@@ -57,6 +57,7 @@ export const translations: Record<string, Record<Language, string>> = {
     "dash.tab.overview": { en: "Overview", ta: "மேலோட்டம்" },
     "dash.tab.orders": { en: "Orders", ta: "ஆர்டர்கள்" },
     "dash.tab.customers": { en: "Customers", ta: "வாடிக்கையாளர்கள்" },
+    "dash.tab.monitoring": { en: "Monitoring", ta: "கண்காணிப்பு" },
     "dash.tab.settings": { en: "Settings", ta: "அமைப்புகள்" },
 
     // Dashboard stats

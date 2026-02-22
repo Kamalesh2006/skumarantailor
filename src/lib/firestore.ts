@@ -27,12 +27,16 @@ export interface UserData {
     role: "admin" | "customer";
     name: string;
     gender?: "male" | "female";
+    createdAt?: number; // timestamp
+    queryCount?: number;
+    lastQueryAt?: number;
     measurements: Record<string, Record<string, number>>; // GarmentType -> { field: value }
 }
 
 export interface SettingsData {
     dailyStitchCapacity: number;
     currentLoad: Record<string, number>; // date string -> count
+    garmentPrices: Record<string, number>; // GarmentType -> Price in Rupees
 }
 
 // ── DEMO SEED DATA ──────────────────────────────────────────
@@ -66,16 +70,27 @@ let demoOrders: OrderData[] = [
 ];
 
 let demoUsers: UserData[] = [
-    { uid: "demo_919876543210", phoneNumber: "+919876543210", role: "customer", name: "Ravi Kumar", measurements: { "Shirt": { chest: 40, waist: 34, shoulder: 18, sleeve: 25, neck: 15.5 }, "Pant": { waist: 34, inseam: 30, length: 42 } } },
-    { uid: "demo_919812345678", phoneNumber: "+919812345678", role: "customer", name: "Priya Sharma", measurements: { "Shirt": { chest: 34, waist: 28, shoulder: 15, sleeve: 22, neck: 13 }, "Girl's Dress": { chest: 34, waist: 28, length: 38 } } },
-    { uid: "demo_919845678901", phoneNumber: "+919845678901", role: "customer", name: "Arun Prakash", measurements: { "Shirt": { chest: 42, waist: 36, shoulder: 19, sleeve: 26, neck: 16 } } },
-    { uid: "demo_919856789012", phoneNumber: "+919856789012", role: "customer", name: "Meena Devi", measurements: { "Girl's Dress": { chest: 35, waist: 29, shoulder: 14.5, length: 40 } } },
-    { uid: "demo_919867890123", phoneNumber: "+919867890123", role: "customer", name: "Karthik Subramanian", measurements: { "Shirt": { chest: 44, waist: 38, shoulder: 20, sleeve: 27, neck: 17 } } },
-    { uid: "demo_919990000001", phoneNumber: "+919990000001", role: "admin", name: "Admin (S Kumaran)", measurements: {} },
+    { uid: "demo_919876543210", phoneNumber: "+919876543210", role: "customer", name: "Ravi Kumar", gender: "male", createdAt: Date.now() - 86400000 * 5, measurements: { "Shirt": { chest: 40, waist: 34, shoulder: 18, sleeve: 25, neck: 15.5 }, "Pant": { waist: 34, inseam: 30, length: 42 } } },
+    { uid: "demo_919812345678", phoneNumber: "+919812345678", role: "customer", name: "Priya Sharma", gender: "female", createdAt: Date.now() - 86400000 * 3, measurements: { "Shirt": { chest: 34, waist: 28, shoulder: 15, sleeve: 22, neck: 13 }, "Girl's Dress": { chest: 34, waist: 28, length: 38 } } },
+    { uid: "demo_919845678901", phoneNumber: "+919845678901", role: "customer", name: "Arun Prakash", gender: "male", createdAt: Date.now() - 86400000 * 10, measurements: { "Shirt": { chest: 42, waist: 36, shoulder: 19, sleeve: 26, neck: 16 } } },
+    { uid: "demo_919856789012", phoneNumber: "+919856789012", role: "customer", name: "Meena Devi", gender: "female", createdAt: Date.now() - 86400000 * 1, measurements: { "Girl's Dress": { chest: 35, waist: 29, shoulder: 14.5, length: 40 } } },
+    { uid: "demo_919867890123", phoneNumber: "+919867890123", role: "customer", name: "Karthik Subramanian", gender: "male", createdAt: Date.now() - 86400000 * 20, measurements: { "Shirt": { chest: 44, waist: 38, shoulder: 20, sleeve: 27, neck: 17 } } },
+    { uid: "demo_919990000001", phoneNumber: "+919990000001", role: "admin", name: "Admin (S Kumaran)", createdAt: Date.now() - 86400000 * 100, measurements: {} },
 ];
 
 let demoSettings: SettingsData = {
     dailyStitchCapacity: 50,
+    garmentPrices: {
+        "Shirt": 1200,
+        "Pant": 1500,
+        "Girl's Dress": 2500,
+        "School Uniform (Boy)": 2000,
+        "School Uniform (Girl)": 2200,
+        "Police Uniform": 3500,
+        "Blouse": 850,
+        "Salwar Kameez": 3000,
+        "General": 1000
+    },
     currentLoad: {
         [fmt(today)]: 35,
         [fmt(addDays(today, 1))]: 42,
@@ -219,6 +234,7 @@ export async function deleteOrder(orderId: string): Promise<boolean> {
 // Users
 export interface UserSearchFilters {
     query?: string;
+    sortBy?: "newest" | "oldest" | "nameaz";
 }
 
 function applyUserFilters(users: UserData[], filters: UserSearchFilters): UserData[] {
@@ -231,6 +247,15 @@ function applyUserFilters(users: UserData[], filters: UserSearchFilters): UserDa
                 (u.phoneNumber && u.phoneNumber.includes(q))
         );
     }
+
+    if (filters.sortBy === "newest") {
+        result.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    } else if (filters.sortBy === "oldest") {
+        result.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    } else if (filters.sortBy === "nameaz") {
+        result.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    }
+
     return result;
 }
 
@@ -283,6 +308,7 @@ export async function updateUser(
 export async function createUser(user: Omit<UserData, "uid">): Promise<UserData> {
     const newUser: UserData = {
         ...user,
+        createdAt: user.createdAt || Date.now(),
         uid: "user_" + Date.now().toString() + Math.random().toString(36).substr(2, 5),
     };
     demoUsers = [newUser, ...demoUsers];
@@ -321,3 +347,14 @@ export const ORDER_STATUSES = [
 ] as const;
 
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+export const incrementUserQueryCount = async (phone: string) => {
+    const userIndex = demoUsers.findIndex(u => u.phoneNumber === phone);
+    if (userIndex !== -1) {
+        demoUsers[userIndex] = {
+            ...demoUsers[userIndex],
+            queryCount: (demoUsers[userIndex].queryCount || 0) + 1,
+            lastQueryAt: Date.now()
+        };
+    }
+};

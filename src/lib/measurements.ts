@@ -12,6 +12,18 @@ export const GARMENT_TYPES = [
 
 export type GarmentType = typeof GARMENT_TYPES[number];
 
+export const GARMENT_GENDER_MAP: Record<GarmentType, "male" | "female" | "unisex"> = {
+    "Shirt": "male",
+    "Pant": "male",
+    "Girl's Dress": "female",
+    "School Uniform (Boy)": "male",
+    "School Uniform (Girl)": "female",
+    "Police Uniform": "male",
+    "Blouse": "female",
+    "Salwar Kameez": "female",
+    "General": "unisex"
+};
+
 export interface MeasurementField {
     id: string;
     labelKey: string; // Translation key

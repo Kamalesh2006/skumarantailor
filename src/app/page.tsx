@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
+import { getSettings, SettingsData } from "@/lib/firestore";
 import TailorIcon from "@/components/TailorIcon";
 import {
   Sparkles,
@@ -17,6 +19,7 @@ import {
   ArrowRight,
   Navigation,
   ChevronDown,
+  IndianRupee,
 } from "lucide-react";
 
 /* ── Floating tailoring SVG elements ────────────────────── */
@@ -104,6 +107,12 @@ export default function Home() {
   const { user, role } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
+
+  const [settings, setSettings] = useState<SettingsData | null>(null);
+
+  useEffect(() => {
+    getSettings().then(setSettings);
+  }, []);
 
   const services = [
     { icon: Scissors, title: t("home.services.custom"), desc: t("home.services.customDesc"), gradient: "from-sky-500 to-blue-600" },
@@ -450,9 +459,54 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ━━━ CONTACT SECTION ━━━ */}
+        {/* ━━━ PRICING SECTION ━━━ */}
         <section className="py-20 px-6">
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-bold text-themed-primary text-center mb-4">
+              Garment Pricing
+            </h2>
+            <div className="w-16 h-1 rounded-full brand-gradient mx-auto mb-12" />
+
+            {settings ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {Object.entries(settings.garmentPrices || {}).map(([gType, price]) => (
+                  <div key={gType} className="glass-card p-5 group hover:scale-[1.02] transition-transform flex items-center justify-between">
+                    <span className="font-semibold text-themed-primary">{gType}</span>
+                    <span className="flex items-center text-emerald-500 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-lg">
+                      <IndianRupee className="h-3.5 w-3.5 mr-0.5" />{price}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex justify-center flex-wrap gap-4 opacity-50">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="glass-card p-5 h-16 w-full max-w-[280px] animate-pulse rounded-2xl" style={{ background: "var(--bg-secondary)" }}></div>
+                ))}
+              </div>
+            )}
+            <p className="text-center text-sm text-themed-secondary mt-8">
+              * Base prices. Final cost may vary based on materials, complex alterations, or rush requests.
+            </p>
+          </div>
+        </section>
+
+        {/* ━━━ CONTACT SECTION ━━━ */}
+        <section className="py-20 px-6 relative overflow-hidden" style={{ background: "var(--bg-secondary)" }}>
+          {/* Subtle background stitch pattern */}
+          <div className="absolute inset-0 pointer-events-none" aria-hidden="true" style={{ opacity: 0.03 }}>
+            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="stitch-pattern-contact" patternUnits="userSpaceOnUse" width="40" height="40">
+                  <line x1="0" y1="20" x2="40" y2="20" stroke="currentColor" strokeWidth="1" strokeDasharray="6 4" />
+                  <line x1="20" y1="0" x2="20" y2="40" stroke="currentColor" strokeWidth="1" strokeDasharray="6 4" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#stitch-pattern-contact)" />
+            </svg>
+          </div>
+
+          <div className="relative max-w-5xl mx-auto">
             <h2 className="text-3xl sm:text-4xl font-bold text-themed-primary text-center mb-4">
               {t("home.contact.title")}
             </h2>

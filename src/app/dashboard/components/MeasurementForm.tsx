@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { UserData } from "@/lib/firestore";
-import { GARMENT_TYPES, GarmentType, GARMENT_CONFIGS } from "@/lib/measurements";
+import { GARMENT_TYPES, GarmentType, GARMENT_CONFIGS, GARMENT_GENDER_MAP } from "@/lib/measurements";
 import { useLanguage } from "@/lib/LanguageContext";
 import MeasurementVisualizer from "./MeasurementVisualizer";
 import { X, Plus, Trash2, Ruler } from "lucide-react";
@@ -18,6 +18,7 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
 
     // Local state for edits
     const [name, setName] = useState(user.name);
+    const [nameError, setNameError] = useState(false);
     const [phone, setPhone] = useState(user.phoneNumber || "");
     const [gender, setGender] = useState<"male" | "female" | undefined>(user.gender);
     // Deep copy to prevent mutating prop
@@ -98,13 +99,16 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                             {/* Basic Info */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-xs font-semibold uppercase tracking-wider text-themed-muted mb-2 block">{t("dash.name")}</label>
+                                    <label className="text-xs font-semibold uppercase tracking-wider text-themed-muted mb-2 block">
+                                        {t("dash.name")} <span className="text-red-500">*</span>
+                                    </label>
                                     <input
                                         value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        className="form-input text-sm w-full font-medium"
+                                        onChange={(e) => { setName(e.target.value); setNameError(false); }}
+                                        className={`form-input text-sm w-full font-medium ${nameError ? "border-red-500 bg-red-500/5 focus:ring-red-500/20" : ""}`}
                                         placeholder="Customer Name"
                                     />
+                                    {nameError && <p className="text-[10px] text-red-500 mt-1">Name is required.</p>}
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
@@ -182,7 +186,17 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                                                 onChange={handleAddGarment}
                                             >
                                                 <option value="" disabled>-- Select Garment Type --</option>
-                                                {GARMENT_TYPES.filter(t => !existingTypes.includes(t)).map(t => (
+                                                {GARMENT_TYPES.filter(t => {
+                                                    // Hide already added
+                                                    if (existingTypes.includes(t)) return false;
+                                                    // If a gender is selected, restrict.
+                                                    if (gender) {
+                                                        const docGender = GARMENT_GENDER_MAP[t];
+                                                        return docGender === "unisex" || docGender === gender;
+                                                    }
+                                                    // If no gender, show all
+                                                    return true;
+                                                }).map(t => (
                                                     <option key={t} value={t}>{t}</option>
                                                 ))}
                                             </select>
@@ -242,7 +256,7 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                     </div>
 
                     {/* Right Col: Visualizer */}
-                    <div className="flex-1 lg:max-w-[40%] bg-black/20 p-6 flex flex-col">
+                    <div className="hidden lg:flex flex-1 lg:max-w-[40%] bg-black/20 p-6 flex-col">
                         <h4 className="text-sm font-semibold text-themed-secondary mb-4 text-center tracking-wider uppercase">
                             {isAddingNew ? "Preview" : `${activeGarment} Visualizer`}
                         </h4>
@@ -266,7 +280,16 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                     <button onClick={onClose} className="btn-secondary">
                         {t("common.cancel")}
                     </button>
-                    <button onClick={() => onSave(user.uid, name, phone, gender, measurements)} className="btn-primary">
+                    <button
+                        onClick={() => {
+                            if (!name.trim()) {
+                                setNameError(true);
+                                return;
+                            }
+                            onSave(user.uid, name, phone, gender, measurements);
+                        }}
+                        className="btn-primary"
+                    >
                         {t("dash.saveChanges")}
                     </button>
                 </div>

@@ -24,6 +24,7 @@ import {
     OrderStatus,
     OrderSearchFilters,
 } from "@/lib/firestore";
+import { GARMENT_TYPES } from "@/lib/measurements";
 import {
     LayoutDashboard,
     PackageSearch,
@@ -50,9 +51,11 @@ import {
     LayoutGrid,
     ChevronLeft,
     ChevronRight,
+    IndianRupee,
+    Activity,
 } from "lucide-react";
 
-type Tab = "overview" | "orders" | "customers" | "settings";
+type Tab = "overview" | "orders" | "customers" | "monitoring" | "settings";
 type ViewMode = "list" | "grid";
 
 import MeasurementForm from "./components/MeasurementForm";
@@ -98,6 +101,8 @@ export default function DashboardPage() {
     const [showNewOrder, setShowNewOrder] = useState(false);
     const [capacityInput, setCapacityInput] = useState("");
     const [savingCapacity, setSavingCapacity] = useState(false);
+    const [pricingInput, setPricingInput] = useState<Record<string, string>>({});
+    const [savingPricing, setSavingPricing] = useState(false);
 
     // New order form
     const [newOrder, setNewOrder] = useState({
@@ -128,6 +133,7 @@ export default function DashboardPage() {
     const CUSTOMER_BATCH_SIZE = 6;
     const customerDebounceRef = useRef<NodeJS.Timeout | null>(null);
     const [debouncedCustomerSearch, setDebouncedCustomerSearch] = useState("");
+    const [customerSortBy, setCustomerSortBy] = useState<"newest" | "oldest" | "nameaz">("newest");
 
     useEffect(() => {
         if (!authLoading) {
@@ -142,6 +148,13 @@ export default function DashboardPage() {
         setOrders(o);
         setSettingsState(s);
         setCapacityInput(String(s.dailyStitchCapacity));
+        if (s.garmentPrices) {
+            const formatted: Record<string, string> = {};
+            Object.entries(s.garmentPrices).forEach(([k, v]) => {
+                formatted[k] = String(v);
+            });
+            setPricingInput(formatted);
+        }
         setDataLoading(false);
     }, []);
 
@@ -216,6 +229,7 @@ export default function DashboardPage() {
     // ─── Customer Fetch Routines ───
     const currentCustomerFilters: UserSearchFilters = {
         query: debouncedCustomerSearch || undefined,
+        sortBy: customerSortBy,
     };
 
     const fetchCustomerListPage = useCallback(async (page: number) => {
@@ -256,7 +270,7 @@ export default function DashboardPage() {
         } else {
             fetchCustomerGridInitial();
         }
-    }, [debouncedCustomerSearch, customerViewMode, dataLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [debouncedCustomerSearch, customerSortBy, customerViewMode, dataLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const hasActiveFilters = debouncedQuery || dateFrom || dateTo || statusFilter;
     const clearFilters = () => {
@@ -302,6 +316,7 @@ export default function DashboardPage() {
         { key: "overview", label: t("dash.tab.overview"), icon: LayoutDashboard },
         { key: "orders", label: t("dash.tab.orders"), icon: PackageSearch },
         { key: "customers", label: t("dash.tab.customers"), icon: Users },
+        { key: "monitoring", label: t("dash.tab.monitoring") || "Monitoring", icon: Activity },
         { key: "settings", label: t("dash.tab.settings"), icon: Settings },
     ];
 
@@ -324,6 +339,21 @@ export default function DashboardPage() {
         await updateSettings({ dailyStitchCapacity: val });
         await loadData();
         setSavingCapacity(false);
+    };
+
+    // ─── Save Pricing ───
+    const handleSavePricing = async () => {
+        setSavingPricing(true);
+        const parsedPrices: Record<string, number> = {};
+        Object.entries(pricingInput).forEach(([gType, val]) => {
+            const num = parseInt(val);
+            if (!isNaN(num) && num >= 0) {
+                parsedPrices[gType] = num;
+            }
+        });
+        await updateSettings({ garmentPrices: parsedPrices });
+        await loadData();
+        setSavingPricing(false);
     };
 
     // ─── Save User ───
@@ -802,6 +832,19 @@ export default function DashboardPage() {
                                                 onChange={(e) => setCustomerSearch(e.target.value)}
                                             />
                                         </div>
+                                        <div className="relative">
+                                            <select
+                                                value={customerSortBy}
+                                                onChange={(e) => setCustomerSortBy(e.target.value as "newest" | "oldest" | "nameaz")}
+                                                className="appearance-none rounded-lg pl-3 pr-8 py-2 text-xs font-medium cursor-pointer"
+                                                style={{ background: "var(--input-bg)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
+                                            >
+                                                <option value="newest">Newest First</option>
+                                                <option value="oldest">Oldest First</option>
+                                                <option value="nameaz">Name (A-Z)</option>
+                                            </select>
+                                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-themed-muted pointer-events-none" />
+                                        </div>
                                         <button
                                             onClick={() => {
                                                 setEditingUser({
@@ -841,33 +884,49 @@ export default function DashboardPage() {
                                     <>
                                         <div className="glass-card overflow-hidden">
                                             <div className="overflow-x-auto">
-                                                <table className="w-full text-left text-sm">
-                                                    <thead className="bg-black/5 dark:bg-white/5 border-b border-black/5 dark:border-white/5">
+                                                <table className="w-full text-left text-sm whitespace-nowrap">
+                                                    <thead className="bg-black/5 dark:bg-white/5 border-b border-black/5 dark:border-white/5 uppercase text-xs font-semibold text-themed-secondary tracking-wider">
                                                         <tr>
-                                                            <th className="px-4 py-3 font-semibold text-themed-secondary">{t("dash.name")}</th>
-                                                            <th className="px-4 py-3 font-semibold text-themed-secondary">Phone</th>
-                                                            <th className="px-4 py-3 font-semibold text-themed-secondary">Profiles</th>
-                                                            <th className="px-4 py-3 font-semibold text-themed-secondary">Orders</th>
-                                                            <th className="px-4 py-3 font-semibold text-themed-secondary text-right">Actions</th>
+                                                            <th className="px-5 py-3">{t("dash.name")}</th>
+                                                            <th className="px-5 py-3">Phone</th>
+                                                            <th className="px-5 py-3">Profiles</th>
+                                                            <th className="px-5 py-3 text-center">Orders</th>
+                                                            <th className="px-5 py-3 text-right">Actions</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-black/5 dark:divide-white/5">
                                                         {displayedCustomers.map((u) => (
-                                                            <tr key={u.uid} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                                                <td className="px-4 py-3 font-medium text-themed-primary">{u.name || t("dash.unnamed")}</td>
-                                                                <td className="px-4 py-3 text-themed-secondary"><div className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5 text-themed-muted" />{u.phoneNumber}</div></td>
-                                                                <td className="px-4 py-3">
-                                                                    <div className="flex flex-wrap gap-1">
-                                                                        {Object.keys(u.measurements || {}).map(gType => (
-                                                                            <span key={gType} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-sky-500/10 text-sky-500">
-                                                                                {gType}
-                                                                            </span>
-                                                                        ))}
+                                                            <tr key={u.uid} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
+                                                                <td className="px-5 py-4">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className="h-8 w-8 rounded-full bg-sky-500/10 text-sky-500 flex items-center justify-center font-bold text-xs shrink-0">
+                                                                            {u.name ? u.name.charAt(0).toUpperCase() : "?"}
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="font-semibold text-themed-primary">{u.name || <span className="text-themed-muted italic">{t("dash.unnamed")}</span>}</p>
+                                                                            {u.gender && <p className="text-[10px] text-themed-secondary uppercase tracking-wider mt-0.5">{u.gender}</p>}
+                                                                        </div>
                                                                     </div>
                                                                 </td>
-                                                                <td className="px-4 py-3 text-themed-secondary">{orders.filter(o => o.customerPhone === u.phoneNumber).length}</td>
-                                                                <td className="px-4 py-3 text-right">
-                                                                    <button onClick={() => setEditingUser({ ...u })} className="p-1.5 rounded-md text-themed-muted hover:text-sky-500 hover:bg-sky-500/10 transition-colors inline-block">
+                                                                <td className="px-5 py-4 text-themed-secondary">
+                                                                    <div className="flex items-center gap-1.5 font-medium"><Phone className="h-3.5 w-3.5 text-themed-muted" />{u.phoneNumber}</div>
+                                                                </td>
+                                                                <td className="px-5 py-4">
+                                                                    <div className="flex flex-wrap gap-1.5 max-w-[200px]">
+                                                                        {Object.keys(u.measurements || {}).length > 0 ? Object.keys(u.measurements || {}).map(gType => (
+                                                                            <span key={gType} className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-sky-500/10 text-sky-500 border border-sky-500/20">
+                                                                                {gType}
+                                                                            </span>
+                                                                        )) : <span className="text-xs text-themed-muted italic">None</span>}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-5 py-4 text-center">
+                                                                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-black/5 dark:bg-white/5 text-themed-primary">
+                                                                        {orders.filter(o => o.customerPhone === u.phoneNumber).length}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-5 py-4 text-right">
+                                                                    <button onClick={() => setEditingUser({ ...u })} className="p-2 rounded-lg text-themed-muted hover:text-sky-500 hover:bg-sky-500/10 transition-colors inline-flex items-center opacity-0 group-hover:opacity-100 focus:opacity-100">
                                                                         <Edit3 className="h-4 w-4" />
                                                                     </button>
                                                                 </td>
@@ -977,6 +1036,7 @@ export default function DashboardPage() {
                                 {/* Edit User Modal */}
                                 {editingUser && (
                                     <MeasurementForm
+                                        key={editingUser.uid}
                                         user={editingUser}
                                         onClose={() => setEditingUser(null)}
                                         onSave={handleSaveUser}
@@ -985,57 +1045,145 @@ export default function DashboardPage() {
                             </div>
                         )}
 
+                        {/* ━━━ MONITORING TAB ━━━ */}
+                        {tab === "monitoring" && (
+                            <div className="space-y-6 animate-fade-in">
+                                <div className="glass-card p-6">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500">
+                                            <Activity className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-themed-primary">Customer Query Monitoring</h3>
+                                            <p className="text-sm text-themed-secondary">Track how often customers check their order status via WhatsApp or Public Tracker.</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid var(--glass-border)" }}>
+                                        <table className="w-full text-left text-sm whitespace-nowrap">
+                                            <thead className="text-xs uppercase" style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}>
+                                                <tr>
+                                                    <th className="px-6 py-4 font-semibold">Customer</th>
+                                                    <th className="px-6 py-4 font-semibold">Phone #</th>
+                                                    <th className="px-6 py-4 font-semibold text-center">Total Queries</th>
+                                                    <th className="px-6 py-4 font-semibold text-right">Last Queried At</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y" style={{ borderColor: "var(--glass-border)", background: "var(--bg-secondary)" }}>
+                                                {/* In a real app we'd fetch all users, sorting by highest queryCount. For the Demo we can borrow listCustomers */}
+                                                {[...listCustomers, ...gridCustomers]
+                                                    .filter((u, i, arr) => arr.findIndex(x => x.uid === u.uid) === i)
+                                                    .sort((a, b) => (b.queryCount || 0) - (a.queryCount || 0))
+                                                    .map(u => (
+                                                        <tr key={u.uid} className="transition-colors hover:bg-neutral-500/5">
+                                                            <td className="px-6 py-4 font-medium text-themed-primary flex items-center gap-2">
+                                                                <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-500 flex items-center justify-center text-xs text-white font-bold">
+                                                                    {u.name.charAt(0).toUpperCase()}
+                                                                </div>
+                                                                {u.name}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-themed-secondary">{u.phoneNumber}</td>
+                                                            <td className="px-6 py-4 text-center">
+                                                                <span className="inline-flex items-center justify-center min-w-[32px] rounded-full px-2 py-1 text-xs font-bold bg-indigo-500/10 text-indigo-500">
+                                                                    {u.queryCount || 0}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right text-themed-muted text-xs">
+                                                                {u.lastQueryAt ? new Date(u.lastQueryAt).toLocaleString() : "Never"}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* ━━━ SETTINGS TAB ━━━ */}
                         {tab === "settings" && settings && (
-                            <div className="max-w-md space-y-6 animate-fade-in">
-                                <div className="glass-card p-6">
-                                    <h3 className="font-semibold text-themed-primary mb-4 flex items-center gap-2">
-                                        <Settings className="h-5 w-5 text-sky-500" /> {t("dash.capacitySettings")}
-                                    </h3>
-                                    <div>
-                                        <label className="text-sm font-medium text-themed-secondary mb-2 block">{t("dash.dailyStitchCapacity")}</label>
-                                        <div className="flex gap-3">
-                                            <input
-                                                type="number"
-                                                value={capacityInput}
-                                                onChange={(e) => setCapacityInput(e.target.value)}
-                                                className="form-input text-sm flex-1"
-                                                min="1"
-                                            />
-                                            <button onClick={handleSaveCapacity} disabled={savingCapacity} className="btn-primary !px-4 text-sm">
-                                                {savingCapacity ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> {t("common.save")}</>}
-                                            </button>
+                            <div className="max-w-5xl w-full animate-fade-in grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                                {/* Left Column */}
+                                <div className="space-y-6">
+                                    <div className="glass-card p-6">
+                                        <h3 className="font-semibold text-themed-primary mb-4 flex items-center gap-2">
+                                            <Settings className="h-5 w-5 text-sky-500" /> {t("dash.capacitySettings")}
+                                        </h3>
+                                        <div>
+                                            <label className="text-sm font-medium text-themed-secondary mb-2 block">{t("dash.dailyStitchCapacity")}</label>
+                                            <div className="flex gap-3">
+                                                <input
+                                                    type="number"
+                                                    value={capacityInput}
+                                                    onChange={(e) => setCapacityInput(e.target.value)}
+                                                    className="form-input text-sm flex-1"
+                                                    min="1"
+                                                />
+                                                <button onClick={handleSaveCapacity} disabled={savingCapacity} className="btn-primary !px-4 text-sm">
+                                                    {savingCapacity ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> {t("common.save")}</>}
+                                                </button>
+                                            </div>
+                                            <p className="text-xs text-themed-muted mt-2">{t("dash.maxOrders")}</p>
                                         </div>
-                                        <p className="text-xs text-themed-muted mt-2">{t("dash.maxOrders")}</p>
+                                    </div>
+
+                                    {/* 7-day capacity overview */}
+                                    <div className="glass-card p-6">
+                                        <h3 className="font-semibold text-themed-primary mb-4">{t("dash.7dayCapacity")}</h3>
+                                        <div className="space-y-3">
+                                            {Array.from({ length: 7 }, (_, i) => {
+                                                const d = new Date();
+                                                d.setDate(d.getDate() + i);
+                                                const key = d.toISOString().split("T")[0];
+                                                const load = settings.currentLoad[key] || 0;
+                                                const pct = Math.min((load / capacity) * 100, 100);
+                                                const isFull = load >= capacity;
+                                                return (
+                                                    <div key={key}>
+                                                        <div className="flex items-center justify-between text-xs mb-1">
+                                                            <span className="text-themed-secondary">{d.toLocaleDateString("en-IN", { weekday: "short", month: "short", day: "numeric" })}</span>
+                                                            <span className={isFull ? "text-red-400 font-medium" : "text-themed-muted"}>{load}/{capacity}</span>
+                                                        </div>
+                                                        <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--bg-tertiary)" }}>
+                                                            <div
+                                                                className={`h-full rounded-full transition-all duration-500 ${isFull ? "bg-red-500" : "bg-sky-500"}`}
+                                                                style={{ width: `${pct}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* 7-day capacity overview */}
+                                {/* Right Column: Pricing Editor */}
                                 <div className="glass-card p-6">
-                                    <h3 className="font-semibold text-themed-primary mb-4">{t("dash.7dayCapacity")}</h3>
-                                    <div className="space-y-3">
-                                        {Array.from({ length: 7 }, (_, i) => {
-                                            const d = new Date();
-                                            d.setDate(d.getDate() + i);
-                                            const key = d.toISOString().split("T")[0];
-                                            const load = settings.currentLoad[key] || 0;
-                                            const pct = Math.min((load / capacity) * 100, 100);
-                                            const isFull = load >= capacity;
-                                            return (
-                                                <div key={key}>
-                                                    <div className="flex items-center justify-between text-xs mb-1">
-                                                        <span className="text-themed-secondary">{d.toLocaleDateString("en-IN", { weekday: "short", month: "short", day: "numeric" })}</span>
-                                                        <span className={isFull ? "text-red-400 font-medium" : "text-themed-muted"}>{load}/{capacity}</span>
-                                                    </div>
-                                                    <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--bg-tertiary)" }}>
-                                                        <div
-                                                            className={`h-full rounded-full transition-all duration-500 ${isFull ? "bg-red-500" : "bg-sky-500"}`}
-                                                            style={{ width: `${pct}%` }}
-                                                        />
-                                                    </div>
+                                    <h3 className="font-semibold text-themed-primary mb-4 flex items-center gap-2">
+                                        <IndianRupee className="h-5 w-5 text-emerald-500" /> Base Garment Pricing
+                                    </h3>
+                                    <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                                        {GARMENT_TYPES.map(gType => (
+                                            <div key={gType} className="flex items-center justify-between gap-3">
+                                                <label className="text-sm font-medium text-themed-secondary min-w-[120px]">{gType}</label>
+                                                <div className="relative flex-1">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-themed-muted font-medium text-sm">₹</span>
+                                                    <input
+                                                        type="number"
+                                                        value={pricingInput[gType] || ""}
+                                                        onChange={(e) => setPricingInput({ ...pricingInput, [gType]: e.target.value })}
+                                                        min="0"
+                                                        className="form-input text-sm w-full pl-7"
+                                                        placeholder="0"
+                                                    />
                                                 </div>
-                                            );
-                                        })}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="mt-4 pt-4 flex justify-end" style={{ borderTop: "1px solid var(--glass-border)" }}>
+                                        <button onClick={handleSavePricing} disabled={savingPricing} className="btn-primary text-sm px-6">
+                                            {savingPricing ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> Save Prices</>}
+                                        </button>
                                     </div>
                                 </div>
                             </div>

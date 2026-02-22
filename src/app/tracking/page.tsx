@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import {
@@ -11,6 +10,7 @@ import {
     getCapacityForDate,
     OrderData,
     SettingsData,
+    incrementUserQueryCount,
 } from "@/lib/firestore";
 import {
     PackageSearch,
@@ -43,7 +43,6 @@ const STATUS_KEYS = [
 export default function TrackingPage() {
     const { user, loading: authLoading } = useAuth();
     const { t } = useLanguage();
-    const router = useRouter();
     const [orders, setOrders] = useState<OrderData[]>([]);
     const [, setSettingsState] = useState<SettingsData | null>(null);
     const [dataLoading, setDataLoading] = useState(true);
@@ -57,24 +56,34 @@ export default function TrackingPage() {
     const [submitting, setSubmitting] = useState(false);
     const [dateCapacity, setDateCapacity] = useState<{ date: string; available: boolean; load: number; capacity: number } | null>(null);
 
-    useEffect(() => {
-        if (!authLoading && !user) router.replace("/login");
-    }, [user, authLoading, router]);
+    const [phoneQuery, setPhoneQuery] = useState("");
+    const [hasSearched, setHasSearched] = useState(false);
+    const [searching, setSearching] = useState(false);
 
-    const loadData = useCallback(async () => {
-        if (!user?.phoneNumber) return;
-        setDataLoading(true);
+    // Remove strict auth redirect
+    // useEffect(() => {
+    //     if (!authLoading && !user) router.replace("/login");
+    // }, [user, authLoading, router]);
+
+    const loadData = useCallback(async (phone: string) => {
+        if (!phone) return;
+        setSearching(true);
         const [o, s] = await Promise.all([
-            getOrdersByPhone(user.phoneNumber),
+            getOrdersByPhone(phone),
             getSettings(),
         ]);
         setOrders(o);
         setSettingsState(s);
-        setDataLoading(false);
-    }, [user]);
+        setHasSearched(true);
+        setSearching(false);
+    }, []);
 
     useEffect(() => {
-        if (user) loadData();
+        if (user?.phoneNumber) {
+            setPhoneQuery(user.phoneNumber);
+            loadData(user.phoneNumber);
+        }
+        setDataLoading(false);
     }, [user, loadData]);
 
     // Update capacity when delivery days changes
@@ -86,7 +95,7 @@ export default function TrackingPage() {
         setDateCapacity({ date: dateStr, ...cap });
     }, [deliveryDays]);
 
-    if (authLoading || !user) {
+    if (authLoading) {
         return (
             <div className="flex min-h-screen items-center justify-center">
                 <Loader2 className="h-8 w-8 text-sky-500 animate-spin" />
@@ -100,20 +109,22 @@ export default function TrackingPage() {
     const isCapacityFull = dateCapacity ? !dateCapacity.available : false;
 
     const handlePlaceOrder = async () => {
-        if (!user.phoneNumber) return;
+        if (!phoneQuery) return;
         setSubmitting(true);
         const today = new Date();
-        const target = new Date(today);
+        const target = new Date();
         target.setDate(target.getDate() + deliveryDays);
 
         await createOrder({
-            customerPhone: user.phoneNumber,
+            customerPhone: phoneQuery,
             customerName: "Customer",
-            status: isCapacityFull ? "Pending" : "Pending",
+            status: "Pending",
             binLocation: "",
             submissionDate: today.toISOString().split("T")[0],
             targetDeliveryDate: target.toISOString().split("T")[0],
             basePrice,
+            numberOfSets: 1,
+            totalAmount: totalPrice,
             rushFee,
             isApprovedRushed: isCapacityFull,
             garmentType,
@@ -125,7 +136,7 @@ export default function TrackingPage() {
         setNotes("");
         setDeliveryDays(10);
         setSubmitting(false);
-        loadData();
+        await loadData(phoneQuery);
     };
 
     // Get status index for stepper
@@ -159,11 +170,36 @@ export default function TrackingPage() {
             </div>
 
             <div className="mx-auto max-w-7xl px-4 lg:px-8 mt-6">
-                {dataLoading ? (
+                {/* Search Bar for Public Tracking */}
+                <div className="glass-card p-6 mb-6">
+                    <h2 className="text-lg font-semibold text-themed-primary mb-3">Track Your Current Orders</h2>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <input
+                            type="tel"
+                            placeholder="Enter your registered phone number (e.g. +91...)"
+                            value={phoneQuery}
+                            onChange={(e) => setPhoneQuery(e.target.value)}
+                            className="form-input flex-1"
+                            disabled={!!user} // Disabled if logged in automatically
+                        />
+                        <button
+                            onClick={async () => {
+                                await loadData(phoneQuery);
+                                await incrementUserQueryCount(phoneQuery);
+                            }}
+                            className="btn-primary"
+                            disabled={!phoneQuery.trim() || searching}
+                        >
+                            {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Find Orders"}
+                        </button>
+                    </div>
+                </div>
+
+                {dataLoading || searching ? (
                     <div className="flex items-center justify-center py-20">
                         <Loader2 className="h-8 w-8 text-sky-500 animate-spin" />
                     </div>
-                ) : (
+                ) : hasSearched && (
                     <div className="space-y-6 animate-fade-in">
                         {/* Orders List */}
                         {orders.length === 0 ? (
@@ -277,6 +313,12 @@ export default function TrackingPage() {
                                 );
                             })
                         )}
+                    </div>
+                )}
+                {!hasSearched && !dataLoading && !searching && (
+                    <div className="glass-card p-10 text-center text-themed-muted">
+                        <PackageSearch className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        <p>Enter your phone number above to track your garments.</p>
                     </div>
                 )}
             </div>
