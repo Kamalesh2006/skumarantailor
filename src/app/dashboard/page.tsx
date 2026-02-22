@@ -8,10 +8,13 @@ import {
     getOrders,
     searchOrdersPaginated,
     searchOrdersCursor,
-    getUsers,
+    searchUsersPaginated,
+    searchUsersCursor,
+    UserSearchFilters,
     getSettings,
-    updateOrder,
     updateUser,
+    updateOrder,
+    createUser,
     updateSettings,
     createOrder,
     OrderData,
@@ -52,14 +55,16 @@ import {
 type Tab = "overview" | "orders" | "customers" | "settings";
 type ViewMode = "list" | "grid";
 
+import MeasurementForm from "./components/MeasurementForm";
+
 export default function DashboardPage() {
     const { user, role, loading: authLoading } = useAuth();
     const { t } = useLanguage();
     const router = useRouter();
     const [tab, setTab] = useState<Tab>("overview");
     const [orders, setOrders] = useState<OrderData[]>([]);
-    const [users, setUsers] = useState<UserData[]>([]);
     const [settings, setSettingsState] = useState<SettingsData | null>(null);
+    const [customerSearch, setCustomerSearch] = useState("");
     const [dataLoading, setDataLoading] = useState(true);
 
     // Search & filter state
@@ -100,9 +105,29 @@ export default function DashboardPage() {
         customerName: "",
         garmentType: "",
         basePrice: 0,
+        numberOfSets: 1,
         targetDays: 10,
         notes: "",
     });
+
+    // View mode for customers
+    const [customerViewMode, setCustomerViewMode] = useState<ViewMode>("list");
+
+    // Customer list pagination state
+    const [listCustomers, setListCustomers] = useState<UserData[]>([]);
+    const [customerCurrentPage, setCustomerCurrentPage] = useState(1);
+    const [customerTotalPages, setCustomerTotalPages] = useState(1);
+    const [customerTotal, setCustomerTotal] = useState(0);
+    const CUSTOMER_PAGE_SIZE = 5;
+
+    // Customer grid lazy-load state
+    const [gridCustomers, setGridCustomers] = useState<UserData[]>([]);
+    const [customerGridCursor, setCustomerGridCursor] = useState<number | null>(0);
+    const [customerGridHasMore, setCustomerGridHasMore] = useState(true);
+    const [customerGridLoading, setCustomerGridLoading] = useState(false);
+    const CUSTOMER_BATCH_SIZE = 6;
+    const customerDebounceRef = useRef<NodeJS.Timeout | null>(null);
+    const [debouncedCustomerSearch, setDebouncedCustomerSearch] = useState("");
 
     useEffect(() => {
         if (!authLoading) {
@@ -113,15 +138,14 @@ export default function DashboardPage() {
 
     const loadData = useCallback(async () => {
         setDataLoading(true);
-        const [o, u, s] = await Promise.all([getOrders(), getUsers(), getSettings()]);
+        const [o, s] = await Promise.all([getOrders(), getSettings()]);
         setOrders(o);
-        setUsers(u.filter((u) => u.role === "customer"));
         setSettingsState(s);
         setCapacityInput(String(s.dailyStitchCapacity));
         setDataLoading(false);
     }, []);
 
-    // Debounce search query — waits 500ms after user stops typing
+    // Debounce orders search query — waits 500ms after user stops typing
     useEffect(() => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => {
@@ -129,6 +153,15 @@ export default function DashboardPage() {
         }, 500);
         return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
     }, [searchQuery]);
+
+    // Debounce customer search query
+    useEffect(() => {
+        if (customerDebounceRef.current) clearTimeout(customerDebounceRef.current);
+        customerDebounceRef.current = setTimeout(() => {
+            setDebouncedCustomerSearch(customerSearch);
+        }, 500);
+        return () => { if (customerDebounceRef.current) clearTimeout(customerDebounceRef.current); };
+    }, [customerSearch]);
 
     const currentFilters: OrderSearchFilters = {
         query: debouncedQuery || undefined,
@@ -180,6 +213,51 @@ export default function DashboardPage() {
         }
     }, [debouncedQuery, dateFrom, dateTo, statusFilter, viewMode, dataLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    // ─── Customer Fetch Routines ───
+    const currentCustomerFilters: UserSearchFilters = {
+        query: debouncedCustomerSearch || undefined,
+    };
+
+    const fetchCustomerListPage = useCallback(async (page: number) => {
+        setSearching(true);
+        const result = await searchUsersPaginated(currentCustomerFilters, page, CUSTOMER_PAGE_SIZE);
+        setListCustomers(result.items);
+        setCustomerCurrentPage(result.page);
+        setCustomerTotalPages(result.totalPages);
+        setCustomerTotal(result.total);
+        setSearching(false);
+    }, [debouncedCustomerSearch]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const fetchCustomerGridInitial = useCallback(async () => {
+        setSearching(true);
+        const result = await searchUsersCursor(currentCustomerFilters, 0, CUSTOMER_BATCH_SIZE);
+        setGridCustomers(result.items);
+        setCustomerGridCursor(result.nextCursor);
+        setCustomerGridHasMore(result.hasMore);
+        setCustomerTotal(result.total);
+        setSearching(false);
+    }, [debouncedCustomerSearch]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const loadMoreCustomerGrid = async () => {
+        if (customerGridCursor === null || customerGridLoading) return;
+        setCustomerGridLoading(true);
+        const result = await searchUsersCursor(currentCustomerFilters, customerGridCursor, CUSTOMER_BATCH_SIZE);
+        setGridCustomers(prev => [...prev, ...result.items]);
+        setCustomerGridCursor(result.nextCursor);
+        setCustomerGridHasMore(result.hasMore);
+        setCustomerGridLoading(false);
+    };
+
+    // Trigger API on customer filter change
+    useEffect(() => {
+        if (dataLoading) return;
+        if (customerViewMode === "list") {
+            fetchCustomerListPage(1);
+        } else {
+            fetchCustomerGridInitial();
+        }
+    }, [debouncedCustomerSearch, customerViewMode, dataLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+
     const hasActiveFilters = debouncedQuery || dateFrom || dateTo || statusFilter;
     const clearFilters = () => {
         setSearchQuery("");
@@ -191,6 +269,7 @@ export default function DashboardPage() {
     };
 
     const displayedOrders = viewMode === "list" ? listOrders : gridOrders;
+    const displayedCustomers = customerViewMode === "list" ? listCustomers : gridCustomers;
 
     useEffect(() => {
         if (user && role === "admin") loadData();
@@ -248,9 +327,12 @@ export default function DashboardPage() {
     };
 
     // ─── Save User ───
-    const handleSaveUser = async () => {
-        if (!editingUser) return;
-        await updateUser(editingUser.uid, editingUser);
+    const handleSaveUser = async (uid: string, name: string, phone: string, gender: "male" | "female" | undefined, measurements: Record<string, Record<string, number>>) => {
+        if (uid.startsWith("new_")) {
+            await createUser({ name, phoneNumber: phone, role: "customer", gender, measurements });
+        } else {
+            await updateUser(uid, { name, phoneNumber: phone, gender, measurements });
+        }
         setEditingUser(null);
         loadData();
     };
@@ -269,6 +351,8 @@ export default function DashboardPage() {
             submissionDate: today.toISOString().split("T")[0],
             targetDeliveryDate: target.toISOString().split("T")[0],
             basePrice: newOrder.basePrice,
+            numberOfSets: newOrder.numberOfSets,
+            totalAmount: newOrder.basePrice * newOrder.numberOfSets,
             rushFee: 0,
             isApprovedRushed: false,
             garmentType: newOrder.garmentType,
@@ -276,7 +360,7 @@ export default function DashboardPage() {
         });
 
         setShowNewOrder(false);
-        setNewOrder({ customerPhone: "", customerName: "", garmentType: "", basePrice: 0, targetDays: 10, notes: "" });
+        setNewOrder({ customerPhone: "", customerName: "", garmentType: "", basePrice: 0, numberOfSets: 1, targetDays: 10, notes: "" });
         loadData();
     };
 
@@ -293,8 +377,6 @@ export default function DashboardPage() {
     };
 
     const statusLabel = (s: string) => t(`status.${s}`) || s;
-
-    const measurementLabel = (key: string) => t(`measure.${key}`) || key;
 
     return (
         <div className="min-h-screen pb-12">
@@ -653,10 +735,14 @@ export default function DashboardPage() {
                                                         <input value={newOrder.customerName} onChange={(e) => setNewOrder({ ...newOrder, customerName: e.target.value })} className="form-input text-sm" placeholder={t("dash.namePlaceholder")} />
                                                     </div>
                                                 </div>
-                                                <div className="grid grid-cols-2 gap-3">
+                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                                     <div>
                                                         <label className="text-xs font-medium text-themed-secondary mb-1 block">{t("dash.garmentType")}</label>
                                                         <input value={newOrder.garmentType} onChange={(e) => setNewOrder({ ...newOrder, garmentType: e.target.value })} className="form-input text-sm" placeholder={t("dash.garmentPlaceholder")} />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-medium text-themed-secondary mb-1 block">Number of Sets</label>
+                                                        <input type="number" min="1" value={newOrder.numberOfSets || ""} onChange={(e) => setNewOrder({ ...newOrder, numberOfSets: Number(e.target.value) })} className="form-input text-sm" placeholder="1" />
                                                     </div>
                                                     <div>
                                                         <label className="text-xs font-medium text-themed-secondary mb-1 block">{t("dash.basePrice")}</label>
@@ -683,82 +769,218 @@ export default function DashboardPage() {
 
                         {/* ━━━ CUSTOMERS TAB ━━━ */}
                         {tab === "customers" && (
-                            <div className="space-y-4 animate-fade-in">
-                                <h3 className="font-semibold text-themed-primary">{t("dash.customers")} ({users.length})</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {users.map((u) => (
-                                        <div key={u.uid} className="glass-card p-5">
-                                            <div className="flex items-start justify-between">
-                                                <div>
-                                                    <h4 className="font-semibold text-themed-primary">{u.name || t("dash.unnamed")}</h4>
-                                                    <p className="text-sm text-themed-secondary flex items-center gap-1 mt-0.5"><Phone className="h-3 w-3" />{u.phoneNumber}</p>
-                                                </div>
-                                                <button onClick={() => setEditingUser({ ...u })} className="p-2 rounded-lg text-themed-muted hover:text-sky-500 transition-colors" style={{ background: "var(--hover-bg)" }}>
-                                                    <Edit3 className="h-4 w-4" />
-                                                </button>
-                                            </div>
+                            <div className="space-y-6 animate-fade-in">
+                                <div className="flex items-center justify-between gap-3 flex-wrap">
+                                    <div className="flex items-center gap-3">
+                                        <Users className="h-6 w-6 text-sky-500" />
+                                        <h2 className="text-2xl font-bold text-themed-primary">{t("dash.customers")} ({customerTotal})</h2>
+                                    </div>
+                                    <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
+                                        <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid var(--glass-border)" }}>
+                                            <button
+                                                onClick={() => setCustomerViewMode("list")}
+                                                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${customerViewMode === "list" ? "brand-gradient text-white" : "text-themed-secondary hover:text-themed-primary"}`}
+                                                style={customerViewMode !== "list" ? { background: "var(--bg-secondary)" } : {}}
+                                            >
+                                                <LayoutList className="h-3.5 w-3.5" /> {t("dash.listView")}
+                                            </button>
+                                            <button
+                                                onClick={() => setCustomerViewMode("grid")}
+                                                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${customerViewMode === "grid" ? "brand-gradient text-white" : "text-themed-secondary hover:text-themed-primary"}`}
+                                                style={customerViewMode !== "grid" ? { background: "var(--bg-secondary)" } : {}}
+                                            >
+                                                <LayoutGrid className="h-3.5 w-3.5" /> {t("dash.gridView")}
+                                            </button>
+                                        </div>
+                                        <div className="relative flex-1 sm:w-64">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-themed-muted" />
+                                            <input
+                                                type="text"
+                                                placeholder="Search customers..."
+                                                className="form-input pl-9 text-sm w-full"
+                                                value={customerSearch}
+                                                onChange={(e) => setCustomerSearch(e.target.value)}
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setEditingUser({
+                                                    uid: "new_" + Date.now().toString(),
+                                                    name: "",
+                                                    phoneNumber: "",
+                                                    role: "customer",
+                                                    measurements: {}
+                                                });
+                                            }}
+                                            className="btn-primary py-2 px-3 text-sm flex items-center justify-center gap-2 whitespace-nowrap"
+                                        >
+                                            <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add Customer</span>
+                                        </button>
+                                    </div>
+                                </div>
 
-                                            {/* Measurements */}
-                                            {Object.keys(u.measurements).length > 0 && (
-                                                <div className="mt-3 flex flex-wrap gap-2">
-                                                    {Object.entries(u.measurements).map(([key, val]) => (
-                                                        <span key={key} className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs" style={{ background: "var(--hover-bg)" }}>
-                                                            <Ruler className="h-3 w-3 text-sky-500" />
-                                                            <span className="text-themed-secondary capitalize">{measurementLabel(key)}:</span>
-                                                            <span className="font-medium text-themed-primary">{val}&quot;</span>
-                                                        </span>
+                                {/* Loading State */}
+                                {searching && (
+                                    <div className="flex justify-center py-8">
+                                        <Loader2 className="h-6 w-6 text-sky-500 animate-spin" />
+                                    </div>
+                                )}
+
+                                {/* Empty State */}
+                                {!searching && displayedCustomers.length === 0 && (
+                                    <div className="glass-card p-8 text-center">
+                                        <Search className="h-10 w-10 mx-auto mb-3 text-themed-muted" />
+                                        <p className="text-sm font-medium text-themed-primary">{t("dash.noResults")}</p>
+                                        <p className="text-xs text-themed-secondary mt-1">{t("dash.noResultsHint")}</p>
+                                        {customerSearch && <button onClick={() => setCustomerSearch("")} className="mt-3 text-xs text-sky-500 hover:text-sky-400">{t("dash.clearFilters")}</button>}
+                                    </div>
+                                )}
+
+                                {/* LIST VIEW */}
+                                {!searching && customerViewMode === "list" && displayedCustomers.length > 0 && (
+                                    <>
+                                        <div className="glass-card overflow-hidden">
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-left text-sm">
+                                                    <thead className="bg-black/5 dark:bg-white/5 border-b border-black/5 dark:border-white/5">
+                                                        <tr>
+                                                            <th className="px-4 py-3 font-semibold text-themed-secondary">{t("dash.name")}</th>
+                                                            <th className="px-4 py-3 font-semibold text-themed-secondary">Phone</th>
+                                                            <th className="px-4 py-3 font-semibold text-themed-secondary">Profiles</th>
+                                                            <th className="px-4 py-3 font-semibold text-themed-secondary">Orders</th>
+                                                            <th className="px-4 py-3 font-semibold text-themed-secondary text-right">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-black/5 dark:divide-white/5">
+                                                        {displayedCustomers.map((u) => (
+                                                            <tr key={u.uid} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                                                                <td className="px-4 py-3 font-medium text-themed-primary">{u.name || t("dash.unnamed")}</td>
+                                                                <td className="px-4 py-3 text-themed-secondary"><div className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5 text-themed-muted" />{u.phoneNumber}</div></td>
+                                                                <td className="px-4 py-3">
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {Object.keys(u.measurements || {}).map(gType => (
+                                                                            <span key={gType} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-sky-500/10 text-sky-500">
+                                                                                {gType}
+                                                                            </span>
+                                                                        ))}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-themed-secondary">{orders.filter(o => o.customerPhone === u.phoneNumber).length}</td>
+                                                                <td className="px-4 py-3 text-right">
+                                                                    <button onClick={() => setEditingUser({ ...u })} className="p-1.5 rounded-md text-themed-muted hover:text-sky-500 hover:bg-sky-500/10 transition-colors inline-block">
+                                                                        <Edit3 className="h-4 w-4" />
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        {/* Pagination Controls */}
+                                        {customerTotalPages > 1 && (
+                                            <div className="flex items-center justify-center gap-2 pt-2">
+                                                <button
+                                                    onClick={() => fetchCustomerListPage(customerCurrentPage - 1)}
+                                                    disabled={customerCurrentPage <= 1}
+                                                    className="flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                                    style={{ background: "var(--bg-secondary)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
+                                                >
+                                                    <ChevronLeft className="h-3.5 w-3.5" /> {t("dash.prev")}
+                                                </button>
+                                                <div className="flex items-center gap-1">
+                                                    {Array.from({ length: customerTotalPages }, (_, i) => i + 1).map((p) => (
+                                                        <button
+                                                            key={p}
+                                                            onClick={() => fetchCustomerListPage(p)}
+                                                            className={`h-8 w-8 rounded-lg text-xs font-medium transition-colors ${p === customerCurrentPage ? "brand-gradient text-white" : "text-themed-secondary hover:text-themed-primary"}`}
+                                                            style={p !== customerCurrentPage ? { background: "var(--bg-secondary)" } : {}}
+                                                        >
+                                                            {p}
+                                                        </button>
                                                     ))}
                                                 </div>
-                                            )}
+                                                <button
+                                                    onClick={() => fetchCustomerListPage(customerCurrentPage + 1)}
+                                                    disabled={customerCurrentPage >= customerTotalPages}
+                                                    className="flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                                    style={{ background: "var(--bg-secondary)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
+                                                >
+                                                    {t("dash.next")} <ChevronRight className="h-3.5 w-3.5" />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
 
-                                            {/* Customer orders count */}
-                                            <p className="text-xs text-themed-muted mt-3">
-                                                {orders.filter((o) => o.customerPhone === u.phoneNumber).length} {t("dash.orderCount")}
-                                            </p>
+                                {/* GRID VIEW */}
+                                {!searching && customerViewMode === "grid" && displayedCustomers.length > 0 && (
+                                    <>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            {displayedCustomers.map((u) => (
+                                                <div key={u.uid} className="glass-card p-5 flex flex-col">
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="min-w-0 pr-4">
+                                                            <h4 className="font-semibold text-themed-primary truncate">{u.name || t("dash.unnamed")}</h4>
+                                                            <p className="text-sm text-themed-secondary flex items-center gap-1 mt-0.5"><Phone className="h-3 w-3 shrink-0" /><span className="truncate">{u.phoneNumber}</span></p>
+                                                        </div>
+                                                        <button onClick={() => setEditingUser({ ...u })} className="p-2 shrink-0 rounded-lg text-themed-muted hover:text-sky-500 transition-colors" style={{ background: "var(--hover-bg)" }}>
+                                                            <Edit3 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Garment Profiles */}
+                                                    {Object.keys(u.measurements || {}).length > 0 && (
+                                                        <div className="mt-4 flex flex-wrap gap-2">
+                                                            {Object.keys(u.measurements).map((garmentType) => (
+                                                                <span key={garmentType} className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs border" style={{ background: "var(--hover-bg)", borderColor: "var(--glass-border)" }}>
+                                                                    <Ruler className="h-3 w-3 text-sky-500" />
+                                                                    <span className="font-medium text-themed-primary">{garmentType}</span>
+                                                                    <span className="text-themed-muted ml-0.5">({Object.keys((u.measurements as Record<string, Record<string, number>>)[garmentType] || {}).length})</span>
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    <div className="mt-auto pt-5">
+                                                        <p className="text-xs text-themed-muted">
+                                                            {orders.filter((o) => o.customerPhone === u.phoneNumber).length} {t("dash.orderCount")}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
+
+                                        {/* Load More Button */}
+                                        <div className="flex justify-center pt-2">
+                                            {customerGridHasMore ? (
+                                                <button
+                                                    onClick={loadMoreCustomerGrid}
+                                                    disabled={customerGridLoading}
+                                                    className="flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-colors"
+                                                    style={{ background: "var(--bg-secondary)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
+                                                >
+                                                    {customerGridLoading ? (
+                                                        <><Loader2 className="h-4 w-4 animate-spin" /> {t("dash.loadingMore")}</>
+                                                    ) : (
+                                                        <>{t("dash.loadMore")} ({displayedCustomers.length}/{customerTotal})</>
+                                                    )}
+                                                </button>
+                                            ) : (
+                                                <p className="text-xs text-themed-muted">{t("dash.allLoaded")}</p>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
 
                                 {/* Edit User Modal */}
                                 {editingUser && (
-                                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
-                                        <div className="glass-card p-6 w-full max-w-lg animate-slide-up" style={{ background: "var(--bg-secondary)" }}>
-                                            <div className="flex items-center justify-between mb-5">
-                                                <h3 className="text-lg font-semibold text-themed-primary">{t("dash.editCustomer")}</h3>
-                                                <button onClick={() => setEditingUser(null)} className="text-themed-muted hover:text-themed-primary"><X className="h-5 w-5" /></button>
-                                            </div>
-                                            <div className="space-y-4">
-                                                <div>
-                                                    <label className="text-xs font-medium text-themed-secondary mb-1 block">{t("dash.name")}</label>
-                                                    <input value={editingUser.name} onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })} className="form-input text-sm" />
-                                                </div>
-                                                <div>
-                                                    <label className="text-xs font-medium text-themed-secondary mb-2 block">{t("dash.measurements")}</label>
-                                                    <div className="grid grid-cols-2 gap-3">
-                                                        {["chest", "waist", "shoulder", "sleeve", "inseam", "neck"].map((m) => (
-                                                            <div key={m} className="flex items-center gap-2">
-                                                                <label className="text-xs text-themed-secondary capitalize w-16">{measurementLabel(m)}</label>
-                                                                <input
-                                                                    type="number"
-                                                                    step="0.5"
-                                                                    value={editingUser.measurements[m] || ""}
-                                                                    onChange={(e) => setEditingUser({
-                                                                        ...editingUser,
-                                                                        measurements: { ...editingUser.measurements, [m]: Number(e.target.value) },
-                                                                    })}
-                                                                    className="form-input text-sm flex-1"
-                                                                    placeholder="0"
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <button onClick={handleSaveUser} className="btn-primary w-full">
-                                                    <Save className="h-4 w-4" /> {t("dash.saveChanges")}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <MeasurementForm
+                                        user={editingUser}
+                                        onClose={() => setEditingUser(null)}
+                                        onSave={handleSaveUser}
+                                    />
                                 )}
                             </div>
                         )}

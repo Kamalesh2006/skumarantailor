@@ -9,21 +9,20 @@ import SplashScreen from "./SplashScreen";
  */
 export default function AppShell({ children }: { children: React.ReactNode }) {
     const [showSplash, setShowSplash] = useState(false);
-    const [splashDone, setSplashDone] = useState(false);
+    const [contentReady, setContentReady] = useState(true); // start visible to prevent flash
 
     useEffect(() => {
         // Only show splash once per browser session
         const seen = sessionStorage.getItem("sk_splash_seen");
-        if (seen) {
-            setSplashDone(true);
-        } else {
+        if (!seen) {
             setShowSplash(true);
+            setContentReady(false); // hide content only when splash is playing
         }
     }, []);
 
     const handleSplashComplete = useCallback(() => {
         setShowSplash(false);
-        setSplashDone(true);
+        setContentReady(true);
         sessionStorage.setItem("sk_splash_seen", "true");
     }, []);
 
@@ -32,7 +31,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         if (!showSplash) return;
         const failsafe = setTimeout(() => {
             setShowSplash(false);
-            setSplashDone(true);
+            setContentReady(true);
             sessionStorage.setItem("sk_splash_seen", "true");
         }, 4000);
         return () => clearTimeout(failsafe);
@@ -41,7 +40,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return (
         <>
             {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
-            <div style={{ opacity: splashDone ? 1 : 0, transition: "opacity 400ms ease" }}>
+            <div style={{ opacity: contentReady ? 1 : 0, transition: "opacity 400ms ease" }}>
                 {children}
             </div>
         </>

@@ -19,14 +19,13 @@ import {
     AlertCircle,
     ArrowLeft,
     Zap,
-    Languages,
 } from "lucide-react";
 
 type Step = "phone" | "otp";
 
 export default function LoginPage() {
     const { user, role, loading: authLoading, demoMode, setDemoMode, demoLogin } = useAuth();
-    const { lang, toggleLang, t } = useLanguage();
+    const { t } = useLanguage();
     const router = useRouter();
 
     const [step, setStep] = useState<Step>("phone");
@@ -195,17 +194,6 @@ export default function LoginPage() {
                 <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-sky-700/[0.05] blur-[120px]" />
             </div>
 
-            {/* Language toggle — top right */}
-            <button
-                onClick={toggleLang}
-                className="fixed top-4 right-4 z-50 flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-themed-secondary transition-all duration-200"
-                style={{ background: "var(--hover-bg)", border: "1px solid var(--border-color)" }}
-                aria-label="Toggle language"
-            >
-                <Languages className="h-4 w-4" />
-                {lang === "ta" ? "English" : "தமிழ்"}
-            </button>
-
             <div className="relative w-full max-w-md animate-slide-up">
                 {/* Brand */}
                 <div className="mb-8 flex flex-col items-center text-center">
@@ -370,6 +358,6 @@ export default function LoginPage() {
             </div>
 
             <div id="recaptcha-container" />
-        </div>
+        </div >
     );
 }

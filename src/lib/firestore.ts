@@ -13,6 +13,8 @@ export interface OrderData {
     submissionDate: string; // ISO date
     targetDeliveryDate: string; // ISO date
     basePrice: number;
+    numberOfSets: number;
+    totalAmount: number;
     rushFee: number;
     isApprovedRushed: boolean;
     garmentType: string;
@@ -24,7 +26,8 @@ export interface UserData {
     phoneNumber: string;
     role: "admin" | "customer";
     name: string;
-    measurements: Record<string, number>;
+    gender?: "male" | "female";
+    measurements: Record<string, Record<string, number>>; // GarmentType -> { field: value }
 }
 
 export interface SettingsData {
@@ -42,30 +45,32 @@ const addDays = (d: Date, n: number) => {
     return r;
 };
 
+const todayStr = fmt(today);
+
 let demoOrders: OrderData[] = [
-    { orderId: "ORD-001", customerPhone: "+919876543210", customerName: "Ravi Kumar", status: "Stitching", binLocation: "A-12", submissionDate: fmt(addDays(today, -5)), targetDeliveryDate: fmt(addDays(today, 5)), basePrice: 2500, rushFee: 0, isApprovedRushed: false, garmentType: "Shirt", notes: "Slim fit, blue cotton" },
-    { orderId: "ORD-002", customerPhone: "+919876543210", customerName: "Ravi Kumar", status: "Cutting", binLocation: "B-03", submissionDate: fmt(addDays(today, -2)), targetDeliveryDate: fmt(addDays(today, 8)), basePrice: 3500, rushFee: 500, isApprovedRushed: true, garmentType: "Suit", notes: "Navy blue, 3-piece" },
-    { orderId: "ORD-003", customerPhone: "+919812345678", customerName: "Priya Sharma", status: "Ready", binLocation: "C-07", submissionDate: fmt(addDays(today, -10)), targetDeliveryDate: fmt(addDays(today, 0)), basePrice: 1800, rushFee: 0, isApprovedRushed: false, garmentType: "Blouse", notes: "Silk, wedding collection" },
-    { orderId: "ORD-004", customerPhone: "+919812345678", customerName: "Priya Sharma", status: "Pending", binLocation: "", submissionDate: fmt(today), targetDeliveryDate: fmt(addDays(today, 10)), basePrice: 2000, rushFee: 0, isApprovedRushed: false, garmentType: "Kurta", notes: "" },
-    { orderId: "ORD-005", customerPhone: "+919845678901", customerName: "Arun Prakash", status: "Stitching", binLocation: "D-01", submissionDate: fmt(addDays(today, -3)), targetDeliveryDate: fmt(addDays(today, 7)), basePrice: 4500, rushFee: 0, isApprovedRushed: false, garmentType: "Sherwani", notes: "Gold embroidery" },
-    { orderId: "ORD-006", customerPhone: "+919845678901", customerName: "Arun Prakash", status: "Ready", binLocation: "D-05", submissionDate: fmt(addDays(today, -12)), targetDeliveryDate: fmt(addDays(today, -2)), basePrice: 1200, rushFee: 0, isApprovedRushed: false, garmentType: "Pant", notes: "Formal, black" },
-    { orderId: "ORD-007", customerPhone: "+919856789012", customerName: "Meena Devi", status: "Delivered", binLocation: "", submissionDate: fmt(addDays(today, -20)), targetDeliveryDate: fmt(addDays(today, -10)), basePrice: 3000, rushFee: 0, isApprovedRushed: false, garmentType: "Saree Blouse", notes: "Set of 3" },
-    { orderId: "ORD-008", customerPhone: "+919856789012", customerName: "Meena Devi", status: "Cutting", binLocation: "E-02", submissionDate: fmt(addDays(today, -1)), targetDeliveryDate: fmt(addDays(today, 6)), basePrice: 2200, rushFee: 300, isApprovedRushed: true, garmentType: "Churidar", notes: "Festival wear" },
-    { orderId: "ORD-009", customerPhone: "+919867890123", customerName: "Karthik Subramanian", status: "Alteration", binLocation: "F-03", submissionDate: fmt(addDays(today, -8)), targetDeliveryDate: fmt(addDays(today, 2)), basePrice: 800, rushFee: 0, isApprovedRushed: false, garmentType: "Shirt", notes: "Sleeve length adjustment" },
-    { orderId: "ORD-010", customerPhone: "+919867890123", customerName: "Karthik Subramanian", status: "Pending", binLocation: "", submissionDate: fmt(today), targetDeliveryDate: fmt(addDays(today, 12)), basePrice: 5000, rushFee: 0, isApprovedRushed: false, garmentType: "Wedding Suit", notes: "Cream silk, 3-piece" },
-    { orderId: "ORD-011", customerPhone: "+919876543210", customerName: "Ravi Kumar", status: "Delivered", binLocation: "", submissionDate: fmt(addDays(today, -25)), targetDeliveryDate: fmt(addDays(today, -15)), basePrice: 1500, rushFee: 0, isApprovedRushed: false, garmentType: "Kurta", notes: "White cotton" },
-    { orderId: "ORD-012", customerPhone: "+919812345678", customerName: "Priya Sharma", status: "Stitching", binLocation: "A-08", submissionDate: fmt(addDays(today, -4)), targetDeliveryDate: fmt(addDays(today, 6)), basePrice: 2800, rushFee: 0, isApprovedRushed: false, garmentType: "Lehenga", notes: "Green, party wear" },
-    { orderId: "ORD-013", customerPhone: "+919845678901", customerName: "Arun Prakash", status: "Pending", binLocation: "", submissionDate: fmt(today), targetDeliveryDate: fmt(addDays(today, 8)), basePrice: 1800, rushFee: 200, isApprovedRushed: true, garmentType: "Shirt", notes: "2 formal shirts" },
-    { orderId: "ORD-014", customerPhone: "+919856789012", customerName: "Meena Devi", status: "Ready", binLocation: "G-01", submissionDate: fmt(addDays(today, -7)), targetDeliveryDate: fmt(addDays(today, 1)), basePrice: 3500, rushFee: 0, isApprovedRushed: false, garmentType: "Salwar Kameez", notes: "Embroidered" },
-    { orderId: "ORD-015", customerPhone: "+919867890123", customerName: "Karthik Subramanian", status: "Cutting", binLocation: "B-06", submissionDate: fmt(addDays(today, -1)), targetDeliveryDate: fmt(addDays(today, 9)), basePrice: 6000, rushFee: 1000, isApprovedRushed: true, garmentType: "Blazer", notes: "Custom fit, charcoal" },
+    { orderId: "ORD-001", customerPhone: "+919876543210", customerName: "Ravi Kumar", status: "Stitching", binLocation: "A-12", submissionDate: fmt(addDays(today, -2)), targetDeliveryDate: fmt(addDays(today, 3)), basePrice: 1500, numberOfSets: 1, totalAmount: 1500, rushFee: 0, isApprovedRushed: false, garmentType: "Shirt", notes: "Extra slim fit" },
+    { orderId: "ORD-002", customerPhone: "+919812345678", customerName: "Priya Sharma", status: "Pending", binLocation: "B-04", submissionDate: fmt(addDays(today, -1)), targetDeliveryDate: fmt(addDays(today, 5)), basePrice: 2200, numberOfSets: 2, totalAmount: 4400, rushFee: 500, isApprovedRushed: true, garmentType: "Girl's Dress", notes: "Knee length" },
+    { orderId: "ORD-003", customerPhone: "+919845678901", customerName: "Arun Prakash", status: "Ready", binLocation: "C-01", submissionDate: fmt(addDays(today, -5)), targetDeliveryDate: fmt(addDays(today, 0)), basePrice: 1800, numberOfSets: 1, totalAmount: 1800, rushFee: 0, isApprovedRushed: false, garmentType: "Pant", notes: "No cuffs" },
+    { orderId: "ORD-004", customerPhone: "+919834567890", customerName: "Meena Devi", status: "Cutting", binLocation: "A-08", submissionDate: todayStr, targetDeliveryDate: fmt(addDays(today, 7)), basePrice: 3500, numberOfSets: 1, totalAmount: 3500, rushFee: 0, isApprovedRushed: false, garmentType: "Salwar Kameez", notes: "Cotton fabric" },
+    { orderId: "ORD-005", customerPhone: "+919823456789", customerName: "Sanjay Gupta", status: "Alteration", binLocation: "D-02", submissionDate: fmt(addDays(today, -10)), targetDeliveryDate: fmt(addDays(today, -1)), basePrice: 1200, numberOfSets: 1, totalAmount: 1200, rushFee: 0, isApprovedRushed: false, garmentType: "Shirt", notes: "Sleeves too long" },
+    { orderId: "ORD-006", customerPhone: "+919890123456", customerName: "Anita Desai", status: "Delivered", binLocation: "Delivered", submissionDate: fmt(addDays(today, -15)), targetDeliveryDate: fmt(addDays(today, -5)), basePrice: 4000, numberOfSets: 2, totalAmount: 8000, rushFee: 0, isApprovedRushed: false, garmentType: "School Uniform", notes: "Include badges" },
+    { orderId: "ORD-007", customerPhone: "+919889012345", customerName: "Vikram Singh", status: "Pending", binLocation: "B-09", submissionDate: todayStr, targetDeliveryDate: fmt(addDays(today, 10)), basePrice: 2800, numberOfSets: 1, totalAmount: 2800, rushFee: 0, isApprovedRushed: false, garmentType: "Pant", notes: "Pleated" },
+    { orderId: "ORD-008", customerPhone: "+919878901234", customerName: "Neha Kapoor", status: "Stitching", binLocation: "C-05", submissionDate: fmt(addDays(today, -3)), targetDeliveryDate: fmt(addDays(today, 4)), basePrice: 1600, numberOfSets: 1, totalAmount: 1600, rushFee: 0, isApprovedRushed: false, garmentType: "Blouse", notes: "Deep back neck" },
+    { orderId: "ORD-009", customerPhone: "+919867890123", customerName: "Karthik Subramanian", status: "Ready", binLocation: "A-03", submissionDate: fmt(addDays(today, -4)), targetDeliveryDate: fmt(addDays(today, 2)), basePrice: 5000, numberOfSets: 1, totalAmount: 5000, rushFee: 0, isApprovedRushed: false, garmentType: "Blazer", notes: "Navy blue, brass buttons" },
+    { orderId: "ORD-010", customerPhone: "+919856789012", customerName: "Sneha Reddy", status: "Cutting", binLocation: "D-10", submissionDate: fmt(addDays(today, -1)), targetDeliveryDate: fmt(addDays(today, 6)), basePrice: 2000, numberOfSets: 1, totalAmount: 2000, rushFee: 0, isApprovedRushed: false, garmentType: "Girl's Dress", notes: "A-line" },
+    { orderId: "ORD-011", customerPhone: "+919876543210", customerName: "Ravi Kumar", status: "Pending", binLocation: "B-11", submissionDate: todayStr, targetDeliveryDate: fmt(addDays(today, 8)), basePrice: 1500, numberOfSets: 1, totalAmount: 1500, rushFee: 0, isApprovedRushed: false, garmentType: "Pant", notes: "Slim fit" },
+    { orderId: "ORD-012", customerPhone: "+919812345678", customerName: "Priya Sharma", status: "Stitching", binLocation: "A-15", submissionDate: fmt(addDays(today, -2)), targetDeliveryDate: fmt(addDays(today, 5)), basePrice: 2200, numberOfSets: 1, totalAmount: 2200, rushFee: 500, isApprovedRushed: true, garmentType: "Salwar Kameez", notes: "Silk, intricate embroidery" },
+    { orderId: "ORD-013", customerPhone: "+919845678901", customerName: "Arun Prakash", status: "Alteration", binLocation: "C-08", submissionDate: fmt(addDays(today, -8)), targetDeliveryDate: fmt(addDays(today, -2)), basePrice: 1800, numberOfSets: 1, totalAmount: 1800, rushFee: 0, isApprovedRushed: false, garmentType: "Shirt", notes: "Collar too tight" },
+    { orderId: "ORD-014", customerPhone: "+919834567890", customerName: "Meena Devi", status: "Delivered", binLocation: "Delivered", submissionDate: fmt(addDays(today, -20)), targetDeliveryDate: fmt(addDays(today, -10)), basePrice: 3500, numberOfSets: 1, totalAmount: 3500, rushFee: 0, isApprovedRushed: false, garmentType: "Blouse", notes: "Puff sleeves" },
+    { orderId: "ORD-015", customerPhone: "+919867890123", customerName: "Karthik Subramanian", status: "Cutting", binLocation: "B-06", submissionDate: fmt(addDays(today, -1)), targetDeliveryDate: fmt(addDays(today, 9)), basePrice: 6000, numberOfSets: 1, totalAmount: 6000, rushFee: 1000, isApprovedRushed: true, garmentType: "Blazer", notes: "Custom fit, charcoal" },
 ];
 
-const demoUsers: UserData[] = [
-    { uid: "demo_919876543210", phoneNumber: "+919876543210", role: "customer", name: "Ravi Kumar", measurements: { chest: 40, waist: 34, shoulder: 18, sleeve: 25, inseam: 30, neck: 15.5 } },
-    { uid: "demo_919812345678", phoneNumber: "+919812345678", role: "customer", name: "Priya Sharma", measurements: { chest: 34, waist: 28, shoulder: 15, sleeve: 22, inseam: 28, neck: 13 } },
-    { uid: "demo_919845678901", phoneNumber: "+919845678901", role: "customer", name: "Arun Prakash", measurements: { chest: 42, waist: 36, shoulder: 19, sleeve: 26, inseam: 31, neck: 16 } },
-    { uid: "demo_919856789012", phoneNumber: "+919856789012", role: "customer", name: "Meena Devi", measurements: { chest: 35, waist: 29, shoulder: 14.5, sleeve: 21, inseam: 27, neck: 12.5 } },
-    { uid: "demo_919867890123", phoneNumber: "+919867890123", role: "customer", name: "Karthik Subramanian", measurements: { chest: 44, waist: 38, shoulder: 20, sleeve: 27, inseam: 32, neck: 17 } },
+let demoUsers: UserData[] = [
+    { uid: "demo_919876543210", phoneNumber: "+919876543210", role: "customer", name: "Ravi Kumar", measurements: { "Shirt": { chest: 40, waist: 34, shoulder: 18, sleeve: 25, neck: 15.5 }, "Pant": { waist: 34, inseam: 30, length: 42 } } },
+    { uid: "demo_919812345678", phoneNumber: "+919812345678", role: "customer", name: "Priya Sharma", measurements: { "Shirt": { chest: 34, waist: 28, shoulder: 15, sleeve: 22, neck: 13 }, "Girl's Dress": { chest: 34, waist: 28, length: 38 } } },
+    { uid: "demo_919845678901", phoneNumber: "+919845678901", role: "customer", name: "Arun Prakash", measurements: { "Shirt": { chest: 42, waist: 36, shoulder: 19, sleeve: 26, neck: 16 } } },
+    { uid: "demo_919856789012", phoneNumber: "+919856789012", role: "customer", name: "Meena Devi", measurements: { "Girl's Dress": { chest: 35, waist: 29, shoulder: 14.5, length: 40 } } },
+    { uid: "demo_919867890123", phoneNumber: "+919867890123", role: "customer", name: "Karthik Subramanian", measurements: { "Shirt": { chest: 44, waist: 38, shoulder: 20, sleeve: 27, neck: 17 } } },
     { uid: "demo_919990000001", phoneNumber: "+919990000001", role: "admin", name: "Admin (S Kumaran)", measurements: {} },
 ];
 
@@ -212,6 +217,51 @@ export async function deleteOrder(orderId: string): Promise<boolean> {
 }
 
 // Users
+export interface UserSearchFilters {
+    query?: string;
+}
+
+function applyUserFilters(users: UserData[], filters: UserSearchFilters): UserData[] {
+    let result = users.filter((u) => u.role === "customer");
+    if (filters.query) {
+        const q = filters.query.toLowerCase();
+        result = result.filter(
+            (u) =>
+                (u.name && u.name.toLowerCase().includes(q)) ||
+                (u.phoneNumber && u.phoneNumber.includes(q))
+        );
+    }
+    return result;
+}
+
+export async function searchUsersPaginated(
+    filters: UserSearchFilters,
+    page: number = 1,
+    pageSize: number = 5
+): Promise<PaginatedResult<UserData>> {
+    const all = applyUserFilters([...demoUsers], filters);
+    const total = all.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const safePage = Math.min(Math.max(1, page), totalPages);
+    const start = (safePage - 1) * pageSize;
+    const items = all.slice(start, start + pageSize);
+
+    return { items, total, page: safePage, pageSize, totalPages };
+}
+
+export async function searchUsersCursor(
+    filters: UserSearchFilters,
+    cursor: number = 0,
+    batchSize: number = 6
+): Promise<CursorResult<UserData>> {
+    const all = applyUserFilters([...demoUsers], filters);
+    const total = all.length;
+    const items = all.slice(cursor, cursor + batchSize);
+    const nextCursor = cursor + batchSize < total ? cursor + batchSize : null;
+
+    return { items, total, nextCursor, hasMore: nextCursor !== null };
+}
+
 export async function getUsers(): Promise<UserData[]> {
     return [...demoUsers];
 }
@@ -228,6 +278,15 @@ export async function updateUser(
     if (idx === -1) return null;
     demoUsers[idx] = { ...demoUsers[idx], ...updates };
     return demoUsers[idx];
+}
+
+export async function createUser(user: Omit<UserData, "uid">): Promise<UserData> {
+    const newUser: UserData = {
+        ...user,
+        uid: "user_" + Date.now().toString() + Math.random().toString(36).substr(2, 5),
+    };
+    demoUsers = [newUser, ...demoUsers];
+    return newUser;
 }
 
 // Settings

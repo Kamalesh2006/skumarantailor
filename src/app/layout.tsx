@@ -6,6 +6,8 @@ import { LanguageProvider } from "@/lib/LanguageContext";
 import Navbar from "@/components/Navbar";
 import AppShell from "@/components/AppShell";
 
+import Footer from "@/components/Footer";
+
 export const metadata: Metadata = {
   title: "S Kumaran Tailors — Premium Tailoring Since 1990",
   description:
@@ -34,6 +36,7 @@ export default function RootLayout({
               <AppShell>
                 <Navbar />
                 <main>{children}</main>
+                <Footer />
               </AppShell>
             </AuthProvider>
           </LanguageProvider>

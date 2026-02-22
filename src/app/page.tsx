@@ -355,7 +355,7 @@ export default function Home() {
               <h1 className="home-brand-title text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight">
                 {t("app.name")}
               </h1>
-              <p className="mt-3 text-sm font-semibold tracking-[0.3em] uppercase text-sky-500/80">
+              <p className="mt-3 text-sm font-semibold tracking-widest uppercase text-sky-500/80">
                 {t("app.tagline")}
               </p>
             </div>
@@ -522,15 +522,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        {/* ━━━ FOOTER ━━━ */}
-        <footer className="py-8 px-6 text-center" style={{ borderTop: "1px solid var(--glass-border)" }}>
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <TailorIcon className="text-sky-500" size={20} />
-            <span className="font-semibold text-themed-primary">{t("app.name")}</span>
-          </div>
-          <p className="text-xs text-themed-muted">© {new Date().getFullYear()} S Kumaran Tailors. All rights reserved.</p>
-        </footer>
       </div>
     </>
   );

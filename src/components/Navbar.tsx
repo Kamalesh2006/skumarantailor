@@ -26,8 +26,42 @@ export default function Navbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
     const pathname = usePathname();
 
-    if (pathname === "/login") return null;
-    if (loading || !user) return null;
+    // Show minimal navbar (brand + language/theme) for unauthenticated users
+    if (loading || !user) {
+        return (
+            <nav className="fixed top-0 left-0 right-0 z-50 border-b nav-bg backdrop-blur-xl" style={{ borderColor: "var(--border-color)" }}>
+                <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+                    <Link href="/" className="flex items-center gap-2.5 group">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg brand-gradient shadow-lg shadow-brand-500/20 group-hover:shadow-brand-500/40 transition-shadow">
+                            <TailorIcon className="text-white" size={20} />
+                        </div>
+                        <span
+                            className="text-lg font-bold tracking-tight"
+                            style={{
+                                background: "linear-gradient(135deg, #0ea5e9 0%, #6366f1 40%, #a855f7 70%, #0ea5e9 100%)",
+                                backgroundSize: "200% 200%",
+                                WebkitBackgroundClip: "text",
+                                WebkitTextFillColor: "transparent",
+                                backgroundClip: "text",
+                                animation: "navGradientShift 4s ease-in-out infinite",
+                            }}
+                        >
+                            {t("app.name")}
+                        </span>
+                    </Link>
+                    <div className="flex items-center gap-2">
+                        <button onClick={toggleLang} className="nav-icon-btn" title="Language">
+                            <Languages className="h-4 w-4" />
+                            <span className="text-xs">{lang === "en" ? "தமிழ்" : "English"}</span>
+                        </button>
+                        <button onClick={toggleTheme} className="nav-icon-btn" title="Theme">
+                            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                        </button>
+                    </div>
+                </div>
+            </nav>
+        );
+    }
 
     const navLinks =
         role === "admin"
