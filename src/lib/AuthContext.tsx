@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | DemoUser | null>(null);
     const [role, setRole] = useState<UserRole | null>(null);
     const [loading, setLoading] = useState(true);
-    const [demoMode, setDemoModeState] = useState(true);
+    const [demoMode, setDemoModeState] = useState(false);
 
     // Restore demo mode preference from localStorage
     useEffect(() => {

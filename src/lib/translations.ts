@@ -202,6 +202,7 @@ export const translations: Record<string, Record<Language, string>> = {
     "home.contact.directions": { en: "Get Directions", ta: "வழியறிய" },
     "home.contact.hours": { en: "Working Hours", ta: "பணி நேரம்" },
     "home.contact.hoursValue": { en: "Mon - Sat: 9:00 AM - 9:00 PM", ta: "திங்கள் - சனி: காலை 9:00 - இரவு 9:00" },
+    "home.pricing.title": { en: "Garment Pricing", ta: "ஆடை விலை பட்டியல்" },
 
     // ─── Measurements ───
     "dash.noVisualizer": { en: "Select a profile to view visualizer", ta: "விஷுவலைசரை காண சுயவிவரத்தை தேர்ந்தெடுக்கவும்" },
@@ -222,4 +223,18 @@ export const translations: Record<string, Record<Language, string>> = {
     "measure.hip": { en: "Hip", ta: "இடுப்பு சுற்றளவு" },
     "measure.bottomLength": { en: "Bottom Length", ta: "கீழ் உயரம்" },
     "measure.bottomWaist": { en: "Bottom Waist", ta: "கீழ் இடுப்பு" },
+
+    // ─── Garments ───
+    "garment.Shirt": { en: "Shirt", ta: "சட்டை" },
+    "garment.Pant": { en: "Pant", ta: "பேண்ட்" },
+    "garment.Suit": { en: "Suit", ta: "சூட்" },
+    "garment.Kurta": { en: "Kurta", ta: "குர்தா" },
+    "garment.Pajama": { en: "Pajama", ta: "பைஜாமா" },
+    "garment.Safari": { en: "Safari", ta: "சபாரி" },
+    "garment.Sherwani": { en: "Sherwani", ta: "ஷெர்வானி" },
+    "garment.Blouse": { en: "Blouse", ta: "ரவிக்கை" },
+    "garment.Chudithar Top": { en: "Chudithar Top", ta: "சுடிதார் மேல்" },
+    "garment.Chudithar Bottom": { en: "Chudithar Bottom", ta: "சுடிதார் கீழ்" },
+    "garment.Pavadai": { en: "Pavadai", ta: "பாவாடை" },
+    "garment.Frock": { en: "Frock", ta: "ஃப்ராக்" },
 };

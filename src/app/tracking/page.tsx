@@ -223,7 +223,7 @@ export default function TrackingPage() {
                                             <div>
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <span className="font-mono text-sm font-bold text-themed-primary">{order.orderId}</span>
-                                                    <span className="text-sm text-themed-secondary">— {order.garmentType}</span>
+                                                    <span className="text-sm text-themed-secondary">— {t(`garment.${order.garmentType}`) || order.garmentType}</span>
                                                     {order.isApprovedRushed && (
                                                         <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-red-500/15 text-red-400 flex items-center gap-1">
                                                             <Zap className="h-3 w-3" /> {t("common.rush")}

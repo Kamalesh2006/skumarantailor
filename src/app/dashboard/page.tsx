@@ -53,9 +53,11 @@ import {
     ChevronRight,
     IndianRupee,
     Activity,
+    FileText,
+    RefreshCw,
 } from "lucide-react";
 
-type Tab = "overview" | "orders" | "customers" | "monitoring" | "settings";
+type Tab = "overview" | "orders" | "customers" | "monitoring" | "settings" | "logs";
 type ViewMode = "list" | "grid";
 
 import MeasurementForm from "./components/MeasurementForm";
@@ -103,6 +105,32 @@ export default function DashboardPage() {
     const [savingCapacity, setSavingCapacity] = useState(false);
     const [pricingInput, setPricingInput] = useState<Record<string, string>>({});
     const [savingPricing, setSavingPricing] = useState(false);
+
+    // Logs state
+    const [fetchingLogs, setFetchingLogs] = useState(false);
+    const [logsContent, setLogsContent] = useState("");
+
+    const loadLogs = useCallback(async () => {
+        setFetchingLogs(true);
+        try {
+            const res = await fetch("/api/logs");
+            if (res.ok) {
+                setLogsContent(await res.text());
+            } else {
+                setLogsContent("Failed to load logs. Server responded with an error.");
+            }
+        } catch {
+            setLogsContent("Network error while loading logs.");
+        } finally {
+            setFetchingLogs(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (tab === "logs") {
+            loadLogs();
+        }
+    }, [tab, loadLogs]);
 
     // New order form
     const [newOrder, setNewOrder] = useState({
@@ -318,6 +346,7 @@ export default function DashboardPage() {
         { key: "customers", label: t("dash.tab.customers"), icon: Users },
         { key: "monitoring", label: t("dash.tab.monitoring") || "Monitoring", icon: Activity },
         { key: "settings", label: t("dash.tab.settings"), icon: Settings },
+        { key: "logs", label: t("dash.tab.logs") || "Logs", icon: FileText },
     ];
 
     // ─── Order Status Update ───
@@ -494,7 +523,7 @@ export default function DashboardPage() {
                                                         <span className="font-mono text-sm font-medium text-themed-primary">{o.orderId}</span>
                                                         <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColor(o.status)}`}>{statusLabel(o.status)}</span>
                                                     </div>
-                                                    <p className="text-xs text-themed-secondary mt-0.5 truncate">{o.customerName} — {o.garmentType}</p>
+                                                    <p className="text-xs text-themed-secondary mt-0.5 truncate">{o.customerName} — {t(`garment.${o.garmentType}`) || o.garmentType}</p>
                                                 </div>
                                                 {o.binLocation && (
                                                     <span className="flex items-center gap-1 text-xs text-themed-muted"><MapPin className="h-3 w-3" />{o.binLocation}</span>
@@ -622,7 +651,7 @@ export default function DashboardPage() {
                                                                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor(o.status)}`}>{statusLabel(o.status)}</span>
                                                                 {o.isApprovedRushed && <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-red-500/15 text-red-400">{t("common.rush")}</span>}
                                                             </div>
-                                                            <p className="text-sm text-themed-secondary mt-1">{o.customerName} — {o.garmentType}</p>
+                                                            <p className="text-sm text-themed-secondary mt-1">{o.customerName} — {t(`garment.${o.garmentType}`) || o.garmentType}</p>
                                                             <div className="flex items-center gap-4 mt-1 text-xs text-themed-muted">
                                                                 <span>₹{o.basePrice + o.rushFee}</span>
                                                                 <span>{t("common.due")}: {o.targetDeliveryDate}</span>
@@ -696,7 +725,7 @@ export default function DashboardPage() {
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-medium text-themed-primary">{o.customerName}</p>
-                                                        <p className="text-xs text-themed-secondary mt-0.5">{o.garmentType}</p>
+                                                        <p className="text-xs text-themed-secondary mt-0.5">{t(`garment.${o.garmentType}`) || o.garmentType}</p>
                                                     </div>
                                                     <div className="flex items-center justify-between text-xs text-themed-muted pt-2" style={{ borderTop: "1px solid var(--glass-border)" }}>
                                                         <span className="font-semibold text-themed-primary">₹{o.basePrice + o.rushFee}</span>
@@ -995,7 +1024,7 @@ export default function DashboardPage() {
                                                             {Object.keys(u.measurements).map((garmentType) => (
                                                                 <span key={garmentType} className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs border" style={{ background: "var(--hover-bg)", borderColor: "var(--glass-border)" }}>
                                                                     <Ruler className="h-3 w-3 text-sky-500" />
-                                                                    <span className="font-medium text-themed-primary">{garmentType}</span>
+                                                                    <span className="font-medium text-themed-primary">{t(`garment.${garmentType}`) || garmentType}</span>
                                                                     <span className="text-themed-muted ml-0.5">({Object.keys((u.measurements as Record<string, Record<string, number>>)[garmentType] || {}).length})</span>
                                                                 </span>
                                                             ))}
@@ -1165,7 +1194,7 @@ export default function DashboardPage() {
                                     <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                                         {GARMENT_TYPES.map(gType => (
                                             <div key={gType} className="flex items-center justify-between gap-3">
-                                                <label className="text-sm font-medium text-themed-secondary min-w-[120px]">{gType}</label>
+                                                <label className="text-sm font-medium text-themed-secondary min-w-[120px]">{t(`garment.${gType}`) || gType}</label>
                                                 <div className="relative flex-1">
                                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-themed-muted font-medium text-sm">₹</span>
                                                     <input
@@ -1185,6 +1214,34 @@ export default function DashboardPage() {
                                             {savingPricing ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> Save Prices</>}
                                         </button>
                                     </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ━━━ LOGS TAB ━━━ */}
+                        {tab === "logs" && (
+                            <div className="space-y-6 animate-fade-in glass-card p-6">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-500/10 text-sky-500">
+                                            <FileText className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-themed-primary">System Logs</h3>
+                                            <p className="text-sm text-themed-secondary">View internal system errors arrayed directly from the backend text file.</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={loadLogs}
+                                        disabled={fetchingLogs}
+                                        className="btn-secondary h-9 px-4 text-xs font-medium flex items-center gap-2"
+                                    >
+                                        <RefreshCw className={`h-3.5 w-3.5 ${fetchingLogs ? "animate-spin" : ""}`} />
+                                        {fetchingLogs ? "Refreshing..." : "Refresh"}
+                                    </button>
+                                </div>
+                                <div className="bg-black/95 text-green-400 p-5 rounded-xl overflow-x-auto overflow-y-auto min-h-[400px] max-h-[600px] text-xs font-mono whitespace-pre-wrap leading-relaxed shadow-inner" style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
+                                    {logsContent || "No logs yet. Click refresh to load."}
                                 </div>
                             </div>
                         )}

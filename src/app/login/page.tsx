@@ -9,6 +9,7 @@ import {
 import { auth, setupRecaptcha } from "@/lib/firebase";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
+import { logger } from "@/lib/logger";
 import TailorIcon from "@/components/TailorIcon";
 import {
     Phone,
@@ -78,8 +79,8 @@ export default function LoginPage() {
             setConfirmationResult(result);
             setStep("otp");
         } catch (err: unknown) {
-            console.error("OTP send error:", err);
-            const fbErr = err as { code?: string };
+            logger.error("OTP send initialization error:", err);
+            const fbErr = err as { code?: string, message?: string };
             if (fbErr.code === "auth/too-many-requests") {
                 setError(t("login.error.tooMany"));
             } else if (fbErr.code === "auth/invalid-phone-number") {
@@ -132,8 +133,8 @@ export default function LoginPage() {
         try {
             await confirmationResult.confirm(otpCode);
         } catch (err: unknown) {
-            console.error("OTP verify error:", err);
-            const fbErr = err as { code?: string };
+            logger.error("OTP verify network/processing error:", err);
+            const fbErr = err as { code?: string, message?: string };
             if (fbErr.code === "auth/invalid-verification-code") {
                 setError(t("login.error.invalidOtp"));
             } else if (fbErr.code === "auth/code-expired") {

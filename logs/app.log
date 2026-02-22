@@ -1,0 +1,1 @@
+[2026-02-22T16:12:07.603Z] [ERROR] OTP send initialization error: | Details: {"code":"auth/internal-error","customData":{},"name":"FirebaseError"}

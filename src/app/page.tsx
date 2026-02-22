@@ -463,7 +463,7 @@ export default function Home() {
         <section className="py-20 px-6">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl sm:text-4xl font-bold text-themed-primary text-center mb-4">
-              Garment Pricing
+              {t("home.pricing.title")}
             </h2>
             <div className="w-16 h-1 rounded-full brand-gradient mx-auto mb-12" />
 
@@ -471,7 +471,7 @@ export default function Home() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {Object.entries(settings.garmentPrices || {}).map(([gType, price]) => (
                   <div key={gType} className="glass-card p-5 group hover:scale-[1.02] transition-transform flex items-center justify-between">
-                    <span className="font-semibold text-themed-primary">{gType}</span>
+                    <span className="font-semibold text-themed-primary">{t(`garment.${gType}`) || gType}</span>
                     <span className="flex items-center text-emerald-500 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-lg">
                       <IndianRupee className="h-3.5 w-3.5 mr-0.5" />{price}
                     </span>
