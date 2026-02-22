@@ -1,0 +1,49 @@
+"use client";
+
+import React, { useState, useEffect, useCallback } from "react";
+import SplashScreen from "./SplashScreen";
+
+/**
+ * AppShell shows a splash screen on first visit per session,
+ * then reveals the page content with the splash fading away.
+ */
+export default function AppShell({ children }: { children: React.ReactNode }) {
+    const [showSplash, setShowSplash] = useState(false);
+    const [splashDone, setSplashDone] = useState(false);
+
+    useEffect(() => {
+        // Only show splash once per browser session
+        const seen = sessionStorage.getItem("sk_splash_seen");
+        if (seen) {
+            setSplashDone(true);
+        } else {
+            setShowSplash(true);
+        }
+    }, []);
+
+    const handleSplashComplete = useCallback(() => {
+        setShowSplash(false);
+        setSplashDone(true);
+        sessionStorage.setItem("sk_splash_seen", "true");
+    }, []);
+
+    // Failsafe: if splash hasn't completed after 4s, force it off
+    useEffect(() => {
+        if (!showSplash) return;
+        const failsafe = setTimeout(() => {
+            setShowSplash(false);
+            setSplashDone(true);
+            sessionStorage.setItem("sk_splash_seen", "true");
+        }, 4000);
+        return () => clearTimeout(failsafe);
+    }, [showSplash]);
+
+    return (
+        <>
+            {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+            <div style={{ opacity: splashDone ? 1 : 0, transition: "opacity 400ms ease" }}>
+                {children}
+            </div>
+        </>
+    );
+}
