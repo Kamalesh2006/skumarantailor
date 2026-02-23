@@ -345,9 +345,9 @@ export default function Home() {
           {/* Floating tailoring elements */}
           <FloatingElements />
 
-          <div className="relative z-10 flex flex-col items-center gap-8 px-6 text-center max-w-3xl mx-auto">
+          <div className="relative z-10 flex flex-col items-center gap-8 px-6 text-center max-w-3xl mx-auto pointer-events-none">
             {/* Animated logo with rings */}
-            <div className="relative home-stagger-1">
+            <div className="relative home-stagger-1 pointer-events-auto">
               <div className="home-logo-ring" />
               <div className="home-logo-ring-2" />
               <div className="flex h-24 w-24 items-center justify-center rounded-3xl brand-gradient shadow-2xl shadow-sky-500/30"
@@ -375,7 +375,7 @@ export default function Home() {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-wrap gap-4 justify-center home-stagger-4">
+            <div className="flex flex-wrap gap-4 justify-center home-stagger-4 pointer-events-auto">
               <button onClick={handleGetStarted} className="btn-primary text-base !px-8 !py-3 shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-shadow">
                 {t("home.hero.cta")} <ArrowRight className="h-4 w-4" />
               </button>

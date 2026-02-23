@@ -27,10 +27,10 @@ if (typeof window !== "undefined") {
     });
 }
 
-// Helper to set up invisible reCAPTCHA on a given element ID
+// Helper to set up visible reCAPTCHA on a given element ID
 export function setupRecaptcha(elementId: string): RecaptchaVerifier {
     const recaptchaVerifier = new RecaptchaVerifier(auth, elementId, {
-        size: "invisible",
+        size: "normal",
         callback: () => {
             // reCAPTCHA solved — allow signInWithPhoneNumber
         },

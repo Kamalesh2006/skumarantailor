@@ -59,6 +59,7 @@ export const translations: Record<string, Record<Language, string>> = {
     "dash.tab.customers": { en: "Customers", ta: "வாடிக்கையாளர்கள்" },
     "dash.tab.monitoring": { en: "Monitoring", ta: "கண்காணிப்பு" },
     "dash.tab.settings": { en: "Settings", ta: "அமைப்புகள்" },
+    "dash.tab.logs": { en: "Logs", ta: "பதிவுகள்" },
 
     // Dashboard stats
     "dash.stat.activeOrders": { en: "Active Orders", ta: "செயலில் ஆர்டர்கள்" },
@@ -237,4 +238,10 @@ export const translations: Record<string, Record<Language, string>> = {
     "garment.Chudithar Bottom": { en: "Chudithar Bottom", ta: "சுடிதார் கீழ்" },
     "garment.Pavadai": { en: "Pavadai", ta: "பாவாடை" },
     "garment.Frock": { en: "Frock", ta: "ஃப்ராக்" },
+    "garment.Girl's Dress": { en: "Girl's Dress", ta: "பெண்கள் ஆடை" },
+    "garment.School Uniform (Boy)": { en: "School Uniform (Boy)", ta: "பள்ளி சீருடை (சிறுவன்)" },
+    "garment.School Uniform (Girl)": { en: "School Uniform (Girl)", ta: "பள்ளி சீருடை (சிறுமி)" },
+    "garment.Police Uniform": { en: "Police Uniform", ta: "காவல் சீருடை" },
+    "garment.Salwar Kameez": { en: "Salwar Kameez", ta: "சல்வார் கமீஸ்" },
+    "garment.General": { en: "General", ta: "பொதுவான" },
 };

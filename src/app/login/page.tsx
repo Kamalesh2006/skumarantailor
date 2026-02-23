@@ -71,9 +71,12 @@ export default function LoginPage() {
         // REAL Firebase mode
         setLoading(true);
         try {
-            if (!recaptchaVerifierRef.current) {
-                recaptchaVerifierRef.current = setupRecaptcha("recaptcha-container");
+            // Always recreate the RecaptchaVerifier to avoid "reCAPTCHA client element has been removed" errors
+            if (recaptchaVerifierRef.current) {
+                recaptchaVerifierRef.current.clear();
             }
+            recaptchaVerifierRef.current = setupRecaptcha("recaptcha-container");
+
             const fullPhone = `${countryCode}${cleanedPhone}`;
             const result = await signInWithPhoneNumber(auth, fullPhone, recaptchaVerifierRef.current);
             setConfirmationResult(result);
@@ -86,7 +89,7 @@ export default function LoginPage() {
             } else if (fbErr.code === "auth/invalid-phone-number") {
                 setError(t("login.error.invalidPhoneFormat"));
             } else {
-                setError(t("login.error.sendFailed"));
+                setError(t("login.error.sendFailed") + (fbErr.message ? ` (${fbErr.message})` : ''));
             }
             if (recaptchaVerifierRef.current) {
                 recaptchaVerifierRef.current.clear();

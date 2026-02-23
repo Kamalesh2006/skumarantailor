@@ -1211,7 +1211,7 @@ export default function DashboardPage() {
                                     </div>
                                     <div className="mt-4 pt-4 flex justify-end" style={{ borderTop: "1px solid var(--glass-border)" }}>
                                         <button onClick={handleSavePricing} disabled={savingPricing} className="btn-primary text-sm px-6">
-                                            {savingPricing ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> Save Prices</>}
+                                            {savingPricing ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4" /> {t("common.save")}</>}
                                         </button>
                                     </div>
                                 </div>
@@ -1227,7 +1227,7 @@ export default function DashboardPage() {
                                             <FileText className="h-5 w-5" />
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-themed-primary">System Logs</h3>
+                                            <h3 className="font-semibold text-themed-primary">{t("dash.tab.logs")}</h3>
                                             <p className="text-sm text-themed-secondary">View internal system errors arrayed directly from the backend text file.</p>
                                         </div>
                                     </div>
