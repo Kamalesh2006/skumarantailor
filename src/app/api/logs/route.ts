@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 // Define the absolute path to the log file in the project root
 const LOG_DIR = path.join(process.cwd(), "logs");
@@ -38,10 +39,10 @@ export async function POST(req: Request) {
         // Append to the local file
         fs.appendFileSync(LOG_FILE, logLine);
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true }, { headers: { "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate" } });
     } catch (error) {
         console.error("Failed to write to app.log:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500, headers: { "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate" } });
     }
 }
 
@@ -50,7 +51,7 @@ export async function GET() {
         if (!fs.existsSync(LOG_FILE)) {
             return new NextResponse("No logs found. The application has not recorded any events yet.", {
                 status: 200,
-                headers: { "Content-Type": "text/plain" }
+                headers: { "Content-Type": "text/plain", "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate" }
             });
         }
 
@@ -58,10 +59,10 @@ export async function GET() {
 
         return new NextResponse(logs, {
             status: 200,
-            headers: { "Content-Type": "text/plain" }
+            headers: { "Content-Type": "text/plain", "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate" }
         });
     } catch (error) {
         console.error("Failed to read app.log:", error);
-        return new NextResponse("Error reading log file.", { status: 500 });
+        return new NextResponse("Error reading log file.", { status: 500, headers: { "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate" } });
     }
 }

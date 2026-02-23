@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getOrdersByPhone, incrementUserQueryCount } from "@/lib/firestore";
 
+export const revalidate = 0;
+
 export async function POST(req: Request) {
     try {
         const body = await req.json();
@@ -9,7 +11,7 @@ export async function POST(req: Request) {
         if (!phoneNumber) {
             return NextResponse.json(
                 { error: "phoneNumber is required in the JSON body." },
-                { status: 400 }
+                { status: 400, headers: { "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate" } }
             );
         }
 
@@ -22,7 +24,7 @@ export async function POST(req: Request) {
         if (orders.length === 0) {
             return new NextResponse(
                 `Hello from S Kumaran Tailors! 🧵 We couldn't find any orders under the number ${phoneNumber}. If you recently placed an order, please contact the shop directly at +91 94428 98544.`,
-                { status: 200, headers: { "Content-Type": "text/plain" } }
+                { status: 200, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate" } }
             );
         }
 
@@ -44,14 +46,14 @@ export async function POST(req: Request) {
 
         return new NextResponse(responseText, {
             status: 200,
-            headers: { "Content-Type": "text/plain" }
+            headers: { "Content-Type": "text/plain", "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate" }
         });
 
     } catch (error) {
         console.error("WhatsApp API Error:", error);
         return NextResponse.json(
             { error: "Internal Server Error while resolving WhatsApp query." },
-            { status: 500 }
+            { status: 500, headers: { "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate" } }
         );
     }
 }
