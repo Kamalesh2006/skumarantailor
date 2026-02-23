@@ -545,14 +545,14 @@ export default function DashboardPage() {
                                         <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid var(--glass-border)" }}>
                                             <button
                                                 onClick={() => setViewMode("list")}
-                                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${viewMode === "list" ? "brand-gradient text-white" : "text-themed-secondary hover:text-themed-primary"}`}
+                                                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${viewMode === "list" ? "brand-gradient text-white" : "text-themed-secondary hover:text-themed-primary"}`}
                                                 style={viewMode !== "list" ? { background: "var(--bg-secondary)" } : {}}
                                             >
                                                 <LayoutList className="h-3.5 w-3.5" /> {t("dash.listView")}
                                             </button>
                                             <button
                                                 onClick={() => setViewMode("grid")}
-                                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${viewMode === "grid" ? "brand-gradient text-white" : "text-themed-secondary hover:text-themed-primary"}`}
+                                                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${viewMode === "grid" ? "brand-gradient text-white" : "text-themed-secondary hover:text-themed-primary"}`}
                                                 style={viewMode !== "grid" ? { background: "var(--bg-secondary)" } : {}}
                                             >
                                                 <LayoutGrid className="h-3.5 w-3.5" /> {t("dash.gridView")}
@@ -834,24 +834,24 @@ export default function DashboardPage() {
                                         <Users className="h-6 w-6 text-sky-500" />
                                         <h2 className="text-2xl font-bold text-themed-primary">{t("dash.customers")} ({customerTotal})</h2>
                                     </div>
-                                    <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
-                                        <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid var(--glass-border)" }}>
+                                    <div className="flex items-center flex-wrap gap-3 w-full sm:w-auto mt-2 sm:mt-0">
+                                        <div className="flex rounded-lg overflow-hidden shrink-0" style={{ border: "1px solid var(--glass-border)" }}>
                                             <button
                                                 onClick={() => setCustomerViewMode("list")}
-                                                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${customerViewMode === "list" ? "brand-gradient text-white" : "text-themed-secondary hover:text-themed-primary"}`}
+                                                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${customerViewMode === "list" ? "brand-gradient text-white" : "text-themed-secondary hover:text-themed-primary"}`}
                                                 style={customerViewMode !== "list" ? { background: "var(--bg-secondary)" } : {}}
                                             >
                                                 <LayoutList className="h-3.5 w-3.5" /> {t("dash.listView")}
                                             </button>
                                             <button
                                                 onClick={() => setCustomerViewMode("grid")}
-                                                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${customerViewMode === "grid" ? "brand-gradient text-white" : "text-themed-secondary hover:text-themed-primary"}`}
+                                                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${customerViewMode === "grid" ? "brand-gradient text-white" : "text-themed-secondary hover:text-themed-primary"}`}
                                                 style={customerViewMode !== "grid" ? { background: "var(--bg-secondary)" } : {}}
                                             >
                                                 <LayoutGrid className="h-3.5 w-3.5" /> {t("dash.gridView")}
                                             </button>
                                         </div>
-                                        <div className="relative flex-1 sm:w-64">
+                                        <div className="relative flex-1 min-w-[200px] w-full sm:w-64">
                                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-themed-muted" />
                                             <input
                                                 type="text"
@@ -861,7 +861,7 @@ export default function DashboardPage() {
                                                 onChange={(e) => setCustomerSearch(e.target.value)}
                                             />
                                         </div>
-                                        <div className="relative">
+                                        <div className="relative shrink-0">
                                             <select
                                                 value={customerSortBy}
                                                 onChange={(e) => setCustomerSortBy(e.target.value as "newest" | "oldest" | "nameaz")}
