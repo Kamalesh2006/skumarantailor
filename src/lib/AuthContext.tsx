@@ -84,7 +84,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Firebase auth listener (only when NOT in demo mode)
     useEffect(() => {
-        if (demoMode) return;
+        if (demoMode) {
+            setLoading(false);
+            return;
+        }
 
         setLoading(true);
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
