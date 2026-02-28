@@ -2,21 +2,20 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import TailorIcon from "@/components/TailorIcon";
+import QuickAddModal from "@/components/QuickAddModal";
 import {
     Menu,
     X,
-    LayoutDashboard,
-    PackageSearch,
     LogOut,
     User,
     Sun,
     Moon,
     Languages,
+    Plus,
 } from "lucide-react";
 
 export default function Navbar() {
@@ -24,7 +23,7 @@ export default function Navbar() {
     const { theme, toggleTheme } = useTheme();
     const { lang, toggleLang, t } = useLanguage();
     const [mobileOpen, setMobileOpen] = useState(false);
-    const pathname = usePathname();
+    const [showQuickAdd, setShowQuickAdd] = useState(false);
 
     // Show minimal navbar (brand + language/theme) for unauthenticated users
     if (loading || !user) {
@@ -63,13 +62,7 @@ export default function Navbar() {
         );
     }
 
-    const navLinks =
-        role === "admin"
-            ? [
-                { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
-                { href: "/tracking", label: t("nav.orders"), icon: PackageSearch },
-            ]
-            : [{ href: "/tracking", label: t("nav.myOrders"), icon: PackageSearch }];
+
 
     const handleLogout = async () => {
         setMobileOpen(false);
@@ -106,35 +99,21 @@ export default function Navbar() {
                         </span>
                     </Link>
 
-                    {/* Desktop Nav Links */}
-                    <div className="hidden md:flex items-center gap-1">
-                        {navLinks.map((link) => {
-                            const isActive = pathname === link.href;
-                            return (
-                                <Link
-                                    key={link.href}
-                                    href={link.href}
-                                    className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${isActive
-                                        ? "bg-sky-500/10 text-sky-500"
-                                        : "text-themed-secondary hover:text-themed-primary"
-                                        }`}
-                                    style={!isActive ? { background: "transparent" } : {}}
-                                    onMouseEnter={(e) => {
-                                        if (!isActive) e.currentTarget.style.background = "var(--hover-bg)";
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        if (!isActive) e.currentTarget.style.background = "transparent";
-                                    }}
-                                >
-                                    <link.icon className="h-4 w-4" />
-                                    {link.label}
-                                </Link>
-                            );
-                        })}
-                    </div>
+
 
                     {/* Desktop Right Side */}
                     <div className="hidden md:flex items-center gap-2">
+                        {/* Quick Add (admin only) */}
+                        {role === "admin" && (
+                            <button
+                                onClick={() => setShowQuickAdd(true)}
+                                className="flex items-center gap-1.5 h-9 rounded-lg px-3 text-sm font-semibold text-white transition-all duration-200 hover:shadow-lg hover:shadow-sky-500/20"
+                                style={{ background: "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)" }}
+                            >
+                                <Plus className="h-4 w-4" />
+                                {t("quickAdd.btnLabel")}
+                            </button>
+                        )}
                         {/* Language Toggle */}
                         <button
                             onClick={toggleLang}
@@ -225,25 +204,17 @@ export default function Navbar() {
                 style={{ background: "var(--bg-primary)", borderLeft: "1px solid var(--border-color)" }}
             >
                 <div className="flex flex-col h-full pt-20 px-4 pb-6">
-                    <div className="flex flex-col gap-1">
-                        {navLinks.map((link) => {
-                            const isActive = pathname === link.href;
-                            return (
-                                <Link
-                                    key={link.href}
-                                    href={link.href}
-                                    onClick={() => setMobileOpen(false)}
-                                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${isActive
-                                        ? "bg-sky-500/10 text-sky-500"
-                                        : "text-themed-secondary"
-                                        }`}
-                                >
-                                    <link.icon className="h-5 w-5" />
-                                    {link.label}
-                                </Link>
-                            );
-                        })}
-                    </div>
+                    {/* Quick Add in mobile drawer (admin only) */}
+                    {role === "admin" && (
+                        <button
+                            onClick={() => { setMobileOpen(false); setShowQuickAdd(true); }}
+                            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-white mb-4"
+                            style={{ background: "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)" }}
+                        >
+                            <Plus className="h-5 w-5" />
+                            {t("quickAdd.btnLabel")}
+                        </button>
+                    )}
 
                     <div className="flex-1" />
 
@@ -267,6 +238,12 @@ export default function Navbar() {
             </div>
 
             <div className="h-16" />
+
+            {/* Quick Add Modal */}
+            <QuickAddModal
+                isOpen={showQuickAdd}
+                onClose={() => setShowQuickAdd(false)}
+            />
         </>
     );
 }

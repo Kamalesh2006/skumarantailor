@@ -31,7 +31,6 @@ import {
     Users,
     Settings,
     Loader2,
-    ArrowRight,
     Save,
     X,
     Edit3,
@@ -478,62 +477,179 @@ export default function DashboardPage() {
                     </div>
                 ) : (
                     <>
-                        {/* ━━━ OVERVIEW TAB ━━━ */}
-                        {tab === "overview" && (
-                            <div className="space-y-6 animate-fade-in">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    {stats.map((s) => (
-                                        <div key={s.label} className="glass-card p-5">
-                                            <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${s.bg} mb-3`}>
-                                                <s.icon className={`h-5 w-5 ${s.color}`} />
-                                            </div>
-                                            <p className="text-2xl font-bold text-themed-primary">{s.value}</p>
-                                            <p className="text-sm text-themed-secondary mt-1">{s.label}</p>
-                                        </div>
-                                    ))}
-                                </div>
+                        {/* ━━━ OVERVIEW TAB — Today's Tasks ━━━ */}
+                        {tab === "overview" && (() => {
+                            const todayStr = new Date().toISOString().split("T")[0];
 
-                                {/* Capacity Bar */}
-                                {settings && (
-                                    <div className="glass-card p-5">
-                                        <h3 className="font-semibold text-themed-primary mb-3">{t("dash.todayCapacity")}</h3>
-                                        <div className="h-4 rounded-full overflow-hidden" style={{ background: "var(--bg-tertiary)" }}>
-                                            <div
-                                                className="h-full rounded-full brand-gradient transition-all duration-700"
-                                                style={{ width: `${Math.min((todayLoad / capacity) * 100, 100)}%` }}
-                                            />
-                                        </div>
-                                        <p className="text-xs text-themed-secondary mt-2">{todayLoad} {t("dash.ordersOf")} {capacity} {t("dash.ordersText")} ({Math.round((todayLoad / capacity) * 100)}%)</p>
-                                    </div>
-                                )}
+                            // STATUS_FLOW for advancing status
+                            const STATUS_FLOW: Record<string, string> = {
+                                Pending: "Cutting",
+                                Cutting: "Stitching",
+                                Stitching: "Alteration",
+                                Alteration: "Ready",
+                                Ready: "Delivered",
+                            };
 
-                                {/* Recent Orders */}
-                                <div>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h3 className="font-semibold text-themed-primary">{t("dash.recentOrders")}</h3>
-                                        <button onClick={() => setTab("orders")} className="text-sm text-sky-500 flex items-center gap-1 hover:text-sky-400">
-                                            {t("dash.viewAll")} <ArrowRight className="h-3 w-3" />
-                                        </button>
-                                    </div>
-                                    <div className="space-y-2">
-                                        {orders.slice(0, 5).map((o) => (
-                                            <div key={o.orderId} className="glass-card p-4 flex items-center justify-between">
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="font-mono text-sm font-medium text-themed-primary">{o.orderId}</span>
-                                                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColor(o.status)}`}>{statusLabel(o.status)}</span>
-                                                    </div>
-                                                    <p className="text-xs text-themed-secondary mt-0.5 truncate">{o.customerName} — {t(`garment.${o.garmentType}`) || o.garmentType}</p>
+                            // Filter active orders only (not Ready/Delivered — those are done)
+                            const activeTasks = orders.filter(
+                                (o) => o.status !== "Delivered" && o.status !== "Ready"
+                            );
+
+                            // Compute priority score for sorting
+                            const scored = activeTasks.map((o) => {
+                                const dueDate = o.targetDeliveryDate;
+                                const daysUntilDue = Math.ceil(
+                                    (new Date(dueDate).getTime() - new Date(todayStr).getTime()) / (1000 * 60 * 60 * 24)
+                                );
+                                const isOverdue = daysUntilDue < 0;
+                                const isDueToday = daysUntilDue === 0;
+                                const isUpcoming = daysUntilDue > 0 && daysUntilDue <= 2;
+                                const isRush = o.isApprovedRushed || o.rushFee > 0;
+                                const daysLate = isOverdue ? Math.abs(daysUntilDue) : 0;
+
+                                // Priority: lower = higher priority
+                                let priority = 100;
+                                if (isOverdue && isRush) priority = 1;
+                                else if (isOverdue) priority = 2;
+                                else if (isDueToday && isRush) priority = 3;
+                                else if (isDueToday) priority = 4;
+                                else if (isUpcoming && isRush) priority = 5;
+                                else if (isUpcoming) priority = 6;
+                                else priority = 10 + daysUntilDue;
+
+                                return { order: o, priority, daysLate, isDueToday, isOverdue, isUpcoming, isRush, daysUntilDue };
+                            });
+
+                            // Sort by priority, then by days until due
+                            scored.sort((a, b) => a.priority - b.priority || a.daysUntilDue - b.daysUntilDue);
+
+                            const handleAdvanceStatus = async (orderId: string, currentStatus: string) => {
+                                const next = STATUS_FLOW[currentStatus];
+                                if (next) {
+                                    await updateOrder(orderId, { status: next as OrderStatus });
+                                    loadData();
+                                }
+                            };
+
+                            const handleDefer = async (orderId: string, existingNotes: string) => {
+                                const deferNote = `[Deferred ${todayStr}]`;
+                                const newNotes = existingNotes ? `${existingNotes} ${deferNote}` : deferNote;
+                                await updateOrder(orderId, { notes: newNotes });
+                                loadData();
+                            };
+
+                            return (
+                                <div className="space-y-6 animate-fade-in">
+                                    {/* Stats */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        {stats.map((s) => (
+                                            <div key={s.label} className="glass-card p-5">
+                                                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${s.bg} mb-3`}>
+                                                    <s.icon className={`h-5 w-5 ${s.color}`} />
                                                 </div>
-                                                {o.binLocation && (
-                                                    <span className="flex items-center gap-1 text-xs text-themed-muted"><MapPin className="h-3 w-3" />{o.binLocation}</span>
-                                                )}
+                                                <p className="text-2xl font-bold text-themed-primary">{s.value}</p>
+                                                <p className="text-sm text-themed-secondary mt-1">{s.label}</p>
                                             </div>
                                         ))}
                                     </div>
+
+                                    {/* Capacity Bar */}
+                                    {settings && (
+                                        <div className="glass-card p-5">
+                                            <h3 className="font-semibold text-themed-primary mb-3">{t("dash.todayCapacity")}</h3>
+                                            <div className="h-4 rounded-full overflow-hidden" style={{ background: "var(--bg-tertiary)" }}>
+                                                <div
+                                                    className="h-full rounded-full brand-gradient transition-all duration-700"
+                                                    style={{ width: `${Math.min((todayLoad / capacity) * 100, 100)}%` }}
+                                                />
+                                            </div>
+                                            <p className="text-xs text-themed-secondary mt-2">{todayLoad} {t("dash.ordersOf")} {capacity} {t("dash.ordersText")} ({Math.round((todayLoad / capacity) * 100)}%)</p>
+                                        </div>
+                                    )}
+
+                                    {/* Today's Tasks Header */}
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-lg font-bold text-themed-primary flex items-center gap-2">
+                                            📋 {t("dash.todayTasks")}
+                                            <span className="text-sm font-normal text-themed-muted">({scored.length})</span>
+                                        </h3>
+                                        <span className="text-xs font-medium text-themed-muted uppercase tracking-wider">
+                                            {t("dash.taskPriority")}
+                                        </span>
+                                    </div>
+
+                                    {/* Task Cards */}
+                                    {scored.length === 0 ? (
+                                        <div className="glass-card p-10 text-center">
+                                            <p className="text-lg text-themed-secondary">{t("dash.noTasks")}</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {scored.map(({ order: o, daysLate, isDueToday, isOverdue, isRush }) => (
+                                                <div
+                                                    key={o.orderId}
+                                                    className="glass-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 transition-all"
+                                                    style={isOverdue ? { borderLeft: "3px solid #ef4444" } : isDueToday ? { borderLeft: "3px solid #f59e0b" } : {}}
+                                                >
+                                                    {/* Left: Order info */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <span className="font-mono text-sm font-bold text-themed-primary">{o.orderId}</span>
+                                                            <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor(o.status)}`}>
+                                                                {statusLabel(o.status)}
+                                                            </span>
+                                                            {isRush && (
+                                                                <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-red-500/15 text-red-400 flex items-center gap-1">
+                                                                    ⚡ Rush
+                                                                </span>
+                                                            )}
+                                                            {isOverdue && (
+                                                                <span className="rounded-full px-2 py-0.5 text-xs font-semibold bg-red-500/15 text-red-400">
+                                                                    🔴 {daysLate} {daysLate === 1 ? t("dash.dayLate") : t("dash.daysLate")}
+                                                                </span>
+                                                            )}
+                                                            {isDueToday && !isOverdue && (
+                                                                <span className="rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-500/15 text-amber-500">
+                                                                    🟡 {t("dash.dueToday")}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-sm text-themed-secondary mt-1 truncate">
+                                                            {o.customerName} — {t(`garment.${o.garmentType}`) || o.garmentType} × {o.numberOfSets}
+                                                        </p>
+                                                        <div className="flex items-center gap-3 mt-1 text-xs text-themed-muted">
+                                                            <span>📅 {o.targetDeliveryDate}</span>
+                                                            {o.binLocation && <span>📍 {o.binLocation}</span>}
+                                                            {o.notes && <span className="truncate max-w-[200px]">📝 {o.notes}</span>}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Right: Actions */}
+                                                    <div className="flex items-center gap-2 flex-shrink-0">
+                                                        {STATUS_FLOW[o.status] && (
+                                                            <button
+                                                                onClick={() => handleAdvanceStatus(o.orderId, o.status)}
+                                                                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-white transition-all hover:shadow-lg"
+                                                                style={{ background: "linear-gradient(135deg, #10b981, #059669)" }}
+                                                            >
+                                                                ✅ {t("dash.markDone")}
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={() => handleDefer(o.orderId, o.notes)}
+                                                            className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-themed-secondary transition-all hover:text-themed-primary"
+                                                            style={{ background: "var(--hover-bg)", border: "1px solid var(--glass-border)" }}
+                                                        >
+                                                            ➡️ {t("dash.defer")}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        )}
+                            );
+                        })()}
 
                         {/* ━━━ ORDERS TAB ━━━ */}
                         {tab === "orders" && (

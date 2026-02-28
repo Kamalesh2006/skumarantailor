@@ -363,7 +363,6 @@ export default function TrackingPage() {
                                         value={deliveryDays}
                                         onChange={(e) => setDeliveryDays(Number(e.target.value))}
                                         className="w-full"
-                                        disabled={isCapacityFull}
                                     />
                                     <div className="flex justify-between text-xs text-themed-muted mt-1">
                                         <span>{t("track.dayExpress")}</span>
