@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import {
@@ -40,7 +41,7 @@ const STATUS_KEYS = [
     { key: "Delivered", icon: Truck, color: "gray" },
 ];
 
-export default function TrackingPage() {
+function TrackingPageContent() {
     const { user, loading: authLoading } = useAuth();
     const { t } = useLanguage();
     const [orders, setOrders] = useState<OrderData[]>([]);
@@ -78,13 +79,22 @@ export default function TrackingPage() {
         setSearching(false);
     }, []);
 
+    const searchParams = useSearchParams();
+
     useEffect(() => {
-        if (user?.phoneNumber) {
+        // Check for ?phone= query param (from monitoring tab View button)
+        const phoneParam = searchParams.get("phone");
+        if (phoneParam) {
+            const clean = phoneParam.startsWith("+") ? phoneParam : `+91${phoneParam}`;
+            setPhoneQuery(clean);
+            loadData(clean);
+            incrementUserQueryCount(clean);
+        } else if (user?.phoneNumber) {
             setPhoneQuery(user.phoneNumber);
             loadData(user.phoneNumber);
         }
         setDataLoading(false);
-    }, [user, loadData]);
+    }, [user, loadData, searchParams]);
 
     // Update capacity when delivery days changes
     useEffect(() => {
@@ -435,5 +445,17 @@ export default function TrackingPage() {
                 </div>
             )}
         </div>
+    );
+}
+
+export default function TrackingPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex min-h-screen items-center justify-center">
+                <Loader2 className="h-8 w-8 text-sky-500 animate-spin" />
+            </div>
+        }>
+            <TrackingPageContent />
+        </Suspense>
     );
 }

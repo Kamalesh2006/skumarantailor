@@ -54,6 +54,9 @@ import {
     Activity,
     FileText,
     RefreshCw,
+    Eye,
+    MessageCircle,
+    Smartphone,
 } from "lucide-react";
 
 type Tab = "overview" | "orders" | "customers" | "monitoring" | "settings" | "logs";
@@ -161,6 +164,11 @@ export default function DashboardPage() {
     const customerDebounceRef = useRef<NodeJS.Timeout | null>(null);
     const [debouncedCustomerSearch, setDebouncedCustomerSearch] = useState("");
     const [customerSortBy, setCustomerSortBy] = useState<"newest" | "oldest" | "nameaz">("newest");
+
+    // Monitoring tab state
+    const [monitorSearch, setMonitorSearch] = useState("");
+    const [monitorPage, setMonitorPage] = useState(1);
+    const [monitorViewMode, setMonitorViewMode] = useState<ViewMode>("list");
 
     useEffect(() => {
         if (!authLoading) {
@@ -1191,59 +1199,237 @@ export default function DashboardPage() {
                         )}
 
                         {/* ━━━ MONITORING TAB ━━━ */}
-                        {tab === "monitoring" && (
-                            <div className="space-y-6 animate-fade-in">
-                                <div className="glass-card p-6">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500">
-                                            <Activity className="h-5 w-5" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-themed-primary">Customer Query Monitoring</h3>
-                                            <p className="text-sm text-themed-secondary">Track how often customers check their order status via WhatsApp or Public Tracker.</p>
-                                        </div>
-                                    </div>
+                        {tab === "monitoring" && (() => {
+                            const MONITOR_PAGE_SIZE = 8;
+                            const allMonitorUsers = [...listCustomers, ...gridCustomers]
+                                .filter((u, i, arr) => arr.findIndex(x => x.uid === u.uid) === i)
+                                .sort((a, b) => (b.queryCount || 0) - (a.queryCount || 0));
 
-                                    <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid var(--glass-border)" }}>
-                                        <table className="w-full text-left text-sm whitespace-nowrap">
-                                            <thead className="text-xs uppercase" style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}>
-                                                <tr>
-                                                    <th className="px-6 py-4 font-semibold">Customer</th>
-                                                    <th className="px-6 py-4 font-semibold">Phone #</th>
-                                                    <th className="px-6 py-4 font-semibold text-center">Total Queries</th>
-                                                    <th className="px-6 py-4 font-semibold text-right">Last Queried At</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y" style={{ borderColor: "var(--glass-border)", background: "var(--bg-secondary)" }}>
-                                                {/* In a real app we'd fetch all users, sorting by highest queryCount. For the Demo we can borrow listCustomers */}
-                                                {[...listCustomers, ...gridCustomers]
-                                                    .filter((u, i, arr) => arr.findIndex(x => x.uid === u.uid) === i)
-                                                    .sort((a, b) => (b.queryCount || 0) - (a.queryCount || 0))
-                                                    .map(u => (
-                                                        <tr key={u.uid} className="transition-colors hover:bg-neutral-500/5">
-                                                            <td className="px-6 py-4 font-medium text-themed-primary flex items-center gap-2">
-                                                                <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-500 flex items-center justify-center text-xs text-white font-bold">
-                                                                    {u.name.charAt(0).toUpperCase()}
-                                                                </div>
-                                                                {u.name}
-                                                            </td>
-                                                            <td className="px-6 py-4 text-themed-secondary">{u.phoneNumber}</td>
-                                                            <td className="px-6 py-4 text-center">
-                                                                <span className="inline-flex items-center justify-center min-w-[32px] rounded-full px-2 py-1 text-xs font-bold bg-indigo-500/10 text-indigo-500">
-                                                                    {u.queryCount || 0}
-                                                                </span>
-                                                            </td>
-                                                            <td className="px-6 py-4 text-right text-themed-muted text-xs">
-                                                                {u.lastQueryAt ? new Date(u.lastQueryAt).toLocaleString() : "Never"}
-                                                            </td>
+                            const filteredMonitorUsers = monitorSearch
+                                ? allMonitorUsers.filter(u =>
+                                    u.name.toLowerCase().includes(monitorSearch.toLowerCase()) ||
+                                    u.phoneNumber.includes(monitorSearch)
+                                )
+                                : allMonitorUsers;
+
+                            const monitorTotalPages = Math.max(1, Math.ceil(filteredMonitorUsers.length / MONITOR_PAGE_SIZE));
+                            const safePage = Math.min(monitorPage, monitorTotalPages);
+                            const monitorPaged = filteredMonitorUsers.slice((safePage - 1) * MONITOR_PAGE_SIZE, safePage * MONITOR_PAGE_SIZE);
+
+                            const getMessageText = (name: string) =>
+                                `Hi ${name}, this is S Kumaran Tailors. We wanted to update you about your order status. Please check your latest order details here or reply to this message for more info. Thank you! 🙏`;
+
+                            const openWhatsApp = (phone: string, name: string) => {
+                                const clean = phone.replace(/[^0-9]/g, "");
+                                const msg = encodeURIComponent(getMessageText(name));
+                                window.open(`https://wa.me/${clean}?text=${msg}`, "_blank");
+                            };
+
+                            const openSMS = (phone: string, name: string) => {
+                                const msg = encodeURIComponent(getMessageText(name));
+                                window.open(`sms:${phone}?body=${msg}`, "_self");
+                            };
+
+                            return (
+                                <div className="space-y-6 animate-fade-in">
+                                    <div className="glass-card p-6">
+                                        {/* Header */}
+                                        <div className="flex items-center gap-3 mb-5">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500">
+                                                <Activity className="h-5 w-5" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-semibold text-themed-primary">Customer Query Monitoring</h3>
+                                                <p className="text-sm text-themed-secondary">Track how often customers check their order status via WhatsApp or Public Tracker.</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Controls: Search + View Toggle */}
+                                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-5">
+                                            <div className="relative flex-1">
+                                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-themed-muted" />
+                                                <input
+                                                    type="text"
+                                                    value={monitorSearch}
+                                                    onChange={(e) => { setMonitorSearch(e.target.value); setMonitorPage(1); }}
+                                                    placeholder="Search by name or phone..."
+                                                    className="form-input text-sm pl-10 w-full"
+                                                />
+                                                {monitorSearch && (
+                                                    <button onClick={() => { setMonitorSearch(""); setMonitorPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-themed-muted hover:text-themed-primary">
+                                                        <XCircle className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid var(--glass-border)" }}>
+                                                    <button
+                                                        onClick={() => setMonitorViewMode("list")}
+                                                        className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all ${monitorViewMode === "list" ? "bg-sky-500/10 text-sky-500" : "text-themed-secondary hover:text-themed-primary"
+                                                            }`}
+                                                    >
+                                                        <LayoutList className="h-3.5 w-3.5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setMonitorViewMode("grid")}
+                                                        className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all ${monitorViewMode === "grid" ? "bg-sky-500/10 text-sky-500" : "text-themed-secondary hover:text-themed-primary"
+                                                            }`}
+                                                    >
+                                                        <LayoutGrid className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </div>
+                                                <span className="text-xs text-themed-muted">{filteredMonitorUsers.length} customers</span>
+                                            </div>
+                                        </div>
+
+                                        {/* List View */}
+                                        {monitorViewMode === "list" ? (
+                                            <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid var(--glass-border)" }}>
+                                                <table className="w-full text-left text-sm whitespace-nowrap">
+                                                    <thead className="text-xs uppercase" style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}>
+                                                        <tr>
+                                                            <th className="px-5 py-3 font-semibold">Customer</th>
+                                                            <th className="px-5 py-3 font-semibold">Phone #</th>
+                                                            <th className="px-5 py-3 font-semibold text-center">Total Queries</th>
+                                                            <th className="px-5 py-3 font-semibold text-right">Last Queried At</th>
+                                                            <th className="px-5 py-3 font-semibold text-right">Action</th>
                                                         </tr>
-                                                    ))}
-                                            </tbody>
-                                        </table>
+                                                    </thead>
+                                                    <tbody className="divide-y" style={{ borderColor: "var(--glass-border)", background: "var(--bg-secondary)" }}>
+                                                        {monitorPaged.map(u => (
+                                                            <tr key={u.uid} className="transition-colors hover:bg-neutral-500/5">
+                                                                <td className="px-5 py-3.5 font-medium text-themed-primary">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-500 flex items-center justify-center text-xs text-white font-bold flex-shrink-0">
+                                                                            {u.name.charAt(0).toUpperCase()}
+                                                                        </div>
+                                                                        {u.name}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-5 py-3.5 text-themed-secondary">{u.phoneNumber}</td>
+                                                                <td className="px-5 py-3.5 text-center">
+                                                                    <span className="inline-flex items-center justify-center min-w-[32px] rounded-full px-2 py-1 text-xs font-bold bg-indigo-500/10 text-indigo-500">
+                                                                        {u.queryCount || 0}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-5 py-3.5 text-right text-themed-muted text-xs">
+                                                                    {u.lastQueryAt ? new Date(u.lastQueryAt).toLocaleString() : "Never"}
+                                                                </td>
+                                                                <td className="px-5 py-3.5 text-right">
+                                                                    <div className="flex items-center justify-end gap-1">
+                                                                        <button
+                                                                            onClick={() => window.open(`/tracking?phone=${encodeURIComponent(u.phoneNumber)}`, "_blank")}
+                                                                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-sky-500 hover:bg-sky-500/10 transition-all"
+                                                                            title="View Orders"
+                                                                        >
+                                                                            <Eye className="h-3.5 w-3.5" />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => openWhatsApp(u.phoneNumber, u.name)}
+                                                                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-emerald-500 hover:bg-emerald-500/10 transition-all"
+                                                                            title="WhatsApp"
+                                                                        >
+                                                                            <MessageCircle className="h-3.5 w-3.5" />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => openSMS(u.phoneNumber, u.name)}
+                                                                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-orange-500 hover:bg-orange-500/10 transition-all"
+                                                                            title="SMS"
+                                                                        >
+                                                                            <Smartphone className="h-3.5 w-3.5" />
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        ) : (
+                                            /* Grid View */
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                                                {monitorPaged.map(u => (
+                                                    <div key={u.uid} className="glass-card p-4 flex flex-col gap-3 hover:scale-[1.01] transition-transform">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-500 flex items-center justify-center text-sm text-white font-bold flex-shrink-0">
+                                                                {u.name.charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className="font-semibold text-themed-primary text-sm truncate">{u.name}</p>
+                                                                <p className="text-xs text-themed-muted truncate">{u.phoneNumber}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <div>
+                                                                <span className="inline-flex items-center justify-center rounded-full px-2.5 py-1 text-xs font-bold bg-indigo-500/10 text-indigo-500">
+                                                                    {u.queryCount || 0} queries
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-xs text-themed-muted">
+                                                                {u.lastQueryAt ? new Date(u.lastQueryAt).toLocaleDateString() : "Never"}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => window.open(`/tracking?phone=${encodeURIComponent(u.phoneNumber)}`, "_blank")}
+                                                                className="flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-sky-500 hover:bg-sky-500/10 transition-all flex-1"
+                                                                style={{ border: "1px solid var(--glass-border)" }}
+                                                            >
+                                                                <Eye className="h-3.5 w-3.5" /> View
+                                                            </button>
+                                                            <button
+                                                                onClick={() => openWhatsApp(u.phoneNumber, u.name)}
+                                                                className="flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-emerald-500 hover:bg-emerald-500/10 transition-all"
+                                                                style={{ border: "1px solid var(--glass-border)" }}
+                                                                title="WhatsApp"
+                                                            >
+                                                                <MessageCircle className="h-3.5 w-3.5" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => openSMS(u.phoneNumber, u.name)}
+                                                                className="flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-orange-500 hover:bg-orange-500/10 transition-all"
+                                                                style={{ border: "1px solid var(--glass-border)" }}
+                                                                title="SMS"
+                                                            >
+                                                                <Smartphone className="h-3.5 w-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Pagination */}
+                                        {monitorTotalPages > 1 && (
+                                            <div className="flex items-center justify-between mt-4 pt-4" style={{ borderTop: "1px solid var(--glass-border)" }}>
+                                                <p className="text-xs text-themed-muted">
+                                                    Showing {(safePage - 1) * MONITOR_PAGE_SIZE + 1}–{Math.min(safePage * MONITOR_PAGE_SIZE, filteredMonitorUsers.length)} of {filteredMonitorUsers.length}
+                                                </p>
+                                                <div className="flex items-center gap-1">
+                                                    <button
+                                                        onClick={() => setMonitorPage(p => Math.max(1, p - 1))}
+                                                        disabled={safePage <= 1}
+                                                        className="flex h-8 w-8 items-center justify-center rounded-lg text-themed-secondary hover:text-themed-primary disabled:opacity-30 transition-all"
+                                                        style={{ background: "var(--hover-bg)" }}
+                                                    >
+                                                        <ChevronLeft className="h-4 w-4" />
+                                                    </button>
+                                                    <span className="text-xs font-medium text-themed-secondary px-2">{safePage} / {monitorTotalPages}</span>
+                                                    <button
+                                                        onClick={() => setMonitorPage(p => Math.min(monitorTotalPages, p + 1))}
+                                                        disabled={safePage >= monitorTotalPages}
+                                                        className="flex h-8 w-8 items-center justify-center rounded-lg text-themed-secondary hover:text-themed-primary disabled:opacity-30 transition-all"
+                                                        style={{ background: "var(--hover-bg)" }}
+                                                    >
+                                                        <ChevronRight className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            );
+                        })()}
 
                         {/* ━━━ SETTINGS TAB ━━━ */}
                         {tab === "settings" && settings && (

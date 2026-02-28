@@ -9,14 +9,17 @@ import SplashScreen from "./SplashScreen";
  */
 export default function AppShell({ children }: { children: React.ReactNode }) {
     const [showSplash, setShowSplash] = useState(false);
-    const [contentReady, setContentReady] = useState(true); // start visible to prevent flash
+    const [contentReady, setContentReady] = useState(false); // start hidden to prevent flash
 
     useEffect(() => {
         // Only show splash once per browser session
         const seen = sessionStorage.getItem("sk_splash_seen");
         if (!seen) {
             setShowSplash(true);
-            setContentReady(false); // hide content only when splash is playing
+            // contentReady stays false — splash covers everything
+        } else {
+            // Splash already seen: reveal content immediately
+            setContentReady(true);
         }
     }, []);
 
