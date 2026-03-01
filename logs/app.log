@@ -14,3 +14,6 @@
 [2026-03-01T12:30:27.117Z] [WARN] Could not create default settings | Details: {"code":"permission-denied","name":"FirebaseError"}
 [2026-03-01T12:52:20.161Z] [ERROR] Error updating user | Details: {"code":"permission-denied","name":"FirebaseError"}
 [2026-03-01T12:52:28.799Z] [ERROR] Error updating user | Details: {"code":"permission-denied","name":"FirebaseError"}
+[2026-03-01T13:00:22.679Z] [ERROR] Error incrementing user query count | Details: {"code":"permission-denied","name":"FirebaseError"}
+[2026-03-01T13:00:33.161Z] [ERROR] Error incrementing user query count | Details: {"code":"permission-denied","name":"FirebaseError"}
+[2026-03-01T13:01:09.421Z] [ERROR] Error incrementing user query count | Details: {"code":"permission-denied","name":"FirebaseError"}

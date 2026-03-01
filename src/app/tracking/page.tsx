@@ -4,15 +4,7 @@ import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
-import {
-    getOrdersByPhone,
-    getSettings,
-    createOrder,
-    getCapacityForDate,
-    OrderData,
-    SettingsData,
-    incrementUserQueryCount,
-} from "@/lib/firestore";
+import { OrderData, getOrdersByPhone } from "@/lib/firestore";
 import {
     PackageSearch,
     Loader2,
@@ -26,9 +18,6 @@ import {
     CalendarDays,
     IndianRupee,
     Zap,
-    AlertTriangle,
-    Plus,
-    X,
     ChevronRight,
 } from "lucide-react";
 
@@ -42,41 +31,29 @@ const STATUS_KEYS = [
 ];
 
 function TrackingPageContent() {
-    const { user, loading: authLoading } = useAuth();
+    const { user } = useAuth();
     const { t } = useLanguage();
     const [orders, setOrders] = useState<OrderData[]>([]);
-    const [, setSettingsState] = useState<SettingsData | null>(null);
-    const [dataLoading, setDataLoading] = useState(true);
-    const [showNewOrder, setShowNewOrder] = useState(false);
-
-    // New order state
-    const [deliveryDays, setDeliveryDays] = useState(10);
-    const [garmentType, setGarmentType] = useState("");
-    const [notes, setNotes] = useState("");
-    const [basePrice] = useState(2500);
-    const [submitting, setSubmitting] = useState(false);
-    const [dateCapacity, setDateCapacity] = useState<{ date: string; available: boolean; load: number; capacity: number } | null>(null);
-
     const [phoneQuery, setPhoneQuery] = useState("");
     const [hasSearched, setHasSearched] = useState(false);
     const [searching, setSearching] = useState(false);
-
-    // Remove strict auth redirect
-    // useEffect(() => {
-    //     if (!authLoading && !user) router.replace("/login");
-    // }, [user, authLoading, router]);
+    const [error, setError] = useState("");
 
     const loadData = useCallback(async (phone: string) => {
         if (!phone) return;
         setSearching(true);
-        const [o, s] = await Promise.all([
-            getOrdersByPhone(phone),
-            getSettings(),
-        ]);
-        setOrders(o);
-        setSettingsState(s);
-        setHasSearched(true);
-        setSearching(false);
+        setError("");
+        try {
+            const data = await getOrdersByPhone(phone);
+            setOrders(data || []);
+            setHasSearched(true);
+        } catch (err) {
+            console.error(err);
+
+            setError("Could not find orders. Please check the number and try again.");
+        } finally {
+            setSearching(false);
+        }
     }, []);
 
     const searchParams = useSearchParams();
@@ -88,66 +65,16 @@ function TrackingPageContent() {
             const clean = phoneParam.startsWith("+") ? phoneParam : `+91${phoneParam}`;
             setPhoneQuery(clean);
             loadData(clean);
-            incrementUserQueryCount(clean);
-        } else if (user?.phoneNumber) {
-            setPhoneQuery(user.phoneNumber);
-            loadData(user.phoneNumber);
+        } else if (user?.email) {
+            // If admin is logged in, extract phone from email (e.g. 919876543210@...)
+            const match = user.email.match(/^91(\d+)@/);
+            if (match) {
+                const phone = `+91${match[1]}`;
+                setPhoneQuery(phone);
+                loadData(phone);
+            }
         }
-        setDataLoading(false);
     }, [user, loadData, searchParams]);
-
-    // Update capacity when delivery days changes
-    useEffect(() => {
-        const d = new Date();
-        d.setDate(d.getDate() + deliveryDays);
-        const dateStr = d.toISOString().split("T")[0];
-        const cap = getCapacityForDate(dateStr);
-        setDateCapacity({ date: dateStr, ...cap });
-    }, [deliveryDays]);
-
-    if (authLoading) {
-        return (
-            <div className="flex min-h-screen items-center justify-center">
-                <Loader2 className="h-8 w-8 text-sky-500 animate-spin" />
-            </div>
-        );
-    }
-
-    // Rush fee calculation: 0 at 10 days, max ₹2000 at 1 day
-    const rushFee = deliveryDays >= 10 ? 0 : Math.round(((10 - deliveryDays) / 9) * 2000);
-    const totalPrice = basePrice + rushFee;
-    const isCapacityFull = dateCapacity ? !dateCapacity.available : false;
-
-    const handlePlaceOrder = async () => {
-        if (!phoneQuery) return;
-        setSubmitting(true);
-        const today = new Date();
-        const target = new Date();
-        target.setDate(target.getDate() + deliveryDays);
-
-        await createOrder({
-            customerPhone: phoneQuery,
-            customerName: "Customer",
-            status: "Pending",
-            binLocation: "",
-            submissionDate: today.toISOString().split("T")[0],
-            targetDeliveryDate: target.toISOString().split("T")[0],
-            basePrice,
-            numberOfSets: 1,
-            totalAmount: totalPrice,
-            rushFee,
-            isApprovedRushed: isCapacityFull,
-            garmentType,
-            notes: isCapacityFull ? `[RUSH REQUEST] ${notes}` : notes,
-        });
-
-        setShowNewOrder(false);
-        setGarmentType("");
-        setNotes("");
-        setDeliveryDays(10);
-        setSubmitting(false);
-        await loadData(phoneQuery);
-    };
 
     // Get status index for stepper
     const getStatusIndex = (status: string) => {
@@ -162,19 +89,14 @@ function TrackingPageContent() {
             <div className="relative overflow-hidden" style={{ borderBottom: "1px solid var(--border-color)" }}>
                 <div className="absolute inset-0 bg-gradient-to-r from-sky-600/10 via-transparent to-sky-500/5" />
                 <div className="relative mx-auto max-w-7xl px-4 py-6 lg:px-8">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-xl brand-gradient shadow-lg shadow-sky-500/20">
-                                <PackageSearch className="h-5 w-5 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-bold tracking-tight text-themed-primary">{t("track.title")}</h1>
-                                <p className="text-sm text-themed-secondary">{t("track.subtitle")}</p>
-                            </div>
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl brand-gradient shadow-lg shadow-sky-500/20">
+                            <PackageSearch className="h-5 w-5 text-white" />
                         </div>
-                        <button onClick={() => setShowNewOrder(true)} className="btn-primary text-sm !py-2 !px-4">
-                            <Plus className="h-4 w-4" /> {t("track.newOrder")}
-                        </button>
+                        <div>
+                            <h1 className="text-xl font-bold tracking-tight text-themed-primary">{t("track.title")}</h1>
+                            <p className="text-sm text-themed-secondary">{t("track.subtitle")}</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -190,12 +112,10 @@ function TrackingPageContent() {
                             value={phoneQuery}
                             onChange={(e) => setPhoneQuery(e.target.value)}
                             className="form-input flex-1"
-                            disabled={!!user} // Disabled if logged in automatically
                         />
                         <button
                             onClick={async () => {
                                 await loadData(phoneQuery);
-                                await incrementUserQueryCount(phoneQuery);
                             }}
                             className="btn-primary"
                             disabled={!phoneQuery.trim() || searching}
@@ -203,9 +123,10 @@ function TrackingPageContent() {
                             {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Find Orders"}
                         </button>
                     </div>
+                    {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
                 </div>
 
-                {dataLoading || searching ? (
+                {searching ? (
                     <div className="flex items-center justify-center py-20">
                         <Loader2 className="h-8 w-8 text-sky-500 animate-spin" />
                     </div>
@@ -219,9 +140,6 @@ function TrackingPageContent() {
                                 <p className="text-themed-secondary text-sm max-w-md mx-auto mb-4">
                                     {t("track.noOrdersHint")}
                                 </p>
-                                <button onClick={() => setShowNewOrder(true)} className="btn-primary text-sm">
-                                    <Plus className="h-4 w-4" /> {t("track.placeFirst")}
-                                </button>
                             </div>
                         ) : (
                             orders.map((order) => {
@@ -325,125 +243,13 @@ function TrackingPageContent() {
                         )}
                     </div>
                 )}
-                {!hasSearched && !dataLoading && !searching && (
+                {!hasSearched && !searching && (
                     <div className="glass-card p-10 text-center text-themed-muted">
                         <PackageSearch className="h-12 w-12 mx-auto mb-3 opacity-50" />
                         <p>Enter your phone number above to track your garments.</p>
                     </div>
                 )}
             </div>
-
-            {/* ━━━ New Order Modal — with Pricing Slider ━━━ */}
-            {showNewOrder && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
-                    <div className="glass-card p-6 w-full max-w-lg animate-slide-up max-h-[90vh] overflow-y-auto" style={{ background: "var(--bg-secondary)" }}>
-                        <div className="flex items-center justify-between mb-5">
-                            <h3 className="text-lg font-semibold text-themed-primary">{t("track.placeOrder")}</h3>
-                            <button onClick={() => setShowNewOrder(false)} className="text-themed-muted hover:text-themed-primary">
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
-
-                        <div className="space-y-5">
-                            {/* Garment */}
-                            <div>
-                                <label className="text-sm font-medium text-themed-secondary mb-1 block">{t("track.garmentType")}</label>
-                                <input
-                                    value={garmentType}
-                                    onChange={(e) => setGarmentType(e.target.value)}
-                                    className="form-input"
-                                    placeholder={t("track.garmentPlaceholder")}
-                                />
-                            </div>
-
-                            {/* Delivery Timeline Slider */}
-                            <div>
-                                <label className="text-sm font-medium text-themed-secondary mb-2 block">{t("track.deliveryTimeline")}</label>
-                                <div className="glass-card p-4">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-2xl font-bold text-themed-primary">{deliveryDays} {t("track.days")}</span>
-                                        <span className={`text-sm font-medium ${deliveryDays <= 3 ? "text-red-400" : deliveryDays <= 6 ? "text-amber-500" : "text-emerald-500"}`}>
-                                            {deliveryDays <= 3 ? t("track.express") : deliveryDays <= 6 ? t("track.priority") : t("track.standard")}
-                                        </span>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min={1}
-                                        max={15}
-                                        value={deliveryDays}
-                                        onChange={(e) => setDeliveryDays(Number(e.target.value))}
-                                        className="w-full"
-                                    />
-                                    <div className="flex justify-between text-xs text-themed-muted mt-1">
-                                        <span>{t("track.dayExpress")}</span>
-                                        <span>{t("track.15days")}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Pricing Breakdown */}
-                            <div className="glass-card p-4">
-                                <h4 className="text-sm font-medium text-themed-secondary mb-3">{t("track.pricing")}</h4>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-themed-secondary">{t("track.basePrice")}</span>
-                                        <span className="text-themed-primary">₹{basePrice.toLocaleString()}</span>
-                                    </div>
-                                    {rushFee > 0 && (
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-amber-500 flex items-center gap-1"><Zap className="h-3 w-3" /> {t("track.rushFee")}</span>
-                                            <span className="text-amber-500">+₹{rushFee.toLocaleString()}</span>
-                                        </div>
-                                    )}
-                                    <div className="border-t pt-2 flex justify-between text-sm font-semibold" style={{ borderColor: "var(--border-color)" }}>
-                                        <span className="text-themed-primary">{t("track.total")}</span>
-                                        <span className="text-sky-500 text-lg">₹{totalPrice.toLocaleString()}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Capacity Warning */}
-                            {isCapacityFull && (
-                                <div className="flex items-start gap-2 rounded-xl p-3 bg-amber-500/10 border border-amber-500/20">
-                                    <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                                    <div>
-                                        <p className="text-sm font-medium text-amber-500">{t("track.capacityFull")} {dateCapacity?.date}</p>
-                                        <p className="text-xs text-themed-secondary mt-0.5">
-                                            {t("track.rushRequest")}
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Notes */}
-                            <div>
-                                <label className="text-sm font-medium text-themed-secondary mb-1 block">{t("track.notesLabel")}</label>
-                                <input
-                                    value={notes}
-                                    onChange={(e) => setNotes(e.target.value)}
-                                    className="form-input"
-                                    placeholder={t("track.notesPlaceholder")}
-                                />
-                            </div>
-
-                            {/* Submit */}
-                            <button
-                                onClick={handlePlaceOrder}
-                                disabled={!garmentType || submitting}
-                                className="btn-primary w-full"
-                            >
-                                {submitting ? (
-                                    <><Loader2 className="h-4 w-4 animate-spin" /> {t("track.placingOrder")}</>
-                                ) : isCapacityFull ? (
-                                    <><Zap className="h-4 w-4" /> {t("track.emergencyRush")}</>
-                                ) : (
-                                    <><Plus className="h-4 w-4" /> {t("track.placeOrderBtn")} — ₹{totalPrice.toLocaleString()}</>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
