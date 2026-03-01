@@ -1,8 +1,27 @@
 "use client";
 
 // ─────────────────────────────────────────────────────────────
-// Firestore Data Layer — with Demo Mode (in-memory store)
+// Firestore Data Layer — Real Firebase CRUD Operations
+// Now that Firestore API is enabled + security rules allow access,
+// all operations go directly to Firestore (no polling, no demo data).
 // ─────────────────────────────────────────────────────────────
+
+import { db } from "./firebase";
+import { logger } from "./logger";
+import {
+    collection,
+    doc,
+    getDocs,
+    setDoc,
+    updateDoc,
+    deleteDoc,
+    query,
+    where,
+    increment,
+    writeBatch,
+} from "firebase/firestore";
+
+// ── Types ───────────────────────────────────────────────────
 
 export interface OrderData {
     orderId: string;
@@ -10,8 +29,8 @@ export interface OrderData {
     customerName: string;
     status: "Pending" | "Cutting" | "Stitching" | "Alteration" | "Ready" | "Delivered";
     binLocation: string;
-    submissionDate: string; // ISO date
-    targetDeliveryDate: string; // ISO date
+    submissionDate: string;
+    targetDeliveryDate: string;
     basePrice: number;
     numberOfSets: number;
     totalAmount: number;
@@ -27,108 +46,83 @@ export interface UserData {
     role: "admin" | "customer";
     name: string;
     gender?: "male" | "female";
-    createdAt?: number; // timestamp
+    createdAt?: number;
     queryCount?: number;
     lastQueryAt?: number;
-    measurements: Record<string, Record<string, number>>; // GarmentType -> { field: value }
+    measurements: Record<string, Record<string, number>>;
 }
 
 export interface SettingsData {
     dailyStitchCapacity: number;
-    currentLoad: Record<string, number>; // date string -> count
-    garmentPrices: Record<string, number>; // GarmentType -> Price in Rupees
+    currentLoad: Record<string, number>;
+    garmentPrices: Record<string, number>;
 }
 
-// ── DEMO SEED DATA ──────────────────────────────────────────
+// ── Default Settings (fallback if Firestore is empty) ───────
 
-const today = new Date();
-const fmt = (d: Date) => d.toISOString().split("T")[0];
-const addDays = (d: Date, n: number) => {
-    const r = new Date(d);
-    r.setDate(r.getDate() + n);
-    return r;
-};
-
-const todayStr = fmt(today);
-
-let demoOrders: OrderData[] = [
-    { orderId: "ORD-001", customerPhone: "+919876543210", customerName: "Ravi Kumar", status: "Stitching", binLocation: "A-12", submissionDate: fmt(addDays(today, -2)), targetDeliveryDate: fmt(addDays(today, 3)), basePrice: 1500, numberOfSets: 1, totalAmount: 1500, rushFee: 0, isApprovedRushed: false, garmentType: "Shirt", notes: "Extra slim fit" },
-    { orderId: "ORD-002", customerPhone: "+919812345678", customerName: "Priya Sharma", status: "Pending", binLocation: "B-04", submissionDate: fmt(addDays(today, -1)), targetDeliveryDate: fmt(addDays(today, 5)), basePrice: 2200, numberOfSets: 2, totalAmount: 4400, rushFee: 500, isApprovedRushed: true, garmentType: "Girl's Dress", notes: "Knee length" },
-    { orderId: "ORD-003", customerPhone: "+919845678901", customerName: "Arun Prakash", status: "Ready", binLocation: "C-01", submissionDate: fmt(addDays(today, -5)), targetDeliveryDate: fmt(addDays(today, 0)), basePrice: 1800, numberOfSets: 1, totalAmount: 1800, rushFee: 0, isApprovedRushed: false, garmentType: "Pant", notes: "No cuffs" },
-    { orderId: "ORD-004", customerPhone: "+919834567890", customerName: "Meena Devi", status: "Cutting", binLocation: "A-08", submissionDate: todayStr, targetDeliveryDate: fmt(addDays(today, 7)), basePrice: 3500, numberOfSets: 1, totalAmount: 3500, rushFee: 0, isApprovedRushed: false, garmentType: "Salwar Kameez", notes: "Cotton fabric" },
-    { orderId: "ORD-005", customerPhone: "+919823456789", customerName: "Sanjay Gupta", status: "Alteration", binLocation: "D-02", submissionDate: fmt(addDays(today, -10)), targetDeliveryDate: fmt(addDays(today, -1)), basePrice: 1200, numberOfSets: 1, totalAmount: 1200, rushFee: 0, isApprovedRushed: false, garmentType: "Shirt", notes: "Sleeves too long" },
-    { orderId: "ORD-006", customerPhone: "+919890123456", customerName: "Anita Desai", status: "Delivered", binLocation: "Delivered", submissionDate: fmt(addDays(today, -15)), targetDeliveryDate: fmt(addDays(today, -5)), basePrice: 4000, numberOfSets: 2, totalAmount: 8000, rushFee: 0, isApprovedRushed: false, garmentType: "School Uniform", notes: "Include badges" },
-    { orderId: "ORD-007", customerPhone: "+919889012345", customerName: "Vikram Singh", status: "Pending", binLocation: "B-09", submissionDate: todayStr, targetDeliveryDate: fmt(addDays(today, 10)), basePrice: 2800, numberOfSets: 1, totalAmount: 2800, rushFee: 0, isApprovedRushed: false, garmentType: "Pant", notes: "Pleated" },
-    { orderId: "ORD-008", customerPhone: "+919878901234", customerName: "Neha Kapoor", status: "Stitching", binLocation: "C-05", submissionDate: fmt(addDays(today, -3)), targetDeliveryDate: fmt(addDays(today, 4)), basePrice: 1600, numberOfSets: 1, totalAmount: 1600, rushFee: 0, isApprovedRushed: false, garmentType: "Blouse", notes: "Deep back neck" },
-    { orderId: "ORD-009", customerPhone: "+919867890123", customerName: "Karthik Subramanian", status: "Ready", binLocation: "A-03", submissionDate: fmt(addDays(today, -4)), targetDeliveryDate: fmt(addDays(today, 2)), basePrice: 5000, numberOfSets: 1, totalAmount: 5000, rushFee: 0, isApprovedRushed: false, garmentType: "Blazer", notes: "Navy blue, brass buttons" },
-    { orderId: "ORD-010", customerPhone: "+919856789012", customerName: "Sneha Reddy", status: "Cutting", binLocation: "D-10", submissionDate: fmt(addDays(today, -1)), targetDeliveryDate: fmt(addDays(today, 6)), basePrice: 2000, numberOfSets: 1, totalAmount: 2000, rushFee: 0, isApprovedRushed: false, garmentType: "Girl's Dress", notes: "A-line" },
-    { orderId: "ORD-011", customerPhone: "+919876543210", customerName: "Ravi Kumar", status: "Pending", binLocation: "B-11", submissionDate: todayStr, targetDeliveryDate: fmt(addDays(today, 8)), basePrice: 1500, numberOfSets: 1, totalAmount: 1500, rushFee: 0, isApprovedRushed: false, garmentType: "Pant", notes: "Slim fit" },
-    { orderId: "ORD-012", customerPhone: "+919812345678", customerName: "Priya Sharma", status: "Stitching", binLocation: "A-15", submissionDate: fmt(addDays(today, -2)), targetDeliveryDate: fmt(addDays(today, 5)), basePrice: 2200, numberOfSets: 1, totalAmount: 2200, rushFee: 500, isApprovedRushed: true, garmentType: "Salwar Kameez", notes: "Silk, intricate embroidery" },
-    { orderId: "ORD-013", customerPhone: "+919845678901", customerName: "Arun Prakash", status: "Alteration", binLocation: "C-08", submissionDate: fmt(addDays(today, -8)), targetDeliveryDate: fmt(addDays(today, -2)), basePrice: 1800, numberOfSets: 1, totalAmount: 1800, rushFee: 0, isApprovedRushed: false, garmentType: "Shirt", notes: "Collar too tight" },
-    { orderId: "ORD-014", customerPhone: "+919834567890", customerName: "Meena Devi", status: "Delivered", binLocation: "Delivered", submissionDate: fmt(addDays(today, -20)), targetDeliveryDate: fmt(addDays(today, -10)), basePrice: 3500, numberOfSets: 1, totalAmount: 3500, rushFee: 0, isApprovedRushed: false, garmentType: "Blouse", notes: "Puff sleeves" },
-    { orderId: "ORD-015", customerPhone: "+919867890123", customerName: "Karthik Subramanian", status: "Cutting", binLocation: "B-06", submissionDate: fmt(addDays(today, -1)), targetDeliveryDate: fmt(addDays(today, 9)), basePrice: 6000, numberOfSets: 1, totalAmount: 6000, rushFee: 1000, isApprovedRushed: true, garmentType: "Blazer", notes: "Custom fit, charcoal" },
-];
-
-let demoUsers: UserData[] = [
-    { uid: "demo_919876543210", phoneNumber: "+919876543210", role: "customer", name: "Ravi Kumar", gender: "male", createdAt: Date.now() - 86400000 * 5, measurements: { "Shirt": { chest: 40, waist: 34, shoulder: 18, sleeve: 25, neck: 15.5 }, "Pant": { waist: 34, inseam: 30, length: 42 } } },
-    { uid: "demo_919812345678", phoneNumber: "+919812345678", role: "customer", name: "Priya Sharma", gender: "female", createdAt: Date.now() - 86400000 * 3, measurements: { "Shirt": { chest: 34, waist: 28, shoulder: 15, sleeve: 22, neck: 13 }, "Girl's Dress": { chest: 34, waist: 28, length: 38 } } },
-    { uid: "demo_919845678901", phoneNumber: "+919845678901", role: "customer", name: "Arun Prakash", gender: "male", createdAt: Date.now() - 86400000 * 10, measurements: { "Shirt": { chest: 42, waist: 36, shoulder: 19, sleeve: 26, neck: 16 } } },
-    { uid: "demo_919856789012", phoneNumber: "+919856789012", role: "customer", name: "Meena Devi", gender: "female", createdAt: Date.now() - 86400000 * 1, measurements: { "Girl's Dress": { chest: 35, waist: 29, shoulder: 14.5, length: 40 } } },
-    { uid: "demo_919867890123", phoneNumber: "+919867890123", role: "customer", name: "Karthik Subramanian", gender: "male", createdAt: Date.now() - 86400000 * 20, measurements: { "Shirt": { chest: 44, waist: 38, shoulder: 20, sleeve: 27, neck: 17 } } },
-    { uid: "demo_919990000001", phoneNumber: "+919990000001", role: "admin", name: "Admin (S Kumaran)", createdAt: Date.now() - 86400000 * 100, measurements: {} },
-];
-
-let demoSettings: SettingsData = {
+const DEFAULT_SETTINGS: SettingsData = {
     dailyStitchCapacity: 50,
     garmentPrices: {
-        "Shirt": 1200,
-        "Pant": 1500,
+        Shirt: 1200,
+        Pant: 1500,
         "Girl's Dress": 2500,
         "School Uniform (Boy)": 2000,
         "School Uniform (Girl)": 2200,
         "Police Uniform": 3500,
-        "Blouse": 850,
+        Blouse: 850,
         "Salwar Kameez": 3000,
-        "General": 1000
+        General: 1000,
     },
-    currentLoad: {
-        [fmt(today)]: 35,
-        [fmt(addDays(today, 1))]: 42,
-        [fmt(addDays(today, 2))]: 48,
-        [fmt(addDays(today, 3))]: 50,
-        [fmt(addDays(today, 4))]: 30,
-        [fmt(addDays(today, 5))]: 20,
-        [fmt(addDays(today, 6))]: 15,
-        [fmt(addDays(today, 7))]: 10,
-        [fmt(addDays(today, 8))]: 5,
-        [fmt(addDays(today, 9))]: 2,
-    },
+    currentLoad: {},
 };
 
-let orderCounter = 15;
+// ── Collection references ───────────────────────────────────
 
-// ── DEMO DATA ACCESS FUNCTIONS ──────────────────────────────
+const ordersCol = collection(db, "orders");
+const usersCol = collection(db, "users");
+const settingsDocRef = doc(db, "settings", "global");
 
-// Orders
+// ── Internal Helper: get settings via collection query ──────
+
+async function fetchSettingsData(): Promise<Record<string, unknown>> {
+    const settingsCol = collection(db, "settings");
+    const snapshot = await getDocs(settingsCol);
+    const globalDoc = snapshot.docs.find((d) => d.id === "global");
+    return globalDoc ? globalDoc.data() : {};
+}
+
+// ── Orders ──────────────────────────────────────────────────
+
 export async function getOrders(): Promise<OrderData[]> {
-    return [...demoOrders];
+    try {
+        const snapshot = await getDocs(ordersCol);
+        return snapshot.docs.map((d) => d.data() as OrderData);
+    } catch (error) {
+        logger.error("Error fetching orders", error);
+        return [];
+    }
 }
 
 export async function getOrdersByPhone(phone: string): Promise<OrderData[]> {
-    return demoOrders.filter((o) => o.customerPhone === phone);
+    try {
+        const q = query(ordersCol, where("customerPhone", "==", phone));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map((d) => d.data() as OrderData);
+    } catch (error) {
+        logger.error("Error fetching orders by phone", error);
+        return [];
+    }
 }
 
 export interface OrderSearchFilters {
-    query?: string;          // search by customer name (partial, case-insensitive)
-    dateFrom?: string;       // ISO date — filter orders submitted on or after
-    dateTo?: string;         // ISO date — filter orders submitted on or before
-    status?: OrderStatus;    // filter by status
+    query?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    status?: OrderStatus;
 }
 
-// Core filter logic — shared by all search variants
-function applyFilters(orders: OrderData[], filters: OrderSearchFilters): OrderData[] {
-    let results = orders;
-
+function applyFilters(items: OrderData[], filters: OrderSearchFilters): OrderData[] {
+    let results = items;
     if (filters.query && filters.query.trim()) {
         const q = filters.query.trim().toLowerCase();
         results = results.filter(
@@ -138,24 +132,16 @@ function applyFilters(orders: OrderData[], filters: OrderSearchFilters): OrderDa
                 o.garmentType.toLowerCase().includes(q)
         );
     }
-    if (filters.dateFrom) {
-        results = results.filter((o) => o.submissionDate >= filters.dateFrom!);
-    }
-    if (filters.dateTo) {
-        results = results.filter((o) => o.submissionDate <= filters.dateTo!);
-    }
-    if (filters.status) {
-        results = results.filter((o) => o.status === filters.status);
-    }
+    if (filters.dateFrom) results = results.filter((o) => o.submissionDate >= filters.dateFrom!);
+    if (filters.dateTo) results = results.filter((o) => o.submissionDate <= filters.dateTo!);
+    if (filters.status) results = results.filter((o) => o.status === filters.status);
     return results;
 }
 
-// Non-paginated search (backward compat)
 export async function searchOrders(filters: OrderSearchFilters): Promise<OrderData[]> {
-    return applyFilters([...demoOrders], filters);
+    return applyFilters(await getOrders(), filters);
 }
 
-// ── Paginated search (for List View) ────────────────────────
 export interface PaginatedResult<T> {
     items: T[];
     total: number;
@@ -169,21 +155,19 @@ export async function searchOrdersPaginated(
     page: number = 1,
     pageSize: number = 5
 ): Promise<PaginatedResult<OrderData>> {
-    const all = applyFilters([...demoOrders], filters);
+    const all = applyFilters(await getOrders(), filters);
     const total = all.length;
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     const safePage = Math.min(Math.max(1, page), totalPages);
     const start = (safePage - 1) * pageSize;
     const items = all.slice(start, start + pageSize);
-
     return { items, total, page: safePage, pageSize, totalPages };
 }
 
-// ── Cursor-based search (for Grid View lazy loading) ────────
 export interface CursorResult<T> {
     items: T[];
     total: number;
-    nextCursor: number | null;  // index to resume from, null = no more
+    nextCursor: number | null;
     hasMore: boolean;
 }
 
@@ -192,26 +176,33 @@ export async function searchOrdersCursor(
     cursor: number = 0,
     batchSize: number = 6
 ): Promise<CursorResult<OrderData>> {
-    const all = applyFilters([...demoOrders], filters);
+    const all = applyFilters(await getOrders(), filters);
     const total = all.length;
     const items = all.slice(cursor, cursor + batchSize);
     const nextCursor = cursor + batchSize < total ? cursor + batchSize : null;
-
     return { items, total, nextCursor, hasMore: nextCursor !== null };
 }
 
 export async function createOrder(order: Omit<OrderData, "orderId">): Promise<OrderData> {
-    orderCounter++;
-    const newOrder: OrderData = {
-        ...order,
-        orderId: `ORD-${String(orderCounter).padStart(3, "0")}`,
-    };
-    demoOrders = [newOrder, ...demoOrders];
+    // Get current counter from settings
+    const settingsData = await fetchSettingsData();
+    const currentCounter = (settingsData.orderCounter as number) || 0;
+    const newCounter = currentCounter + 1;
+    const orderId = `ORD-${String(newCounter).padStart(3, "0")}`;
 
-    // Update capacity load for target date
-    const existing = demoSettings.currentLoad[order.targetDeliveryDate] || 0;
-    demoSettings.currentLoad[order.targetDeliveryDate] = existing + 1;
+    const newOrder: OrderData = { ...order, orderId };
 
+    // Batch write: create order + update counter + update load
+    const batch = writeBatch(db);
+    batch.set(doc(db, "orders", orderId), newOrder);
+    batch.set(settingsDocRef, {
+        orderCounter: newCounter,
+        [`currentLoad.${order.targetDeliveryDate}`]: increment(1),
+    }, { merge: true });
+    await batch.commit();
+
+    // Refresh cached settings
+    cachedSettings = null;
     return newOrder;
 }
 
@@ -219,26 +210,37 @@ export async function updateOrder(
     orderId: string,
     updates: Partial<OrderData>
 ): Promise<OrderData | null> {
-    const idx = demoOrders.findIndex((o) => o.orderId === orderId);
-    if (idx === -1) return null;
-    demoOrders[idx] = { ...demoOrders[idx], ...updates };
-    return demoOrders[idx];
+    try {
+        const orderRef = doc(db, "orders", orderId);
+        await setDoc(orderRef, updates, { merge: true });
+        // Re-read the updated document
+        const all = await getOrders();
+        return all.find((o) => o.orderId === orderId) || null;
+    } catch (error) {
+        logger.error("Error updating order", error);
+        return null;
+    }
 }
 
 export async function deleteOrder(orderId: string): Promise<boolean> {
-    const before = demoOrders.length;
-    demoOrders = demoOrders.filter((o) => o.orderId !== orderId);
-    return demoOrders.length < before;
+    try {
+        await deleteDoc(doc(db, "orders", orderId));
+        return true;
+    } catch (error) {
+        logger.error("Error deleting order", error);
+        return false;
+    }
 }
 
-// Users
+// ── Users ───────────────────────────────────────────────────
+
 export interface UserSearchFilters {
     query?: string;
     sortBy?: "newest" | "oldest" | "nameaz";
 }
 
-function applyUserFilters(users: UserData[], filters: UserSearchFilters): UserData[] {
-    let result = users.filter((u) => u.role === "customer");
+function applyUserFilters(items: UserData[], filters: UserSearchFilters): UserData[] {
+    let result = items.filter((u) => u.role === "customer");
     if (filters.query) {
         const q = filters.query.toLowerCase();
         result = result.filter(
@@ -247,15 +249,9 @@ function applyUserFilters(users: UserData[], filters: UserSearchFilters): UserDa
                 (u.phoneNumber && u.phoneNumber.includes(q))
         );
     }
-
-    if (filters.sortBy === "newest") {
-        result.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-    } else if (filters.sortBy === "oldest") {
-        result.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
-    } else if (filters.sortBy === "nameaz") {
-        result.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-    }
-
+    if (filters.sortBy === "newest") result.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    else if (filters.sortBy === "oldest") result.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    else if (filters.sortBy === "nameaz") result.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     return result;
 }
 
@@ -264,13 +260,12 @@ export async function searchUsersPaginated(
     page: number = 1,
     pageSize: number = 5
 ): Promise<PaginatedResult<UserData>> {
-    const all = applyUserFilters([...demoUsers], filters);
+    const all = applyUserFilters(await getUsers(), filters);
     const total = all.length;
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     const safePage = Math.min(Math.max(1, page), totalPages);
     const start = (safePage - 1) * pageSize;
     const items = all.slice(start, start + pageSize);
-
     return { items, total, page: safePage, pageSize, totalPages };
 }
 
@@ -279,82 +274,129 @@ export async function searchUsersCursor(
     cursor: number = 0,
     batchSize: number = 6
 ): Promise<CursorResult<UserData>> {
-    const all = applyUserFilters([...demoUsers], filters);
+    const all = applyUserFilters(await getUsers(), filters);
     const total = all.length;
     const items = all.slice(cursor, cursor + batchSize);
     const nextCursor = cursor + batchSize < total ? cursor + batchSize : null;
-
     return { items, total, nextCursor, hasMore: nextCursor !== null };
 }
 
 export async function getUsers(): Promise<UserData[]> {
-    return [...demoUsers];
+    try {
+        const snapshot = await getDocs(usersCol);
+        return snapshot.docs.map((d) => d.data() as UserData);
+    } catch (error) {
+        logger.error("Error fetching users", error);
+        return [];
+    }
 }
 
 export async function getUserByPhone(phone: string): Promise<UserData | null> {
-    return demoUsers.find((u) => u.phoneNumber === phone) || null;
+    try {
+        const q = query(usersCol, where("phoneNumber", "==", phone));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) return null;
+        return snapshot.docs[0].data() as UserData;
+    } catch (error) {
+        logger.error("Error fetching user by phone", error);
+        return null;
+    }
 }
 
 export async function updateUser(
     uid: string,
     updates: Partial<UserData>
 ): Promise<UserData | null> {
-    const idx = demoUsers.findIndex((u) => u.uid === uid);
-    if (idx === -1) return null;
-    demoUsers[idx] = { ...demoUsers[idx], ...updates };
-    return demoUsers[idx];
+    try {
+        await setDoc(doc(db, "users", uid), updates, { merge: true });
+        const all = await getUsers();
+        return all.find((u) => u.uid === uid) || null;
+    } catch (error) {
+        logger.error("Error updating user", error);
+        return null;
+    }
 }
 
 export async function createUser(user: Omit<UserData, "uid">): Promise<UserData> {
-    const newUser: UserData = {
-        ...user,
-        createdAt: user.createdAt || Date.now(),
-        uid: "user_" + Date.now().toString() + Math.random().toString(36).substr(2, 5),
-    };
-    demoUsers = [newUser, ...demoUsers];
+    const uid = "user_" + Date.now().toString() + Math.random().toString(36).substr(2, 5);
+    const newUser: UserData = { ...user, createdAt: user.createdAt || Date.now(), uid };
+    await setDoc(doc(db, "users", uid), newUser);
     return newUser;
 }
 
-// Settings
+// ── Settings ────────────────────────────────────────────────
+
 export async function getSettings(): Promise<SettingsData> {
-    return { ...demoSettings, currentLoad: { ...demoSettings.currentLoad } };
+    try {
+        const data = await fetchSettingsData();
+        if (!data || Object.keys(data).length === 0) {
+            // First run: create default settings
+            try {
+                await setDoc(settingsDocRef, { ...DEFAULT_SETTINGS, orderCounter: 0 });
+            } catch (e) {
+                logger.warn("Could not create default settings", e);
+            }
+            return { ...DEFAULT_SETTINGS };
+        }
+        return {
+            dailyStitchCapacity: (data.dailyStitchCapacity as number) ?? DEFAULT_SETTINGS.dailyStitchCapacity,
+            currentLoad: (data.currentLoad as Record<string, number>) ?? {},
+            garmentPrices: (data.garmentPrices as Record<string, number>) ?? DEFAULT_SETTINGS.garmentPrices,
+        };
+    } catch (error) {
+        logger.error("Error fetching settings", error);
+        return { ...DEFAULT_SETTINGS };
+    }
 }
 
 export async function updateSettings(
     updates: Partial<SettingsData>
 ): Promise<SettingsData> {
-    demoSettings = { ...demoSettings, ...updates };
-    return demoSettings;
+    try {
+        await setDoc(settingsDocRef, updates, { merge: true });
+        cachedSettings = null;
+        return getSettings();
+    } catch (error) {
+        logger.error("Error updating settings", error);
+        return getSettings();
+    }
 }
 
-// Helpers
+// ── Helpers ─────────────────────────────────────────────────
+
+let cachedSettings: SettingsData | null = null;
+
 export function getCapacityForDate(date: string): { load: number; capacity: number; available: boolean } {
-    const load = demoSettings.currentLoad[date] || 0;
-    return {
-        load,
-        capacity: demoSettings.dailyStitchCapacity,
-        available: load < demoSettings.dailyStitchCapacity,
-    };
+    const s = cachedSettings || DEFAULT_SETTINGS;
+    const load = s.currentLoad[date] || 0;
+    return { load, capacity: s.dailyStitchCapacity, available: load < s.dailyStitchCapacity };
+}
+
+export async function refreshSettingsCache(): Promise<void> {
+    cachedSettings = await getSettings();
+}
+
+if (typeof window !== "undefined") {
+    refreshSettingsCache();
 }
 
 export const ORDER_STATUSES = [
-    "Pending",
-    "Cutting",
-    "Stitching",
-    "Alteration",
-    "Ready",
-    "Delivered",
+    "Pending", "Cutting", "Stitching", "Alteration", "Ready", "Delivered",
 ] as const;
 
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 export const incrementUserQueryCount = async (phone: string) => {
-    const userIndex = demoUsers.findIndex(u => u.phoneNumber === phone);
-    if (userIndex !== -1) {
-        demoUsers[userIndex] = {
-            ...demoUsers[userIndex],
-            queryCount: (demoUsers[userIndex].queryCount || 0) + 1,
-            lastQueryAt: Date.now()
-        };
+    try {
+        const q = query(usersCol, where("phoneNumber", "==", phone));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+            await updateDoc(snapshot.docs[0].ref, {
+                queryCount: increment(1),
+                lastQueryAt: Date.now(),
+            });
+        }
+    } catch (error) {
+        logger.error("Error incrementing user query count", error);
     }
 };

@@ -1,34 +1,26 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { onAuthStateChanged, signOut, User } from "firebase/auth";
+import { onAuthStateChanged, signOut, signInWithEmailAndPassword, User } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
 // ──────────────────────────────────────────────
-// Admin phone numbers (add your admin phones here)
-// In demo mode: any phone starting with +91999 is admin
+// Admin phone numbers
 // ──────────────────────────────────────────────
 const ADMIN_PHONES: string[] = [
-    // "+919876543210",
+    "+919788436339",
+    "+919442898544",
+    "+917639606258",
 ];
 
 export type UserRole = "admin" | "customer";
 
-// Demo user shape (mimics Firebase User partially)
-interface DemoUser {
-    uid: string;
-    phoneNumber: string;
-    displayName: string | null;
-}
-
 interface AuthContextType {
-    user: User | DemoUser | null;
+    user: User | null;
     role: UserRole | null;
     loading: boolean;
-    demoMode: boolean;
-    setDemoMode: (v: boolean) => void;
-    demoLogin: (phone: string) => void;
+    login: (phone: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
 }
 
@@ -36,9 +28,7 @@ const AuthContext = createContext<AuthContextType>({
     user: null,
     role: null,
     loading: true,
-    demoMode: true,
-    setDemoMode: () => { },
-    demoLogin: () => { },
+    login: async () => { },
     logout: async () => { },
 });
 
@@ -49,51 +39,37 @@ export function useAuth() {
 // Helper: determine role from phone
 function roleFromPhone(phone: string): UserRole {
     if (ADMIN_PHONES.includes(phone)) return "admin";
-    // Demo convention: +91999... = admin
-    if (phone.startsWith("+91999")) return "admin";
+    // Also check without country code
+    const stripped = phone.replace(/^\+91/, "");
+    if (ADMIN_PHONES.some((p) => p.replace(/^\+91/, "") === stripped)) return "admin";
     return "customer";
 }
 
+// Helper: convert phone to the email format used in Firebase Auth
+export function phoneToEmail(phone: string): string {
+    const digits = phone.replace(/[^0-9]/g, "");
+    // Ensure we have 91 prefix
+    const withCode = digits.startsWith("91") ? digits : `91${digits}`;
+    return `${withCode}@skumarantailor.app`;
+}
+
+// Helper: extract phone from email
+function emailToPhone(email: string): string {
+    const match = email.match(/^91(\d+)@/);
+    return match ? `+91${match[1]}` : "";
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | DemoUser | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [role, setRole] = useState<UserRole | null>(null);
     const [loading, setLoading] = useState(true);
-    const [demoMode, setDemoModeState] = useState(false);
 
-    // Restore demo mode preference from localStorage
+    // Firebase auth state listener
     useEffect(() => {
-        const stored = localStorage.getItem("sk_demo_mode");
-        if (stored !== null) {
-            setDemoModeState(stored === "true");
-        }
-
-        // Restore demo session
-        const demoSession = localStorage.getItem("sk_demo_user");
-        if (demoSession) {
-            try {
-                const parsed = JSON.parse(demoSession);
-                setUser(parsed.user);
-                setRole(parsed.role);
-            } catch {
-                // ignore invalid JSON
-            }
-        }
-
-        setLoading(false);
-    }, []);
-
-    // Firebase auth listener (only when NOT in demo mode)
-    useEffect(() => {
-        if (demoMode) {
-            setLoading(false);
-            return;
-        }
-
-        setLoading(true);
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser) {
                 setUser(firebaseUser);
-                const phone = firebaseUser.phoneNumber || "";
+                const phone = firebaseUser.email ? emailToPhone(firebaseUser.email) : "";
                 let userRole: UserRole = "customer";
 
                 try {
@@ -103,12 +79,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     if (userDoc.exists()) {
                         userRole = userDoc.data().role as UserRole;
                     } else {
+                        // First login — create user doc
                         userRole = roleFromPhone(phone);
                         await setDoc(userDocRef, {
                             uid: firebaseUser.uid,
                             phoneNumber: phone,
                             role: userRole,
+                            name: userRole === "admin" ? "Admin" : "",
                             measurements: {},
+                            createdAt: Date.now(),
                         });
                     }
                 } catch (error) {
@@ -125,51 +104,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         return () => unsubscribe();
-    }, [demoMode]);
-
-    const setDemoMode = useCallback((v: boolean) => {
-        setDemoModeState(v);
-        localStorage.setItem("sk_demo_mode", String(v));
-        if (!v) {
-            // Clear demo session when switching to real mode
-            localStorage.removeItem("sk_demo_user");
-            setUser(null);
-            setRole(null);
-        }
     }, []);
 
-    const demoLogin = useCallback((phone: string) => {
-        const fullPhone = phone.startsWith("+") ? phone : `+91${phone}`;
-        const userRole = roleFromPhone(fullPhone);
-        const demoUser: DemoUser = {
-            uid: `demo_${fullPhone.replace(/\+/g, "")}`,
-            phoneNumber: fullPhone,
-            displayName: null,
-        };
-        setUser(demoUser);
-        setRole(userRole);
-        localStorage.setItem(
-            "sk_demo_user",
-            JSON.stringify({ user: demoUser, role: userRole })
-        );
+    const login = useCallback(async (phone: string, password: string) => {
+        const email = phoneToEmail(phone);
+        await signInWithEmailAndPassword(auth, email, password);
+        // onAuthStateChanged will handle the rest
     }, []);
 
     const logout = useCallback(async () => {
-        if (demoMode) {
-            localStorage.removeItem("sk_demo_user");
-            setUser(null);
-            setRole(null);
-        } else {
-            await signOut(auth);
-            setUser(null);
-            setRole(null);
-        }
-    }, [demoMode]);
+        await signOut(auth);
+        setUser(null);
+        setRole(null);
+    }, []);
 
     return (
-        <AuthContext.Provider
-            value={{ user, role, loading, demoMode, setDemoMode, demoLogin, logout }}
-        >
+        <AuthContext.Provider value={{ user, role, loading, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

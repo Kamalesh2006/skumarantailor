@@ -179,18 +179,23 @@ export default function DashboardPage() {
 
     const loadData = useCallback(async () => {
         setDataLoading(true);
-        const [o, s] = await Promise.all([getOrders(), getSettings()]);
-        setOrders(o);
-        setSettingsState(s);
-        setCapacityInput(String(s.dailyStitchCapacity));
-        if (s.garmentPrices) {
-            const formatted: Record<string, string> = {};
-            Object.entries(s.garmentPrices).forEach(([k, v]) => {
-                formatted[k] = String(v);
-            });
-            setPricingInput(formatted);
+        try {
+            const [o, s] = await Promise.all([getOrders(), getSettings()]);
+            setOrders(o);
+            setSettingsState(s);
+            setCapacityInput(String(s.dailyStitchCapacity));
+            if (s.garmentPrices) {
+                const formatted: Record<string, string> = {};
+                Object.entries(s.garmentPrices).forEach(([k, v]) => {
+                    formatted[k] = String(v);
+                });
+                setPricingInput(formatted);
+            }
+        } catch (error) {
+            console.error("Error loading dashboard data:", error);
+        } finally {
+            setDataLoading(false);
         }
-        setDataLoading(false);
     }, []);
 
     // Debounce orders search query — waits 500ms after user stops typing
@@ -1216,8 +1221,11 @@ export default function DashboardPage() {
                             const safePage = Math.min(monitorPage, monitorTotalPages);
                             const monitorPaged = filteredMonitorUsers.slice((safePage - 1) * MONITOR_PAGE_SIZE, safePage * MONITOR_PAGE_SIZE);
 
+                            const siteUrl = typeof window !== "undefined" ? window.location.origin : "https://skumarantailor.vercel.app";
+                            const trackingLink = `${siteUrl}/tracking`;
+
                             const getMessageText = (name: string) =>
-                                `Hi ${name}, this is S Kumaran Tailors. We wanted to update you about your order status. Please check your latest order details here or reply to this message for more info. Thank you! 🙏`;
+                                `வணக்கம் ${name}! 🙏\nHi ${name}, this is S Kumaran Tailors.\n\nஉங்கள் ஆர்டர் நிலையை அறிய கீழே உள்ள இணைப்பை பாருங்கள் / Track your order status here:\n${trackingLink}\n\n📞 தொடர்புக்கு / Contact: +91 94428 98544\n\nநன்றி! Thank you! 🙏`;
 
                             const openWhatsApp = (phone: string, name: string) => {
                                 const clean = phone.replace(/[^0-9]/g, "");

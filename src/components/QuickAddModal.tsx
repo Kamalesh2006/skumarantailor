@@ -258,18 +258,25 @@ export default function QuickAddModal({ isOpen, onClose, onOrderCreated }: Quick
                 createdOrders.push(`${order.orderId}: ${s.garmentType} × ${s.count}`);
             }
 
-            // Build WhatsApp message
+            // Build bilingual WhatsApp message (Tamil + English)
             const orderSummary = sets
                 .map((s) => `• ${t(`garment.${s.garmentType}`) || s.garmentType} × ${s.count}`)
                 .join("\n");
 
+            const siteUrl = typeof window !== "undefined" ? window.location.origin : "https://skumarantailor.vercel.app";
+            const trackingLink = `${siteUrl}/tracking`;
+
             const message =
-                `🧵 *S Kumaran Tailors*\n\n` +
+                `🧵 *எஸ் குமரன் டெய்லர்ஸ் | S Kumaran Tailors*\n\n` +
+                `வணக்கம் ${name.trim()}! 🙏\n` +
                 `Hello ${name.trim()}!\n\n` +
-                `Your order has been placed:\n${orderSummary}\n\n` +
-                `📅 Expected delivery: ${targetStr}\n` +
-                `📞 For queries, call us.\n\n` +
-                `Thank you! 🙏`;
+                `உங்கள் ஆர்டர் பதிவு செய்யப்பட்டது ✅\n` +
+                `Your order has been placed:\n\n` +
+                `${orderSummary}\n\n` +
+                `📅 எதிர்பார்க்கப்படும் டெலிவரி / Expected delivery: ${targetStr}\n\n` +
+                `📱 ஆர்டர் நிலையை இங்கே பாருங்கள் / Track your order status:\n${trackingLink}\n\n` +
+                `📞 தொடர்புக்கு / Contact us: +91 94428 98544\n\n` +
+                `நன்றி! Thank you! 🙏`;
 
             const whatsappUrl = `https://wa.me/91${phoneClean}?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, "_blank");
@@ -346,8 +353,8 @@ export default function QuickAddModal({ isOpen, onClose, onOrderCreated }: Quick
                                         type="button"
                                         onClick={phoneVoice.toggle}
                                         className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg transition-all duration-200 ${phoneVoice.listening
-                                                ? "bg-red-500/15 text-red-400 animate-pulse"
-                                                : "text-themed-muted hover:text-sky-500 hover:bg-sky-500/10"
+                                            ? "bg-red-500/15 text-red-400 animate-pulse"
+                                            : "text-themed-muted hover:text-sky-500 hover:bg-sky-500/10"
                                             }`}
                                         title={phoneVoice.listening ? t("quickAdd.voiceListening") : "Voice input"}
                                     >

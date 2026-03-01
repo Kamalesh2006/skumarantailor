@@ -21,28 +21,45 @@ export async function POST(req: Request) {
         // Fetch their orders
         const orders = await getOrdersByPhone(phoneNumber);
 
+        // Build site URL from NEXT_PUBLIC env var or request headers
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://skumarantailor.vercel.app";
+        const trackingLink = `${siteUrl}/tracking`;
+
         if (orders.length === 0) {
             return new NextResponse(
-                `Hello from S Kumaran Tailors! 🧵 We couldn't find any orders under the number ${phoneNumber}. If you recently placed an order, please contact the shop directly at +91 94428 98544.`,
+                `🧵 *எஸ் குமரன் டெய்லர்ஸ் | S Kumaran Tailors*\n\n` +
+                `வணக்கம்! 🙏\n` +
+                `Hello from S Kumaran Tailors!\n\n` +
+                `${phoneNumber} என்ற எண்ணில் ஆர்டர்கள் எதுவும் இல்லை.\n` +
+                `We couldn't find any orders under the number ${phoneNumber}.\n\n` +
+                `சமீபத்தில் ஆர்டர் செய்திருந்தால், கடையை நேரடியாக தொடர்பு கொள்ளுங்கள்.\n` +
+                `If you recently placed an order, please contact us directly.\n\n` +
+                `📞 தொடர்புக்கு / Contact: +91 94428 98544\n` +
+                `🌐 வலைதளம் / Website: ${siteUrl}`,
                 { status: 200, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate" } }
             );
         }
 
-        // Format orders for WhatsApp text
-        let responseText = `*Hello from S Kumaran Tailors!* ✂️\nHere is the status of your current orders:\n\n`;
+        // Format orders for WhatsApp text (bilingual)
+        let responseText =
+            `🧵 *எஸ் குமரன் டெய்லர்ஸ் | S Kumaran Tailors* ✂️\n\n` +
+            `வணக்கம்! உங்கள் ஆர்டர் நிலை:\n` +
+            `Hello! Here is the status of your orders:\n\n`;
 
         orders.forEach((order, index) => {
             const statusEmoji = order.status === "Ready" ? "✅" : (order.status === "Delivered" ? "🛍️" : "⏳");
-            responseText += `*Order #${order.orderId}* - ${order.garmentType}\n`;
-            responseText += `Status: ${statusEmoji} ${order.status}\n`;
-            responseText += `Due Date: 📅 ${order.targetDeliveryDate}\n`;
+            responseText += `*ஆர்டர் / Order #${order.orderId}* - ${order.garmentType}\n`;
+            responseText += `நிலை / Status: ${statusEmoji} ${order.status}\n`;
+            responseText += `டெலிவரி தேதி / Due Date: 📅 ${order.targetDeliveryDate}\n`;
 
             if (index < orders.length - 1) {
                 responseText += `\n---\n\n`;
             }
         });
 
-        responseText += `\nTo view full details, visit our website!\nThank you for choosing S Kumaran Tailors. 🙏`;
+        responseText += `\n\n📱 ஆர்டர் நிலையை இங்கே பாருங்கள் / Track your order online:\n${trackingLink}\n`;
+        responseText += `📞 தொடர்புக்கு / Contact: +91 94428 98544\n\n`;
+        responseText += `எஸ் குமரன் டெய்லர்ஸை தேர்ந்தெடுத்ததற்கு நன்றி!\nThank you for choosing S Kumaran Tailors! 🙏`;
 
         return new NextResponse(responseText, {
             status: 200,
