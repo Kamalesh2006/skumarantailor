@@ -46,14 +46,23 @@ export default function Navbar() {
                             {t("app.name")}
                         </span>
                     </Link>
-                    <div className="flex items-center gap-2">
-                        <button onClick={toggleLang} className="nav-icon-btn" title="Language">
-                            <Languages className="h-4 w-4" />
-                            <span className="text-xs">{lang === "en" ? "தமிழ்" : "English"}</span>
-                        </button>
-                        <button onClick={toggleTheme} className="nav-icon-btn" title="Theme">
-                            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                        </button>
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href="/tracking"
+                            className="hidden sm:flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:bg-sky-500/10 hover:text-sky-600"
+                        >
+                            <span className="h-4 w-4">📦</span>
+                            {t("track.trackOrder")}
+                        </Link>
+                        <div className="flex items-center gap-2">
+                            <button onClick={toggleLang} className="nav-icon-btn" title="Language">
+                                <Languages className="h-4 w-4" />
+                                <span className="text-xs">{lang === "en" ? "தமிழ்" : "English"}</span>
+                            </button>
+                            <button onClick={toggleTheme} className="nav-icon-btn" title="Theme">
+                                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </nav>
@@ -200,18 +209,6 @@ export default function Navbar() {
                 style={{ background: "var(--bg-primary)", borderLeft: "1px solid var(--border-color)" }}
             >
                 <div className="flex flex-col h-full pt-20 px-4 pb-6">
-                    {/* Quick Add in mobile drawer (admin only) */}
-                    {role === "admin" && (
-                        <button
-                            onClick={() => { setMobileOpen(false); setShowQuickAdd(true); }}
-                            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-white mb-4"
-                            style={{ background: "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)" }}
-                        >
-                            <Plus className="h-5 w-5" />
-                            {t("quickAdd.btnLabel")}
-                        </button>
-                    )}
-
                     <div className="flex-1" />
 
                     <div className="pt-4 space-y-3" style={{ borderTop: "1px solid var(--border-color)" }}>

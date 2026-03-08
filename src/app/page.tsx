@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { getSettings, SettingsData } from "@/lib/firestore";
 import TailorIcon from "@/components/TailorIcon";
@@ -103,7 +102,6 @@ function FloatingElements() {
 }
 
 export default function Home() {
-  const { user, role } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
 
@@ -121,11 +119,9 @@ export default function Home() {
   ];
 
   const handleGetStarted = () => {
-    if (user && role) {
-      router.push(role === "admin" ? "/dashboard" : "/tracking");
-    } else {
-      router.push("/login");
-    }
+    // Both tracking and dashboard are now fully managed by their own auth states 
+    // but the main CTA should go to tracking for public users or login if they want
+    router.push("/tracking");
   };
 
   return (
@@ -344,7 +340,7 @@ export default function Home() {
           {/* Floating tailoring elements */}
           <FloatingElements />
 
-          <div className="relative z-10 flex flex-col items-center gap-8 px-6 text-center max-w-3xl mx-auto pointer-events-none">
+          <div className="relative z-10 flex flex-col items-center gap-8 px-6 text-center max-w-3xl mx-auto">
             {/* Animated logo with rings */}
             <div className="relative home-stagger-1 pointer-events-auto" style={{ width: "400px", height: "280px" }}>
               {/* Centered sewing machine */}
@@ -364,11 +360,11 @@ export default function Home() {
             </div>
 
             {/* Brand Title — Gradient */}
-            <div className="home-stagger-2 mt-4">
-              <h1 className="home-brand-title text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight">
+            <div className="home-stagger-2 mt-4 px-2">
+              <h1 className="home-brand-title text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight">
                 {t("app.name")}
               </h1>
-              <p className="mt-3 text-sm font-semibold tracking-widest uppercase text-sky-500/80">
+              <p className="mt-2 text-xs sm:text-sm font-semibold tracking-widest uppercase text-sky-500/80">
                 {t("app.tagline")}
               </p>
             </div>
@@ -384,7 +380,7 @@ export default function Home() {
                 {t("home.hero.cta")} <ArrowRight className="h-4 w-4" />
               </button>
               <button
-                onClick={() => router.push("/login")}
+                onClick={() => router.push("/tracking")}
                 className="flex items-center gap-2 rounded-xl px-8 py-3 text-base font-semibold text-themed-primary transition-all hover:scale-[1.03]"
                 style={{ background: "var(--bg-secondary)", border: "1px solid var(--glass-border)" }}
               >

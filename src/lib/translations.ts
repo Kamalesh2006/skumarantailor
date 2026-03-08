@@ -136,6 +136,7 @@ export const translations: Record<string, Record<Language, string>> = {
     // ─── Tracking / Customer portal ───
     "track.title": { en: "My Orders", ta: "எனது ஆர்டர்கள்" },
     "track.subtitle": { en: "Track your tailoring orders", ta: "உங்கள் தையல் ஆர்டர்களை கண்காணிக்கவும்" },
+    "track.trackOrder": { en: "Track Order", ta: "ஆர்டர் பின்தொடர்" },
     "track.newOrder": { en: "New Order", ta: "புதிய ஆர்டர்" },
     "track.noOrders": { en: "No Orders Yet", ta: "இன்னும் ஆர்டர்கள் இல்லை" },
     "track.noOrdersHint": { en: "Place your first tailoring order and track it in real-time!", ta: "உங்கள் முதல் தையல் ஆர்டரை வைத்து நிகழ்நேரத்தில் கண்காணிக்கவும்!" },

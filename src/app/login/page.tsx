@@ -32,7 +32,7 @@ export default function LoginPage() {
     // Redirect if already authenticated
     useEffect(() => {
         if (!authLoading && user && role) {
-            router.replace(role === "admin" ? "/dashboard" : "/tracking");
+            router.replace("/dashboard");
         }
     }, [user, role, authLoading, router]);
 
@@ -95,12 +95,20 @@ export default function LoginPage() {
             <div className="relative w-full max-w-md animate-slide-up">
                 {/* Brand */}
                 <div className="mb-8 flex flex-col items-center text-center">
-                    <div className="relative mb-4">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-2xl brand-gradient shadow-2xl shadow-sky-500/30">
-                            <TailorIcon className="text-white" size={32} />
-                        </div>
-                        <div className="absolute -top-1 -right-1">
-                            <Sparkles className="h-4 w-4 text-sky-300 animate-pulse" />
+                    <div className="relative mb-6">
+                        {/* Ambient Glow */}
+                        <div
+                            className="absolute inset-0 rounded-full"
+                            style={{
+                                boxShadow: "0 0 40px rgba(14, 165, 233, 0.3), 0 0 80px rgba(14, 165, 233, 0.15)",
+                            }}
+                        />
+                        {/* Bare Icon */}
+                        <div className="relative z-10 flex items-center justify-center p-2">
+                            <TailorIcon
+                                className="text-themed-primary drop-shadow-[0_0_10px_rgba(14,165,233,0.4)]"
+                                size={56}
+                            />
                         </div>
                     </div>
                     <h1 className="text-2xl font-bold tracking-tight text-themed-primary">{t("login.welcome")}</h1>
