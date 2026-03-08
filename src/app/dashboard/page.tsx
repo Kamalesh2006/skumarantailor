@@ -631,8 +631,13 @@ export default function DashboardPage() {
                                     await updateOrder(orderId, { status: next as OrderStatus });
                                     loadData();
 
-                                    // Prompt notification on Ready or Delivered
-                                    if (next === "Ready" || next === "Delivered") {
+                                    // Only prompt notification on explicit important transitions:
+                                    // Stitching -> Ready
+                                    // Ready -> Delivered
+                                    const isBecomingReady = currentStatus === "Stitching" && next === "Ready";
+                                    const isBecomingDelivered = currentStatus === "Ready" && next === "Delivered";
+
+                                    if (isBecomingReady || isBecomingDelivered) {
                                         const order = orders.find((o) => o.orderId === orderId);
                                         if (order) {
                                             setStatusNotify({

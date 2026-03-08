@@ -2,12 +2,11 @@
 
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { OrderData, getOrdersByPhone } from "@/lib/firestore";
+import LogoLoading from "@/components/LogoLoading";
 import {
     PackageSearch,
-    Loader2,
     Scissors,
     CheckCircle2,
     Circle,
@@ -31,7 +30,6 @@ const STATUS_KEYS = [
 ];
 
 function TrackingPageContent() {
-    const { user } = useAuth();
     const { t } = useLanguage();
     const [orders, setOrders] = useState<OrderData[]>([]);
     const [phoneQuery, setPhoneQuery] = useState("");
@@ -65,16 +63,8 @@ function TrackingPageContent() {
             const clean = phoneParam.startsWith("+") ? phoneParam : `+91${phoneParam}`;
             setPhoneQuery(clean);
             loadData(clean);
-        } else if (user?.email) {
-            // If admin is logged in, extract phone from email (e.g. 919876543210@...)
-            const match = user.email.match(/^91(\d+)@/);
-            if (match) {
-                const phone = `+91${match[1]}`;
-                setPhoneQuery(phone);
-                loadData(phone);
-            }
         }
-    }, [user, loadData, searchParams]);
+    }, [loadData, searchParams]);
 
     // Get status index for stepper
     const getStatusIndex = (status: string) => {
@@ -88,14 +78,14 @@ function TrackingPageContent() {
             {/* Header */}
             <div className="relative overflow-hidden" style={{ borderBottom: "1px solid var(--border-color)" }}>
                 <div className="absolute inset-0 bg-gradient-to-r from-sky-600/10 via-transparent to-sky-500/5" />
-                <div className="relative mx-auto max-w-7xl px-4 py-6 lg:px-8">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-xl brand-gradient shadow-lg shadow-sky-500/20">
-                            <PackageSearch className="h-5 w-5 text-white" />
+                <div className="relative mx-auto max-w-7xl px-4 py-8 lg:px-8">
+                    <div className="flex items-start sm:items-center gap-4">
+                        <div className="flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-xl brand-gradient shadow-lg shadow-sky-500/20">
+                            <PackageSearch className="h-6 w-6 text-white" />
                         </div>
-                        <div>
-                            <h1 className="text-xl font-bold tracking-tight text-themed-primary">{t("track.title")}</h1>
-                            <p className="text-sm text-themed-secondary">{t("track.subtitle")}</p>
+                        <div className="flex-1">
+                            <h1 className="text-2xl font-bold tracking-tight text-themed-primary leading-tight">{t("track.title")}</h1>
+                            <p className="text-sm text-themed-secondary mt-1">{t("track.subtitle")}</p>
                         </div>
                     </div>
                 </div>
@@ -117,18 +107,18 @@ function TrackingPageContent() {
                             onClick={async () => {
                                 await loadData(phoneQuery);
                             }}
-                            className="btn-primary"
+                            className="btn-primary min-w-[140px] flex justify-center items-center"
                             disabled={!phoneQuery.trim() || searching}
                         >
-                            {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Find Orders"}
+                            {searching ? <LogoLoading size={20} /> : "Find Orders"}
                         </button>
                     </div>
                     {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
                 </div>
 
                 {searching ? (
-                    <div className="flex items-center justify-center py-20">
-                        <Loader2 className="h-8 w-8 text-sky-500 animate-spin" />
+                    <div className="flex items-center justify-center py-24">
+                        <LogoLoading size={48} />
                     </div>
                 ) : hasSearched && (
                     <div className="space-y-6 animate-fade-in">
@@ -158,9 +148,9 @@ function TrackingPageContent() {
                                                         </span>
                                                     )}
                                                 </div>
-                                                <div className="flex items-center gap-4 mt-1 text-xs text-themed-muted">
+                                                <div className="flex items-center gap-x-4 gap-y-2 mt-2 text-xs text-themed-muted flex-wrap">
                                                     <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {t("common.due")}: {order.targetDeliveryDate}</span>
-                                                    <span className="flex items-center gap-1"><IndianRupee className="h-3 w-3" /> ₹{order.basePrice + order.rushFee}</span>
+                                                    <span className="flex items-center gap-1"><IndianRupee className="h-3 w-3" /> ₹{order.basePrice + (order.rushFee || 0)}</span>
                                                     {order.binLocation && (
                                                         <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {order.binLocation}</span>
                                                     )}
@@ -193,7 +183,7 @@ function TrackingPageContent() {
                                                             >
                                                                 <step.icon className="h-3.5 w-3.5" />
                                                             </div>
-                                                            <span className={`text-xs font-medium ${isComplete ? "text-themed-primary" : "text-themed-muted"}`}>
+                                                            <span className={`text-[10px] sm:text-xs font-medium text-center whitespace-normal leading-tight mt-1 ${isComplete ? "text-themed-primary" : "text-themed-muted"}`}>
                                                                 {statusLabel(step.key)}
                                                             </span>
                                                         </div>
@@ -258,7 +248,7 @@ export default function TrackingPage() {
     return (
         <Suspense fallback={
             <div className="flex min-h-screen items-center justify-center">
-                <Loader2 className="h-8 w-8 text-sky-500 animate-spin" />
+                <LogoLoading size={48} />
             </div>
         }>
             <TrackingPageContent />

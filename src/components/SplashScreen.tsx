@@ -67,47 +67,27 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                     opacity: phase === "enter" ? 0 : undefined,
                 }}
             >
-                {/* Logo container with animated ring */}
-                <div className="relative">
-                    {/* Outer spinning ring */}
+                {/* Logo container with simple glow */}
+                <div className="relative flex items-center justify-center p-4">
+                    {/* Pulsing ambient glow behind icon */}
                     <div
-                        className="absolute -inset-5 rounded-[32px]"
+                        className="absolute inset-0 rounded-full"
                         style={{
-                            border: "2px solid transparent",
-                            borderTopColor: "rgba(14, 165, 233, 0.4)",
-                            borderRightColor: "rgba(14, 165, 233, 0.15)",
-                            animation: "splashSpin 1.5s linear infinite",
+                            boxShadow: "0 0 60px rgba(14, 165, 233, 0.4), 0 0 100px rgba(14, 165, 233, 0.2)",
+                            animation: "splashRingPulse 2s ease-in-out infinite",
                         }}
                     />
 
-                    {/* Pulsing glow ring */}
+                    {/* Icon Floating */}
                     <div
-                        className="absolute -inset-3 rounded-[28px]"
+                        className="relative z-10"
                         style={{
-                            boxShadow: "0 0 30px rgba(14, 165, 233, 0.2), 0 0 60px rgba(14, 165, 233, 0.1)",
-                            animation: "splashRingPulse 1.2s ease-in-out infinite",
-                        }}
-                    />
-
-                    {/* Icon */}
-                    <div
-                        className="relative flex h-28 w-28 items-center justify-center rounded-3xl brand-gradient shadow-2xl overflow-hidden"
-                        style={{
-                            boxShadow: "0 0 40px rgba(14, 165, 233, 0.3), 0 20px 60px rgba(14, 165, 233, 0.2)",
+                            animation: "splashIconFloat 3s ease-in-out infinite",
                         }}
                     >
                         <TailorIcon
-                            className="text-white drop-shadow-lg"
-                            size={72}
-                        />
-
-                        {/* Shimmer sweep */}
-                        <div
-                            className="absolute inset-0"
-                            style={{
-                                background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%)",
-                                animation: "splashShimmer 2s ease-in-out infinite",
-                            }}
+                            className="text-themed-primary drop-shadow-[0_0_15px_rgba(14,165,233,0.5)]"
+                            size={120}
                         />
                     </div>
                 </div>
