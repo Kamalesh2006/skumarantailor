@@ -7,7 +7,6 @@ import { useLanguage } from "@/lib/LanguageContext";
 import { getSettings, SettingsData } from "@/lib/firestore";
 import TailorIcon from "@/components/TailorIcon";
 import {
-  Sparkles,
   Scissors,
   Wrench,
   GemIcon,
@@ -347,20 +346,25 @@ export default function Home() {
 
           <div className="relative z-10 flex flex-col items-center gap-8 px-6 text-center max-w-3xl mx-auto pointer-events-none">
             {/* Animated logo with rings */}
-            <div className="relative home-stagger-1 pointer-events-auto">
-              <div className="home-logo-ring" />
-              <div className="home-logo-ring-2" />
-              <div className="flex h-24 w-24 items-center justify-center rounded-3xl brand-gradient shadow-2xl shadow-sky-500/30"
-                style={{ animation: "splashIconFloat 4s ease-in-out infinite" }}>
-                <TailorIcon className="text-white" size={48} />
+            <div className="relative home-stagger-1 pointer-events-auto" style={{ width: "400px", height: "280px" }}>
+              {/* Centered sewing machine */}
+              <div className="absolute inset-0 flex items-center justify-center" style={{ animation: "splashIconFloat 4s ease-in-out infinite" }}>
+                <TailorIcon size={260} />
               </div>
-              <div className="absolute -top-2 -right-2">
-                <Sparkles className="h-6 w-6 text-sky-400 animate-pulse" />
+
+              {/* Orbiting scissors */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div style={{ position: "absolute", animation: "heroOrbitCW 6s linear infinite" }}>
+                  <Scissors className="h-5 w-5 text-sky-400/70" />
+                </div>
+                <div style={{ position: "absolute", animation: "heroOrbitCCW 8s linear infinite" }}>
+                  <Scissors className="h-4 w-4 text-indigo-400/60" style={{ transform: "scaleX(-1)" }} />
+                </div>
               </div>
             </div>
 
             {/* Brand Title — Gradient */}
-            <div className="home-stagger-2">
+            <div className="home-stagger-2 mt-4">
               <h1 className="home-brand-title text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight">
                 {t("app.name")}
               </h1>

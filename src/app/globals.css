@@ -254,3 +254,29 @@ input[type="range"]::-moz-range-thumb {
     background-position: 100% 50%;
   }
 }
+
+/* Hero scissors orbit animations */
+@keyframes heroOrbitCW {
+  from { transform: rotate(0deg) translateX(190px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(190px) rotate(-360deg); }
+}
+
+@keyframes heroOrbitCCW {
+  from { transform: rotate(0deg) translateX(170px) rotate(0deg); }
+  to { transform: rotate(-360deg) translateX(170px) rotate(360deg); }
+}
+
+@keyframes splashIconFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes threadFlow {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -28; }
+}
+
+@keyframes spoolBob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(3deg); }
+}
