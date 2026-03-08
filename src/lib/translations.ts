@@ -3,7 +3,7 @@ export type Language = "en" | "ta";
 export const translations: Record<string, Record<Language, string>> = {
     // ─── Common ───
     "app.name": { en: "S Kumaran Tailors", ta: "எஸ் குமரன் டெய்லர்ஸ்" },
-    "app.tagline": { en: "Since 1990 • Cuddalore", ta: "1990 முதல் • கடலூர்" },
+    "app.tagline": { en: "Since 1986 • Cuddalore", ta: "1986 முதல் • கடலூர்" },
     "common.save": { en: "Save", ta: "சேமி" },
     "common.cancel": { en: "Cancel", ta: "ரத்து" },
     "common.close": { en: "Close", ta: "மூடு" },
@@ -182,7 +182,7 @@ export const translations: Record<string, Record<Language, string>> = {
 
     // ─── Home Page ───
     "home.hero.title": { en: "Crafting Elegance, One Stitch at a Time", ta: "ஒவ்வொரு தையலிலும் நேர்த்தி" },
-    "home.hero.subtitle": { en: "Premium tailoring services in Cuddalore since 1990. Custom-made garments with precision, quality, and care.", ta: "1990 முதல் கடலூரில் தரமான தையல் சேவை. துல்லியம், தரம் மற்றும் அக்கறையுடன் தனிப்பயன் ஆடைகள்." },
+    "home.hero.subtitle": { en: "Premium tailoring services in Cuddalore since 1986. Custom-made garments with precision, quality, and care.", ta: "1986 முதல் கடலூரில் தரமான தையல் சேவை. துல்லியம், தரம் மற்றும் அக்கறையுடன் தனிப்பயன் ஆடைகள்." },
     "home.hero.cta": { en: "Get Started", ta: "தொடங்குங்கள்" },
     "home.hero.trackOrder": { en: "Track Order", ta: "ஆர்டர் பின்தொடர்" },
     "home.services.title": { en: "Our Services", ta: "எங்கள் சேவைகள்" },
@@ -195,7 +195,7 @@ export const translations: Record<string, Record<Language, string>> = {
     "home.services.express": { en: "Express Delivery", ta: "அவசர டெலிவரி" },
     "home.services.expressDesc": { en: "Rush orders available with priority stitching and quick turnaround.", ta: "முன்னுரிமை தையல் மற்றும் விரைவான டெலிவரி உடன் அவசர ஆர்டர்கள்." },
     "home.about.title": { en: "About Us", ta: "எங்களை பற்றி" },
-    "home.about.text": { en: "S Kumaran Tailors has been Cuddalore's most trusted tailoring shop for over 30 years. Founded in 1990, we specialize in men's and women's custom tailoring, wedding collections, and alteration services. Our master tailors bring decades of experience to every stitch, ensuring each garment reflects your unique style with impeccable quality.", ta: "எஸ் குமரன் டெய்லர்ஸ் 30 ஆண்டுகளுக்கும் மேலாக கடலூரின் மிகவும் நம்பகமான தையல் கடையாக உள்ளது. 1990 இல் நிறுவப்பட்ட இது, ஆண்கள் மற்றும் பெண்கள் தனிப்பயன் தையல், திருமண ஆடைகள் மற்றும் மாற்ற சேவைகளில் நிபுணத்துவம் பெற்றது." },
+    "home.about.text": { en: "S Kumaran Tailors has been Cuddalore's most trusted tailoring shop for over 30 years. Founded in 1986, we specialize in men's and women's custom tailoring, wedding collections, and alteration services. Our master tailors bring decades of experience to every stitch, ensuring each garment reflects your unique style with impeccable quality.", ta: "எஸ் குமரன் டெய்லர்ஸ் 30 ஆண்டுகளுக்கும் மேலாக கடலூரின் மிகவும் நம்பகமான தையல் கடையாக உள்ளது. 1986 இல் நிறுவப்பட்ட இது, ஆண்கள் மற்றும் பெண்கள் தனிப்பயன் தையல், திருமண ஆடைகள் மற்றும் மாற்ற சேவைகளில் நிபுணத்துவம் பெற்றது." },
     "home.contact.title": { en: "Contact Us", ta: "தொடர்பு" },
     "home.contact.phone": { en: "Phone", ta: "தொலைபேசி" },
     "home.contact.email": { en: "Email", ta: "மின்னஞ்சல்" },

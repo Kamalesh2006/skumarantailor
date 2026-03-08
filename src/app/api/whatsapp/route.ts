@@ -22,8 +22,8 @@ export async function POST(req: Request) {
         const orders = await getOrdersByPhone(phoneNumber);
 
         // Build site URL from NEXT_PUBLIC env var or request headers
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://skumarantailor.vercel.app";
-        const trackingLink = `${siteUrl}/tracking`;
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://skumarantailors.vercel.app";
+        const trackingLink = `${siteUrl}/tracking?phone=${encodeURIComponent(phoneNumber)}`;
 
         if (orders.length === 0) {
             return new NextResponse(

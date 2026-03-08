@@ -1,73 +1,53 @@
+"use client";
+
 import React from "react";
+import Image from "next/image";
+import { useTheme } from "@/lib/ThemeContext";
 
 interface TailorIconProps {
     className?: string;
     size?: number;
+    /**
+     * If true, the image brightness is inverted so the dark sewing machine
+     * appears white — useful on dark backgrounds / brand gradient containers.
+     */
+    invertForDark?: boolean;
 }
 
 /**
- * SK monogram for S Kumaran Tailors — pure SVG, no external image.
+ * Vintage sewing machine icon for S Kumaran Tailors.
+ * Uses the actual detailed sewing machine PNG for a realistic look.
+ * CSS filter recolors it to match the blue/indigo brand theme.
  */
-export default function TailorIcon({ className = "", size = 24 }: TailorIconProps) {
+export default function TailorIcon({ className = "", size = 24, invertForDark = false }: TailorIconProps) {
+    const { theme } = useTheme();
+    const isDark = theme === "dark";
+
+    // Recolor filters:
+    // invertForDark: white silhouette (for on-gradient usage)
+    // Dark theme: bright blue so it's visible on dark backgrounds
+    // Light theme: dark navy-blue
+    let themeFilter: string;
+    if (invertForDark) {
+        themeFilter = "brightness(0) invert(1)";
+    } else if (isDark) {
+        themeFilter = "brightness(0) saturate(100%) invert(55%) sepia(80%) saturate(600%) hue-rotate(175deg) brightness(105%) contrast(95%)";
+    } else {
+        themeFilter = "brightness(0) saturate(100%) invert(20%) sepia(70%) saturate(1200%) hue-rotate(200deg) brightness(85%) contrast(95%)";
+    }
+
     return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 48 48"
+        <Image
+            src="/sewing-machine.png"
+            alt="S Kumaran Tailors - Sewing Machine"
             width={size}
             height={size}
             className={className}
-        >
-            {/* S letter */}
-            <text
-                x="8"
-                y="35"
-                fontFamily="Georgia, 'Times New Roman', serif"
-                fontWeight="bold"
-                fontSize="32"
-                fill="currentColor"
-                letterSpacing="-2"
-            >
-                S
-            </text>
-
-            {/* K letter — offset and slightly overlapping */}
-            <text
-                x="22"
-                y="35"
-                fontFamily="Georgia, 'Times New Roman', serif"
-                fontWeight="bold"
-                fontSize="32"
-                fill="currentColor"
-                letterSpacing="-1"
-            >
-                K
-            </text>
-
-            {/* Needle line crossing diagonally */}
-            <line
-                x1="6"
-                y1="38"
-                x2="42"
-                y2="8"
-                stroke="currentColor"
-                strokeWidth="1.2"
-                strokeLinecap="round"
-                opacity="0.6"
-            />
-
-            {/* Needle eye (small circle at top) */}
-            <circle cx="42" cy="8" r="1.5" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.6" />
-
-            {/* Thread from needle */}
-            <path
-                d="M42 8 Q46 12, 43 16 Q40 20, 44 23"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="0.8"
-                strokeLinecap="round"
-                opacity="0.4"
-                strokeDasharray="2 1.5"
-            />
-        </svg>
+            style={{
+                objectFit: "contain",
+                filter: themeFilter,
+            }}
+            priority
+        />
     );
 }

@@ -31,9 +31,7 @@ export default function Navbar() {
             <nav className="fixed top-0 left-0 right-0 z-50 border-b nav-bg backdrop-blur-xl" style={{ borderColor: "var(--border-color)" }}>
                 <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
                     <Link href="/" className="flex items-center gap-2.5 group">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg brand-gradient shadow-lg shadow-brand-500/20 group-hover:shadow-brand-500/40 transition-shadow">
-                            <TailorIcon className="text-white" size={20} />
-                        </div>
+                        <TailorIcon size={32} />
                         <span
                             className="text-lg font-bold tracking-tight"
                             style={{
@@ -81,9 +79,7 @@ export default function Navbar() {
                         href={role === "admin" ? "/dashboard" : "/tracking"}
                         className="flex items-center gap-2.5 group"
                     >
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg brand-gradient shadow-lg shadow-brand-500/20 group-hover:shadow-brand-500/40 transition-shadow">
-                            <TailorIcon className="text-white" size={20} />
-                        </div>
+                        <TailorIcon size={32} />
                         <span
                             className="text-lg font-bold tracking-tight"
                             style={{

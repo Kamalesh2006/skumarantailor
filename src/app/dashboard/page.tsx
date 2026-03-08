@@ -57,12 +57,15 @@ import {
     Eye,
     MessageCircle,
     Smartphone,
+    Send,
 } from "lucide-react";
 
 type Tab = "overview" | "orders" | "customers" | "monitoring" | "settings" | "logs";
 type ViewMode = "list" | "grid";
 
 import MeasurementForm from "./components/MeasurementForm";
+import QuickAddModal from "@/components/QuickAddModal";
+import TailorIcon from "@/components/TailorIcon";
 
 export default function DashboardPage() {
     const { user, role, loading: authLoading } = useAuth();
@@ -111,6 +114,17 @@ export default function DashboardPage() {
     // Logs state
     const [fetchingLogs, setFetchingLogs] = useState(false);
     const [logsContent, setLogsContent] = useState("");
+    const [showQuickAdd, setShowQuickAdd] = useState(false);
+
+    // Status change notification prompt
+    const [statusNotify, setStatusNotify] = useState<{
+        show: boolean;
+        customerName: string;
+        customerPhone: string;
+        status: string;
+        garmentType: string;
+        orderId: string;
+    } | null>(null);
 
     const loadLogs = useCallback(async () => {
         setFetchingLogs(true);
@@ -365,6 +379,66 @@ export default function DashboardPage() {
     const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
         await updateOrder(orderId, { status: newStatus });
         loadData();
+
+        // Prompt admin to notify customer on Ready or Delivered
+        if (newStatus === "Ready" || newStatus === "Delivered") {
+            const order = orders.find((o) => o.orderId === orderId);
+            if (order) {
+                setStatusNotify({
+                    show: true,
+                    customerName: order.customerName,
+                    customerPhone: order.customerPhone,
+                    status: newStatus,
+                    garmentType: order.garmentType,
+                    orderId: order.orderId,
+                });
+            }
+        }
+    };
+
+    const getStatusNotifyMessage = (name: string, phone: string, status: string, garmentType: string) => {
+        const siteUrl = "https://skumarantailors.vercel.app";
+        const trackingLink = `${siteUrl}/tracking?phone=${encodeURIComponent(phone)}`;
+        const garmentLabel = t(`garment.${garmentType}`) || garmentType;
+
+        if (status === "Ready") {
+            return (
+                `🧵 *எஸ் குமரன் டெய்லர்ஸ் | S Kumaran Tailors*\n\n` +
+                `வணக்கம் ${name}! 🙏\n` +
+                `உங்கள் ${garmentLabel} தயாராகிவிட்டது! ✅\n` +
+                `தயவுசெய்து எங்கள் கடையில் வந்து பெற்றுக்கொள்ளுங்கள்.\n\n` +
+                `Hi ${name},\nYour ${garmentType} is ready for pickup! ✅\n` +
+                `Please visit our shop to collect it.\n\n` +
+                `📍 ஆர்டர் நிலை / Track: ${trackingLink}\n` +
+                `📞 தொடர்புக்கு / Contact: +91 94428 98544\n\n` +
+                `நன்றி! Thank you! 🙏`
+            );
+        } else {
+            return (
+                `🧵 *எஸ் குமரன் டெய்லர்ஸ் | S Kumaran Tailors*\n\n` +
+                `வணக்கம் ${name}! 🙏\n` +
+                `உங்கள் ${garmentLabel} வெற்றிகரமாக வழங்கப்பட்டது! 🎉\n` +
+                `எங்கள் சேவையைப் பயன்படுத்தியதற்கு நன்றி.\n\n` +
+                `Hi ${name},\nYour ${garmentType} has been delivered! 🎉\n` +
+                `Thank you for choosing S Kumaran Tailors.\n\n` +
+                `📍 ஆர்டர் நிலை / Track: ${trackingLink}\n` +
+                `📞 தொடர்புக்கு / Contact: +91 94428 98544\n\n` +
+                `நன்றி! Thank you! 🙏`
+            );
+        }
+    };
+
+    const sendStatusWhatsApp = (phone: string, name: string, status: string, garmentType: string) => {
+        const clean = phone.replace(/[^0-9]/g, "");
+        const msg = encodeURIComponent(getStatusNotifyMessage(name, phone, status, garmentType));
+        window.open(`https://wa.me/${clean}?text=${msg}`, "_blank");
+        setStatusNotify(null);
+    };
+
+    const sendStatusSMS = (phone: string, name: string, status: string, garmentType: string) => {
+        const msg = encodeURIComponent(getStatusNotifyMessage(name, phone, status, garmentType));
+        window.open(`sms:${phone}?body=${msg}`, "_self");
+        setStatusNotify(null);
     };
 
     const handleBinUpdate = async (orderId: string, bin: string) => {
@@ -455,14 +529,23 @@ export default function DashboardPage() {
             <div className="relative overflow-hidden" style={{ borderBottom: "1px solid var(--border-color)" }}>
                 <div className="absolute inset-0 bg-gradient-to-r from-sky-600/10 via-transparent to-sky-500/5" />
                 <div className="relative mx-auto max-w-7xl px-4 py-6 lg:px-8">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-xl brand-gradient shadow-lg shadow-sky-500/20">
-                            <LayoutDashboard className="h-5 w-5 text-white" />
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <TailorIcon size={40} />
+                            <div>
+                                <h1 className="text-xl font-bold tracking-tight text-themed-primary">{t("dash.title")}</h1>
+                                <p className="text-sm text-themed-secondary">{t("dash.subtitle")}</p>
+                            </div>
                         </div>
-                        <div>
-                            <h1 className="text-xl font-bold tracking-tight text-themed-primary">{t("dash.title")}</h1>
-                            <p className="text-sm text-themed-secondary">{t("dash.subtitle")}</p>
-                        </div>
+                        <button
+                            onClick={() => setShowQuickAdd(true)}
+                            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white whitespace-nowrap shrink-0 transition-all duration-200 hover:shadow-lg hover:shadow-sky-500/20 hover:scale-[1.03] active:scale-95"
+                            style={{ background: "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)" }}
+                        >
+                            <Plus className="h-4 w-4" />
+                            <span className="hidden sm:inline">{t("quickAdd.title")}</span>
+                            <span className="sm:hidden">Add</span>
+                        </button>
                     </div>
 
                     {/* Tabs */}
@@ -482,6 +565,12 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </div>
+
+            <QuickAddModal
+                isOpen={showQuickAdd}
+                onClose={() => setShowQuickAdd(false)}
+                onOrderCreated={loadData}
+            />
 
             <div className="mx-auto max-w-7xl px-4 lg:px-8 mt-6">
                 {dataLoading ? (
@@ -541,6 +630,21 @@ export default function DashboardPage() {
                                 if (next) {
                                     await updateOrder(orderId, { status: next as OrderStatus });
                                     loadData();
+
+                                    // Prompt notification on Ready or Delivered
+                                    if (next === "Ready" || next === "Delivered") {
+                                        const order = orders.find((o) => o.orderId === orderId);
+                                        if (order) {
+                                            setStatusNotify({
+                                                show: true,
+                                                customerName: order.customerName,
+                                                customerPhone: order.customerPhone,
+                                                status: next,
+                                                garmentType: order.garmentType,
+                                                orderId: order.orderId,
+                                            });
+                                        }
+                                    }
                                 }
                             };
 
@@ -1221,20 +1325,21 @@ export default function DashboardPage() {
                             const safePage = Math.min(monitorPage, monitorTotalPages);
                             const monitorPaged = filteredMonitorUsers.slice((safePage - 1) * MONITOR_PAGE_SIZE, safePage * MONITOR_PAGE_SIZE);
 
-                            const siteUrl = typeof window !== "undefined" ? window.location.origin : "https://skumarantailor.vercel.app";
-                            const trackingLink = `${siteUrl}/tracking`;
+                            const siteUrl = "https://skumarantailors.vercel.app";
 
-                            const getMessageText = (name: string) =>
-                                `வணக்கம் ${name}! 🙏\nHi ${name}, this is S Kumaran Tailors.\n\nஉங்கள் ஆர்டர் நிலையை அறிய கீழே உள்ள இணைப்பை பாருங்கள் / Track your order status here:\n${trackingLink}\n\n📞 தொடர்புக்கு / Contact: +91 94428 98544\n\nநன்றி! Thank you! 🙏`;
+                            const getMessageText = (name: string, phone: string) => {
+                                const trackingLink = `${siteUrl}/tracking?phone=${encodeURIComponent(phone)}`;
+                                return `வணக்கம் ${name}! 🙏\nHi ${name}, this is S Kumaran Tailors.\n\nஉங்கள் ஆர்டர் நிலையை அறிய கீழே உள்ள இணைப்பை பாருங்கள் / Track your order status here:\n${trackingLink}\n\n📞 தொடர்புக்கு / Contact: +91 94428 98544\n\nநன்றி! Thank you! 🙏`;
+                            };
 
                             const openWhatsApp = (phone: string, name: string) => {
                                 const clean = phone.replace(/[^0-9]/g, "");
-                                const msg = encodeURIComponent(getMessageText(name));
+                                const msg = encodeURIComponent(getMessageText(name, phone));
                                 window.open(`https://wa.me/${clean}?text=${msg}`, "_blank");
                             };
 
                             const openSMS = (phone: string, name: string) => {
-                                const msg = encodeURIComponent(getMessageText(name));
+                                const msg = encodeURIComponent(getMessageText(name, phone));
                                 window.open(`sms:${phone}?body=${msg}`, "_self");
                             };
 
@@ -1558,6 +1663,85 @@ export default function DashboardPage() {
                     </>
                 )}
             </div>
+            {/* ─── Status Change Notification Prompt ─── */}
+            {statusNotify?.show && (
+                <div className="fixed inset-0 z-[80] flex items-center justify-center p-4"
+                    style={{ background: "rgba(0,0,0,0.5)" }}
+                    onClick={() => setStatusNotify(null)}
+                >
+                    <div
+                        className="glass-card p-6 w-full max-w-sm animate-slide-up"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                                statusNotify.status === "Ready" ? "bg-emerald-500/15" : "bg-gray-500/15"
+                            }`}>
+                                <Send className={`h-5 w-5 ${
+                                    statusNotify.status === "Ready" ? "text-emerald-500" : "text-gray-400"
+                                }`} />
+                            </div>
+                            <div>
+                                <h3 className="text-base font-bold text-themed-primary">
+                                    {statusNotify.status === "Ready" ? "Order Ready! ✅" : "Order Delivered! 🎉"}
+                                </h3>
+                                <p className="text-xs text-themed-secondary">Notify the customer?</p>
+                            </div>
+                        </div>
+
+                        {/* Customer Info */}
+                        <div className="rounded-xl p-3 mb-5" style={{ background: "var(--bg-tertiary)" }}>
+                            <p className="text-sm font-semibold text-themed-primary">{statusNotify.customerName}</p>
+                            <p className="text-xs text-themed-secondary flex items-center gap-1 mt-0.5">
+                                <Phone className="h-3 w-3" />
+                                {statusNotify.customerPhone}
+                            </p>
+                            <p className="text-xs text-themed-muted mt-1">
+                                {t(`garment.${statusNotify.garmentType}`) || statusNotify.garmentType} • {statusNotify.orderId}
+                            </p>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-3 mb-3">
+                            <button
+                                onClick={() => sendStatusWhatsApp(
+                                    statusNotify.customerPhone,
+                                    statusNotify.customerName,
+                                    statusNotify.status,
+                                    statusNotify.garmentType
+                                )}
+                                className="flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] active:scale-95"
+                                style={{ background: "#25D366" }}
+                            >
+                                <MessageCircle className="h-4 w-4" />
+                                WhatsApp
+                            </button>
+                            <button
+                                onClick={() => sendStatusSMS(
+                                    statusNotify.customerPhone,
+                                    statusNotify.customerName,
+                                    statusNotify.status,
+                                    statusNotify.garmentType
+                                )}
+                                className="flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] active:scale-95"
+                                style={{ background: "#0ea5e9" }}
+                            >
+                                <Smartphone className="h-4 w-4" />
+                                SMS
+                            </button>
+                        </div>
+
+                        {/* Skip */}
+                        <button
+                            onClick={() => setStatusNotify(null)}
+                            className="w-full py-2 text-sm text-themed-muted hover:text-themed-secondary transition-colors"
+                        >
+                            Skip notification
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

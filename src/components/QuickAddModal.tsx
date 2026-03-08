@@ -263,8 +263,8 @@ export default function QuickAddModal({ isOpen, onClose, onOrderCreated }: Quick
                 .map((s) => `• ${t(`garment.${s.garmentType}`) || s.garmentType} × ${s.count}`)
                 .join("\n");
 
-            const siteUrl = typeof window !== "undefined" ? window.location.origin : "https://skumarantailor.vercel.app";
-            const trackingLink = `${siteUrl}/tracking`;
+            const siteUrl = "https://skumarantailors.vercel.app";
+            const trackingLink = `${siteUrl}/tracking?phone=${encodeURIComponent("+91" + phoneClean)}`;
 
             const message =
                 `🧵 *எஸ் குமரன் டெய்லர்ஸ் | S Kumaran Tailors*\n\n` +
@@ -435,27 +435,36 @@ export default function QuickAddModal({ isOpen, onClose, onOrderCreated }: Quick
                                             </select>
                                         </div>
 
-                                        {/* Count with voice */}
-                                        <div className="w-24 flex-shrink-0">
+                                        {/* Count with stepper */}
+                                        <div className="flex-shrink-0">
                                             <label className="text-[10px] font-medium text-themed-muted uppercase tracking-wider block mb-1">
                                                 {t("quickAdd.count")}
                                             </label>
                                             <div className="flex items-center gap-1">
-                                                <input
-                                                    type="number"
-                                                    min={1}
-                                                    max={99}
-                                                    value={s.count}
-                                                    onChange={(e) =>
-                                                        updateSet(idx, "count", Math.max(1, parseInt(e.target.value) || 1))
-                                                    }
-                                                    className="w-full rounded-lg px-2 py-2 text-sm text-center"
-                                                    style={{
-                                                        background: "var(--input-bg)",
-                                                        border: "1px solid var(--glass-border)",
-                                                        color: "var(--text-primary)",
-                                                    }}
-                                                />
+                                                <div className="flex items-center rounded-lg overflow-hidden" style={{ border: "1px solid var(--glass-border)" }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => updateSet(idx, "count", Math.max(1, s.count - 1))}
+                                                        className="flex h-9 w-9 items-center justify-center text-themed-secondary hover:text-themed-primary transition-colors"
+                                                        style={{ background: "var(--hover-bg)" }}
+                                                    >
+                                                        <span className="text-lg font-bold leading-none">−</span>
+                                                    </button>
+                                                    <span
+                                                        className="flex h-9 w-10 items-center justify-center text-sm font-bold"
+                                                        style={{ background: "var(--input-bg)", color: "var(--text-primary)" }}
+                                                    >
+                                                        {s.count}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => updateSet(idx, "count", Math.min(99, s.count + 1))}
+                                                        className="flex h-9 w-9 items-center justify-center text-themed-secondary hover:text-themed-primary transition-colors"
+                                                        style={{ background: "var(--hover-bg)" }}
+                                                    >
+                                                        <span className="text-lg font-bold leading-none">+</span>
+                                                    </button>
+                                                </div>
                                                 {countVoice.supported && (
                                                     <button
                                                         type="button"

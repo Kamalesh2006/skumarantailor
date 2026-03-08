@@ -9,7 +9,7 @@ import AppShell from "@/components/AppShell";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "S Kumaran Tailors — Premium Tailoring Since 1990",
+  title: "S Kumaran Tailors — Premium Tailoring Since 1986",
   description:
     "Professional tailoring services by S Kumaran Tailors, Cuddalore. Track your orders, manage measurements, and experience premium craftsmanship.",
 };
