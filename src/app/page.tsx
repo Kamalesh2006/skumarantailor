@@ -112,15 +112,13 @@ export default function Home() {
   }, []);
 
   const services = [
-    { icon: Scissors, title: t("home.services.custom"), desc: t("home.services.customDesc"), gradient: "from-sky-500 to-blue-600" },
-    { icon: Wrench, title: t("home.services.alteration"), desc: t("home.services.alterationDesc"), gradient: "from-violet-500 to-purple-600" },
-    { icon: GemIcon, title: t("home.services.wedding"), desc: t("home.services.weddingDesc"), gradient: "from-amber-500 to-orange-600" },
-    { icon: Zap, title: t("home.services.express"), desc: t("home.services.expressDesc"), gradient: "from-emerald-500 to-green-600" },
+    { icon: Scissors, title: t("home.services.custom"), desc: t("home.services.customDesc"), gradient: "from-charcoal-800 to-charcoal-900" },
+    { icon: Wrench, title: t("home.services.alteration"), desc: t("home.services.alterationDesc"), gradient: "from-brown-500 to-brown-700" },
+    { icon: GemIcon, title: t("home.services.wedding"), desc: t("home.services.weddingDesc"), gradient: "from-gold-400 to-gold-600" },
+    { icon: Zap, title: t("home.services.express"), desc: t("home.services.expressDesc"), gradient: "from-brown-400 to-brown-600" },
   ];
 
   const handleGetStarted = () => {
-    // Both tracking and dashboard are now fully managed by their own auth states 
-    // but the main CTA should go to tracking for public users or login if they want
     router.push("/tracking");
   };
 
@@ -129,7 +127,7 @@ export default function Home() {
       {/* Scoped CSS for home page animations */}
       <style jsx global>{`
                 .home-brand-title {
-                    background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 40%, #a855f7 70%, #0ea5e9 100%);
+                    background: linear-gradient(135deg, #D4AF37 0%, #8B5A2B 50%, #D4AF37 100%);
                     background-size: 200% 200%;
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
@@ -144,7 +142,7 @@ export default function Home() {
                 /* Floating elements base */
                 .home-float {
                     position: absolute;
-                    color: var(--text-muted, #94a3b8);
+                    color: var(--text-muted, #7a7570);
                     opacity: 0.12;
                     animation-timing-function: ease-in-out;
                     animation-iteration-count: infinite;
@@ -163,7 +161,7 @@ export default function Home() {
                 .home-float-needle {
                     position: absolute;
                     top: 25%; right: 12%;
-                    color: var(--text-muted, #94a3b8);
+                    color: var(--text-muted, #7a7570);
                     opacity: 0.1;
                     animation: homeFloat3 9s ease-in-out infinite;
                     transform: rotate(25deg);
@@ -171,14 +169,14 @@ export default function Home() {
                 .home-float-spool {
                     position: absolute;
                     bottom: 20%; left: 5%;
-                    color: var(--text-muted, #94a3b8);
+                    color: var(--text-muted, #7a7570);
                     opacity: 0.1;
                     animation: homeFloat4 11s ease-in-out infinite;
                 }
                 .home-float-ruler {
                     position: absolute;
                     top: 70%; left: 15%;
-                    color: var(--text-muted, #94a3b8);
+                    color: var(--text-muted, #7a7570);
                     opacity: 0.07;
                     animation: homeFloat5 12s ease-in-out infinite;
                     transform: rotate(-10deg);
@@ -197,7 +195,7 @@ export default function Home() {
                 /* Thread animations */
                 .home-thread {
                     position: absolute;
-                    color: var(--text-muted, #94a3b8);
+                    color: var(--text-muted, #7a7570);
                     opacity: 0.06;
                 }
                 .home-thread-1 {
@@ -217,7 +215,7 @@ export default function Home() {
                 /* Stitch pattern */
                 .home-stitch {
                     position: absolute;
-                    color: var(--text-muted, #94a3b8);
+                    color: var(--text-muted, #7a7570);
                     opacity: 0.04;
                 }
                 .home-stitch-diagonal {
@@ -286,7 +284,7 @@ export default function Home() {
                     left: -50%;
                     width: 200%;
                     height: 200%;
-                    background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.03) 45%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 55%, transparent 60%);
+                    background: linear-gradient(45deg, transparent 40%, rgba(212,175,55,0.03) 45%, rgba(212,175,55,0.06) 50%, rgba(212,175,55,0.03) 55%, transparent 60%);
                     animation: homeShimmer 6s ease-in-out infinite;
                     pointer-events: none;
                 }
@@ -300,14 +298,14 @@ export default function Home() {
                     position: absolute;
                     inset: -8px;
                     border-radius: 1.75rem;
-                    border: 2px solid rgba(14, 165, 233, 0.2);
+                    border: 2px solid rgba(212, 175, 55, 0.2);
                     animation: homeRingPulse 3s ease-in-out infinite;
                 }
                 .home-logo-ring-2 {
                     position: absolute;
                     inset: -16px;
                     border-radius: 2.25rem;
-                    border: 1px solid rgba(14, 165, 233, 0.1);
+                    border: 1px solid rgba(212, 175, 55, 0.1);
                     animation: homeRingPulse 3s ease-in-out infinite 0.5s;
                 }
                 @keyframes homeRingPulse {
@@ -329,12 +327,12 @@ export default function Home() {
       <div className="min-h-screen" style={{ background: "var(--bg-primary)" }}>
         {/* ━━━ HERO SECTION ━━━ */}
         <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-          {/* Gradient background blobs */}
+          {/* Gradient background blobs — warm gold tones */}
           <div className="absolute inset-0">
-            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[700px] w-[700px] rounded-full bg-sky-500/8 blur-[180px]" />
-            <div className="absolute bottom-0 left-0 h-[400px] w-[500px] rounded-full bg-indigo-600/5 blur-[120px]" />
-            <div className="absolute top-0 right-0 h-[350px] w-[400px] rounded-full bg-violet-500/5 blur-[120px]" />
-            <div className="absolute bottom-1/3 right-1/4 h-[200px] w-[200px] rounded-full bg-amber-500/4 blur-[80px]" />
+            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[700px] w-[700px] rounded-full blur-[180px]" style={{ background: "rgba(212, 175, 55, 0.06)" }} />
+            <div className="absolute bottom-0 left-0 h-[400px] w-[500px] rounded-full blur-[120px]" style={{ background: "rgba(139, 90, 43, 0.04)" }} />
+            <div className="absolute top-0 right-0 h-[350px] w-[400px] rounded-full blur-[120px]" style={{ background: "rgba(212, 175, 55, 0.04)" }} />
+            <div className="absolute bottom-1/3 right-1/4 h-[200px] w-[200px] rounded-full blur-[80px]" style={{ background: "rgba(139, 90, 43, 0.03)" }} />
           </div>
 
           {/* Floating tailoring elements */}
@@ -351,20 +349,20 @@ export default function Home() {
               {/* Orbiting scissors */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div style={{ position: "absolute", animation: "heroOrbitCW 6s linear infinite" }}>
-                  <Scissors className="h-5 w-5 text-sky-400/70" />
+                  <Scissors className="h-5 w-5 text-gold-400/70" />
                 </div>
                 <div style={{ position: "absolute", animation: "heroOrbitCCW 8s linear infinite" }}>
-                  <Scissors className="h-4 w-4 text-indigo-400/60" style={{ transform: "scaleX(-1)" }} />
+                  <Scissors className="h-4 w-4 text-brown-400/60" style={{ transform: "scaleX(-1)" }} />
                 </div>
               </div>
             </div>
 
-            {/* Brand Title — Gradient */}
+            {/* Brand Title — Gold Gradient */}
             <div className="home-stagger-2 mt-4 px-2">
-              <h1 className="home-brand-title text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight">
+              <h1 className="home-brand-title font-serif text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight">
                 {t("app.name")}
               </h1>
-              <p className="mt-2 text-xs sm:text-sm font-semibold tracking-widest uppercase text-sky-500/80">
+              <p className="mt-2 text-xs sm:text-sm font-semibold tracking-widest uppercase text-gold-400/80">
                 {t("app.tagline")}
               </p>
             </div>
@@ -376,7 +374,7 @@ export default function Home() {
 
             {/* CTA Buttons */}
             <div className="flex flex-wrap gap-4 justify-center home-stagger-4 pointer-events-auto">
-              <button onClick={handleGetStarted} className="btn-primary text-base !px-8 !py-3 shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-shadow">
+              <button onClick={handleGetStarted} className="btn-primary text-base !px-8 !py-3 shadow-lg hover:shadow-xl transition-shadow">
                 {t("home.hero.cta")} <ArrowRight className="h-4 w-4" />
               </button>
               <button
@@ -398,7 +396,7 @@ export default function Home() {
         {/* ━━━ SERVICES SECTION ━━━ */}
         <section className="py-20 px-6">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-themed-primary text-center mb-4">
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-themed-primary text-center mb-4">
               {t("home.services.title")}
             </h2>
             <div className="w-16 h-1 rounded-full brand-gradient mx-auto mb-12" />
@@ -433,7 +431,7 @@ export default function Home() {
           </div>
 
           <div className="relative max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-themed-primary mb-4">
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-themed-primary mb-4">
               {t("home.about.title")}
             </h2>
             <div className="w-16 h-1 rounded-full brand-gradient mx-auto mb-8" />
@@ -448,8 +446,7 @@ export default function Home() {
                 { num: "100%", label: t("home.about.title") === "About Us" ? "Handcrafted" : "கைவினை" },
               ].map((s) => (
                 <div key={s.num}>
-                  <p className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text"
-                    style={{ backgroundImage: "linear-gradient(135deg, #0ea5e9, #6366f1)" }}>
+                  <p className="text-3xl sm:text-4xl font-bold text-gold-400">
                     {s.num}
                   </p>
                   <p className="text-sm text-themed-secondary mt-1">{s.label}</p>
@@ -462,7 +459,7 @@ export default function Home() {
         {/* ━━━ PRICING SECTION ━━━ */}
         <section className="py-20 px-6">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-themed-primary text-center mb-4">
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-themed-primary text-center mb-4">
               {t("home.pricing.title")}
             </h2>
             <div className="w-16 h-1 rounded-full brand-gradient mx-auto mb-12" />
@@ -472,7 +469,7 @@ export default function Home() {
                 {Object.entries(settings.garmentPrices || {}).map(([gType, price]) => (
                   <div key={gType} className="glass-card p-5 group hover:scale-[1.02] transition-transform flex items-center justify-between">
                     <span className="font-semibold text-themed-primary">{t(`garment.${gType}`) || gType}</span>
-                    <span className="flex items-center text-emerald-500 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-lg">
+                    <span className="flex items-center text-gold-400 font-bold bg-gold-400/10 px-2.5 py-1 rounded-lg">
                       <IndianRupee className="h-3.5 w-3.5 mr-0.5" />{price}
                     </span>
                   </div>
@@ -507,7 +504,7 @@ export default function Home() {
           </div>
 
           <div className="relative max-w-5xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-themed-primary text-center mb-4">
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-themed-primary text-center mb-4">
               {t("home.contact.title")}
             </h2>
             <div className="w-16 h-1 rounded-full brand-gradient mx-auto mb-12" />
@@ -515,7 +512,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <a href="tel:+919442898544" className="glass-card p-5 flex items-center gap-4 group hover:scale-[1.02] transition-all duration-300">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 shadow-lg flex-shrink-0 group-hover:scale-110 transition-transform">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brown-500 to-brown-700 shadow-lg flex-shrink-0 group-hover:scale-110 transition-transform">
                     <Phone className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -525,7 +522,7 @@ export default function Home() {
                 </a>
 
                 <a href="mailto:skumarantailorscuddalore@gmail.com" className="glass-card p-5 flex items-center gap-4 group hover:scale-[1.02] transition-all duration-300">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg flex-shrink-0 group-hover:scale-110 transition-transform">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-gold-400 to-gold-600 shadow-lg flex-shrink-0 group-hover:scale-110 transition-transform">
                     <Mail className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -535,8 +532,8 @@ export default function Home() {
                 </a>
 
                 <div className="glass-card p-5 flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg flex-shrink-0">
-                    <Clock className="h-5 w-5 text-white" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-charcoal-700 to-charcoal-900 shadow-lg flex-shrink-0">
+                    <Clock className="h-5 w-5 text-gold-400" />
                   </div>
                   <div>
                     <p className="text-xs text-themed-muted font-medium uppercase tracking-wider">{t("home.contact.hours")}</p>
@@ -547,7 +544,7 @@ export default function Home() {
 
               <div className="space-y-4">
                 <div className="glass-card p-5 flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 shadow-lg flex-shrink-0 mt-1">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brown-400 to-brown-600 shadow-lg flex-shrink-0 mt-1">
                     <MapPin className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -563,14 +560,14 @@ export default function Home() {
 
                 <a href="https://maps.app.goo.gl/JRro36KmqkzCneSS6" target="_blank" rel="noopener noreferrer"
                   className="glass-card p-5 flex items-center gap-4 group hover:scale-[1.02] transition-all duration-300 cursor-pointer">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 shadow-lg flex-shrink-0 group-hover:scale-110 transition-transform">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-gold-400 to-gold-600 shadow-lg flex-shrink-0 group-hover:scale-110 transition-transform">
                     <Navigation className="h-5 w-5 text-white" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-base font-semibold text-sky-500">{t("home.contact.directions")}</p>
+                    <p className="text-base font-semibold text-gold-400">{t("home.contact.directions")}</p>
                     <p className="text-xs text-themed-muted mt-0.5">Google Maps →</p>
                   </div>
-                  <ArrowRight className="h-5 w-5 text-sky-500 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="h-5 w-5 text-gold-400 group-hover:translate-x-1 transition-transform" />
                 </a>
               </div>
             </div>

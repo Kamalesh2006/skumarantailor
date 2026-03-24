@@ -79,7 +79,7 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                 <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: "var(--glass-border)" }}>
                     <div>
                         <h3 className="text-xl font-bold text-themed-primary flex items-center gap-2">
-                            <Ruler className="h-5 w-5 text-sky-500" />
+                            <Ruler className="h-5 w-5 text-gold-400" />
                             {t("dash.editCustomer")}
                         </h3>
                         <p className="text-sm text-themed-secondary mt-1">{user.phoneNumber || "New Customer"}</p>
@@ -151,13 +151,13 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                                         <div key={type} className="flex items-center">
                                             <button
                                                 onClick={() => { setActiveGarment(type); setIsAddingNew(false); }}
-                                                className={`px-3 py-1.5 text-sm font-medium rounded-l-lg border transition-colors ${activeGarment === type && !isAddingNew ? 'bg-sky-500/10 text-sky-500 border-sky-500/30' : 'text-themed-secondary border-transparent hover:bg-white/5'}`}
+                                                className={`px-3 py-1.5 text-sm font-medium rounded-l-lg border transition-colors ${activeGarment === type && !isAddingNew ? 'bg-gold-400/10 text-gold-400 border-gold-400/30' : 'text-themed-secondary border-transparent hover:bg-white/5'}`}
                                             >
                                                 {type}
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteGarment(type)}
-                                                className={`px-2 py-1.5 border-y border-r rounded-r-lg transition-colors ${activeGarment === type && !isAddingNew ? 'bg-sky-500/10 text-sky-500 border-y-sky-500/30 border-r-sky-500/30 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30' : 'text-themed-muted border-transparent hover:text-red-400 hover:bg-red-500/10'}`}
+                                                className={`px-2 py-1.5 border-y border-r rounded-r-lg transition-colors ${activeGarment === type && !isAddingNew ? 'bg-gold-400/10 text-gold-400 border-y-gold-400/30 border-r-gold-400/30 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30' : 'text-themed-muted border-transparent hover:text-red-400 hover:bg-red-500/10'}`}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </button>
@@ -167,7 +167,7 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                                     {!isAddingNew && (
                                         <button
                                             onClick={() => setIsAddingNew(true)}
-                                            className="px-3 py-1.5 text-sm font-medium rounded-lg text-themed-secondary hover:text-sky-500 hover:bg-sky-500/10 transition-colors flex items-center gap-1 border border-dashed"
+                                            className="px-3 py-1.5 text-sm font-medium rounded-lg text-themed-secondary hover:text-gold-400 hover:bg-gold-400/10 transition-colors flex items-center gap-1 border border-dashed"
                                             style={{ borderColor: "var(--glass-border)" }}
                                         >
                                             <Plus className="h-4 w-4" /> Add Profile
@@ -267,7 +267,7 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                                     measurements={currentGarmentData}
                                 />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center p-4 bg-sky-500/5 rounded-2xl border border-sky-500/10 border-dashed">
+                                <div className="w-full h-full flex items-center justify-center p-4 bg-gold-400/5 rounded-2xl border border-gold-400/10 border-dashed">
                                     <p className="text-themed-muted text-sm text-center">Select a profile<br />to view diagram</p>
                                 </div>
                             )}

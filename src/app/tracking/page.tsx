@@ -21,12 +21,12 @@ import {
 } from "lucide-react";
 
 const STATUS_KEYS = [
-    { key: "Pending", icon: Package, color: "sky" },
-    { key: "Cutting", icon: Scissors, color: "blue" },
-    { key: "Stitching", icon: Circle, color: "purple" },
-    { key: "Alteration", icon: Clock, color: "orange" },
-    { key: "Ready", icon: CheckCircle2, color: "emerald" },
-    { key: "Delivered", icon: Truck, color: "gray" },
+    { key: "Pending", icon: Package, color: "gold" },
+    { key: "Cutting", icon: Scissors, color: "brown" },
+    { key: "Stitching", icon: Circle, color: "charcoal" },
+    { key: "Alteration", icon: Clock, color: "brown" },
+    { key: "Ready", icon: CheckCircle2, color: "gold" },
+    { key: "Delivered", icon: Truck, color: "charcoal" },
 ];
 
 function TrackingPageContent() {
@@ -77,14 +77,14 @@ function TrackingPageContent() {
         <div className="min-h-screen pb-12">
             {/* Header */}
             <div className="relative overflow-hidden" style={{ borderBottom: "1px solid var(--border-color)" }}>
-                <div className="absolute inset-0 bg-gradient-to-r from-sky-600/10 via-transparent to-sky-500/5" />
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(212,175,55,0.06), transparent, rgba(139,90,43,0.03))" }} />
                 <div className="relative mx-auto max-w-7xl px-4 py-8 lg:px-8">
                     <div className="flex items-start sm:items-center gap-4">
-                        <div className="flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-xl brand-gradient shadow-lg shadow-sky-500/20">
+                        <div className="flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-xl brand-gradient shadow-lg">
                             <PackageSearch className="h-6 w-6 text-white" />
                         </div>
                         <div className="flex-1">
-                            <h1 className="text-2xl font-bold tracking-tight text-themed-primary leading-tight">{t("track.title")}</h1>
+                            <h1 className="text-2xl font-serif font-bold tracking-tight text-themed-primary leading-tight">{t("track.title")}</h1>
                             <p className="text-sm text-themed-secondary mt-1">{t("track.subtitle")}</p>
                         </div>
                     </div>
@@ -163,10 +163,10 @@ function TrackingPageContent() {
                                             <div className="relative flex items-center justify-between">
                                                 {/* Background line */}
                                                 <div className="absolute top-4 left-[8%] right-[8%] h-0.5" style={{ background: "var(--bg-tertiary)" }} />
-                                                {/* Progress line */}
+                                                {/* Progress line — gold */}
                                                 <div
-                                                    className="absolute top-4 left-[8%] h-0.5 bg-sky-500 transition-all duration-700"
-                                                    style={{ width: `${statusIdx > 0 ? (statusIdx / (STATUS_KEYS.length - 1)) * 84 : 0}%` }}
+                                                    className="absolute top-4 left-[8%] h-0.5 transition-all duration-700"
+                                                    style={{ width: `${statusIdx > 0 ? (statusIdx / (STATUS_KEYS.length - 1)) * 84 : 0}%`, background: "#D4AF37" }}
                                                 />
 
                                                 {STATUS_KEYS.map((step, i) => {
@@ -176,9 +176,9 @@ function TrackingPageContent() {
                                                         <div key={step.key} className="relative z-10 flex flex-col items-center gap-1.5">
                                                             <div
                                                                 className={`flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all ${isComplete
-                                                                    ? "border-sky-500 bg-sky-500 text-white"
+                                                                    ? "border-gold-400 bg-gold-400 text-white"
                                                                     : "text-themed-muted"
-                                                                    } ${isCurrent ? "ring-4 ring-sky-500/20" : ""}`}
+                                                                    } ${isCurrent ? "ring-4 ring-gold-400/20" : ""}`}
                                                                 style={!isComplete ? { borderColor: "var(--border-color)", background: "var(--bg-secondary)" } : {}}
                                                             >
                                                                 <step.icon className="h-3.5 w-3.5" />
@@ -201,21 +201,21 @@ function TrackingPageContent() {
                                                     <div key={step.key} className="flex items-center gap-3">
                                                         <div className="relative">
                                                             <div
-                                                                className={`flex h-7 w-7 items-center justify-center rounded-full border-2 transition-all ${isComplete ? "border-sky-500 bg-sky-500 text-white" : "text-themed-muted"
-                                                                    } ${isCurrent ? "ring-4 ring-sky-500/20" : ""}`}
+                                                                className={`flex h-7 w-7 items-center justify-center rounded-full border-2 transition-all ${isComplete ? "border-gold-400 bg-gold-400 text-white" : "text-themed-muted"
+                                                                    } ${isCurrent ? "ring-4 ring-gold-400/20" : ""}`}
                                                                 style={!isComplete ? { borderColor: "var(--border-color)", background: "var(--bg-secondary)" } : {}}
                                                             >
                                                                 <step.icon className="h-3 w-3" />
                                                             </div>
                                                             {i < STATUS_KEYS.length - 1 && (
-                                                                <div className={`absolute top-full left-1/2 -translate-x-1/2 w-0.5 h-2 ${isComplete ? "bg-sky-500" : ""}`} style={!isComplete ? { background: "var(--border-color)" } : {}} />
+                                                                <div className={`absolute top-full left-1/2 -translate-x-1/2 w-0.5 h-2 ${isComplete ? "bg-gold-400" : ""}`} style={!isComplete ? { background: "var(--border-color)" } : {}} />
                                                             )}
                                                         </div>
                                                         <span className={`text-sm font-medium ${isComplete ? "text-themed-primary" : "text-themed-muted"}`}>
                                                             {statusLabel(step.key)}
                                                         </span>
                                                         {isCurrent && (
-                                                            <ChevronRight className="h-4 w-4 text-sky-500 animate-pulse ml-auto" />
+                                                            <ChevronRight className="h-4 w-4 text-gold-400 animate-pulse ml-auto" />
                                                         )}
                                                     </div>
                                                 );

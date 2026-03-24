@@ -304,13 +304,7 @@ export default function QuickAddModal({ isOpen, onClose, onOrderCreated }: Quick
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 pb-0">
                     <h3
-                        className="text-lg font-bold"
-                        style={{
-                            background: "linear-gradient(135deg, #0ea5e9, #a855f7)",
-                            WebkitBackgroundClip: "text",
-                            WebkitTextFillColor: "transparent",
-                            backgroundClip: "text",
-                        }}
+                        className="text-lg font-serif font-bold text-gold-400"
                     >
                         {t("quickAdd.title")}
                     </h3>
@@ -354,7 +348,7 @@ export default function QuickAddModal({ isOpen, onClose, onOrderCreated }: Quick
                                         onClick={phoneVoice.toggle}
                                         className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg transition-all duration-200 ${phoneVoice.listening
                                             ? "bg-red-500/15 text-red-400 animate-pulse"
-                                            : "text-themed-muted hover:text-sky-500 hover:bg-sky-500/10"
+                                            : "text-themed-muted hover:text-gold-400 hover:bg-gold-400/10"
                                             }`}
                                         title={phoneVoice.listening ? t("quickAdd.voiceListening") : "Voice input"}
                                     >
@@ -386,7 +380,7 @@ export default function QuickAddModal({ isOpen, onClose, onOrderCreated }: Quick
                                         onClick={nameVoice.toggle}
                                         className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg transition-all duration-200 ${nameVoice.listening
                                             ? "bg-red-500/15 text-red-400 animate-pulse"
-                                            : "text-themed-muted hover:text-sky-500 hover:bg-sky-500/10"
+                                            : "text-themed-muted hover:text-gold-400 hover:bg-gold-400/10"
                                             }`}
                                         title={nameVoice.listening ? t("quickAdd.voiceListening") : "Voice input"}
                                     >
@@ -474,7 +468,7 @@ export default function QuickAddModal({ isOpen, onClose, onOrderCreated }: Quick
                                                         }}
                                                         className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-all duration-200 ${countVoice.listening && voiceTargetIndex === idx
                                                             ? "bg-red-500/15 text-red-400 animate-pulse"
-                                                            : "text-themed-muted hover:text-sky-500 hover:bg-sky-500/10"
+                                                            : "text-themed-muted hover:text-gold-400 hover:bg-gold-400/10"
                                                             }`}
                                                         title="Voice"
                                                     >
@@ -507,7 +501,7 @@ export default function QuickAddModal({ isOpen, onClose, onOrderCreated }: Quick
                             <button
                                 type="button"
                                 onClick={addSet}
-                                className="flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-500 hover:bg-sky-500/10 transition-colors"
+                                className="flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg text-xs font-medium text-gold-400 hover:bg-gold-400/10 transition-colors"
                             >
                                 <Plus className="h-3.5 w-3.5" />
                                 {t("quickAdd.addSet")}
@@ -521,8 +515,10 @@ export default function QuickAddModal({ isOpen, onClose, onOrderCreated }: Quick
                             className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
                             style={{
                                 background: isValid && !submitting
-                                    ? "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)"
+                                    ? "#2D2D2D"
                                     : "var(--bg-tertiary)",
+                                color: isValid && !submitting ? "#D4AF37" : undefined,
+                                border: isValid && !submitting ? "1px solid rgba(212, 175, 55, 0.3)" : undefined,
                             }}
                         >
                             {submitting ? (

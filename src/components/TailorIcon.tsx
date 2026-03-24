@@ -25,15 +25,17 @@ export default function TailorIcon({ className = "", size = 24, invertForDark = 
 
     // Recolor filters:
     // invertForDark: white silhouette (for on-gradient usage)
-    // Dark theme: bright blue so it's visible on dark backgrounds
-    // Light theme: dark navy-blue
+    // Dark theme: warm gold so it's visible on dark backgrounds
+    // Light theme: dark charcoal
     let themeFilter: string;
     if (invertForDark) {
         themeFilter = "brightness(0) invert(1)";
     } else if (isDark) {
-        themeFilter = "brightness(0) saturate(100%) invert(55%) sepia(80%) saturate(600%) hue-rotate(175deg) brightness(105%) contrast(95%)";
+        // Gold: #D4AF37 → warm golden tone
+        themeFilter = "brightness(0) saturate(100%) invert(72%) sepia(45%) saturate(600%) hue-rotate(10deg) brightness(95%) contrast(90%)";
     } else {
-        themeFilter = "brightness(0) saturate(100%) invert(20%) sepia(70%) saturate(1200%) hue-rotate(200deg) brightness(85%) contrast(95%)";
+        // Charcoal: #2D2D2D → dark warm charcoal
+        themeFilter = "brightness(0) saturate(100%) invert(15%) sepia(5%) saturate(200%) hue-rotate(20deg) brightness(100%) contrast(95%)";
     }
 
     return (

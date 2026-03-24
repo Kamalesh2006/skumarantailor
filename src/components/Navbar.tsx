@@ -32,34 +32,24 @@ export default function Navbar() {
                 <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
                     <Link href="/" className="flex items-center gap-2.5 group">
                         <TailorIcon size={32} />
-                        <span
-                            className="text-lg font-bold tracking-tight"
-                            style={{
-                                background: "linear-gradient(135deg, #0ea5e9 0%, #6366f1 40%, #a855f7 70%, #0ea5e9 100%)",
-                                backgroundSize: "200% 200%",
-                                WebkitBackgroundClip: "text",
-                                WebkitTextFillColor: "transparent",
-                                backgroundClip: "text",
-                                animation: "navGradientShift 4s ease-in-out infinite",
-                            }}
-                        >
+                        <span className="text-lg font-serif font-bold tracking-tight text-themed-primary">
                             {t("app.name")}
                         </span>
                     </Link>
                     <div className="flex items-center gap-4">
                         <Link
                             href="/tracking"
-                            className="hidden sm:flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:bg-sky-500/10 hover:text-sky-600"
+                            className="hidden sm:flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:bg-gold-400/10 hover:text-gold-400"
                         >
                             <span className="h-4 w-4">📦</span>
                             {t("track.trackOrder")}
                         </Link>
                         <div className="flex items-center gap-2">
-                            <button onClick={toggleLang} className="nav-icon-btn" title="Language">
+                            <button onClick={toggleLang} className="flex items-center gap-1.5 h-9 rounded-lg px-2.5 text-themed-secondary transition-all duration-200 hover:bg-gold-400/10 hover:text-gold-400" title="Language">
                                 <Languages className="h-4 w-4" />
                                 <span className="text-xs">{lang === "en" ? "தமிழ்" : "English"}</span>
                             </button>
-                            <button onClick={toggleTheme} className="nav-icon-btn" title="Theme">
+                            <button onClick={toggleTheme} className="flex items-center justify-center h-9 w-9 rounded-lg text-themed-secondary transition-all duration-200 hover:bg-gold-400/10 hover:text-gold-400" title="Theme">
                                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                             </button>
                         </div>
@@ -89,17 +79,7 @@ export default function Navbar() {
                         className="flex items-center gap-2.5 group"
                     >
                         <TailorIcon size={32} />
-                        <span
-                            className="text-lg font-bold tracking-tight"
-                            style={{
-                                background: "linear-gradient(135deg, #0ea5e9 0%, #6366f1 40%, #a855f7 70%, #0ea5e9 100%)",
-                                backgroundSize: "200% 200%",
-                                WebkitBackgroundClip: "text",
-                                WebkitTextFillColor: "transparent",
-                                backgroundClip: "text",
-                                animation: "navGradientShift 4s ease-in-out infinite",
-                            }}
-                        >
+                        <span className="text-lg font-serif font-bold tracking-tight text-themed-primary">
                             {t("app.name")}
                         </span>
                     </Link>
@@ -112,8 +92,12 @@ export default function Navbar() {
                         {role === "admin" && (
                             <button
                                 onClick={() => setShowQuickAdd(true)}
-                                className="flex items-center gap-1.5 h-9 rounded-lg px-3 text-sm font-semibold text-white transition-all duration-200 hover:shadow-lg hover:shadow-sky-500/20"
-                                style={{ background: "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)" }}
+                                className="flex items-center gap-1.5 h-9 rounded-lg px-3 text-sm font-semibold transition-all duration-200 hover:shadow-lg"
+                                style={{
+                                    background: "#2D2D2D",
+                                    color: "#D4AF37",
+                                    border: "1px solid rgba(212, 175, 55, 0.3)",
+                                }}
                             >
                                 <Plus className="h-4 w-4" />
                                 {t("quickAdd.btnLabel")}
@@ -151,7 +135,8 @@ export default function Navbar() {
                         <div className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-themed-secondary" style={{ background: "var(--hover-bg)" }}>
                             <User className="h-4 w-4" />
                             <span className="max-w-[120px] truncate">{phoneDisplay}</span>
-                            <span className="rounded-full bg-sky-500/15 px-2 py-0.5 text-xs font-medium text-sky-500 capitalize">
+                            <span className="rounded-full px-2 py-0.5 text-xs font-medium capitalize"
+                                style={{ background: "rgba(212, 175, 55, 0.15)", color: "#D4AF37" }}>
                                 {roleLabel}
                             </span>
                         </div>
@@ -215,7 +200,8 @@ export default function Navbar() {
                         <div className="flex items-center gap-2 px-2 text-sm text-themed-secondary">
                             <User className="h-4 w-4 flex-shrink-0" />
                             <span className="truncate">{phoneDisplay}</span>
-                            <span className="rounded-full bg-sky-500/15 px-2 py-0.5 text-xs font-medium text-sky-500 capitalize ml-auto">
+                            <span className="rounded-full px-2 py-0.5 text-xs font-medium capitalize ml-auto"
+                                style={{ background: "rgba(212, 175, 55, 0.15)", color: "#D4AF37" }}>
                                 {roleLabel}
                             </span>
                         </div>

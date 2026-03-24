@@ -346,7 +346,7 @@ export default function DashboardPage() {
     if (authLoading || !user || role !== "admin") {
         return (
             <div className="flex min-h-screen items-center justify-center">
-                <Loader2 className="h-8 w-8 text-sky-500 animate-spin" />
+                <Loader2 className="h-8 w-8 text-gold-400 animate-spin" />
             </div>
         );
     }
@@ -360,7 +360,7 @@ export default function DashboardPage() {
     const capacity = settings?.dailyStitchCapacity || 50;
 
     const stats = [
-        { label: t("dash.stat.activeOrders"), value: activeOrders, icon: PackageSearch, color: "text-sky-500", bg: "bg-sky-500/10" },
+        { label: t("dash.stat.activeOrders"), value: activeOrders, icon: PackageSearch, color: "text-gold-400", bg: "bg-gold-400/10" },
         { label: t("dash.stat.todayLoad"), value: `${todayLoad}/${capacity}`, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
         { label: t("dash.stat.readyPickup"), value: readyOrders, icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10" },
         { label: t("dash.stat.pendingApproval"), value: pendingOrders, icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10" },
@@ -527,20 +527,20 @@ export default function DashboardPage() {
         <div className="min-h-screen pb-12">
             {/* Header */}
             <div className="relative overflow-hidden" style={{ borderBottom: "1px solid var(--border-color)" }}>
-                <div className="absolute inset-0 bg-gradient-to-r from-sky-600/10 via-transparent to-sky-500/5" />
+                <div className="absolute inset-0 bg-gradient-to-r from-gold-500/10 via-transparent to-gold-400/5" />
                 <div className="relative mx-auto max-w-7xl px-4 py-6 lg:px-8">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <TailorIcon size={40} />
                             <div>
-                                <h1 className="text-xl font-bold tracking-tight text-themed-primary">{t("dash.title")}</h1>
+                                <h1 className="text-xl font-serif font-bold tracking-tight text-themed-primary">{t("dash.title")}</h1>
                                 <p className="text-sm text-themed-secondary">{t("dash.subtitle")}</p>
                             </div>
                         </div>
                         <button
                             onClick={() => setShowQuickAdd(true)}
-                            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white whitespace-nowrap shrink-0 transition-all duration-200 hover:shadow-lg hover:shadow-sky-500/20 hover:scale-[1.03] active:scale-95"
-                            style={{ background: "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)" }}
+                            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white whitespace-nowrap shrink-0 transition-all duration-200 hover:shadow-lg hover:shadow-gold-400/20 hover:scale-[1.03] active:scale-95"
+                            style={{ background: "linear-gradient(135deg, #D4AF37, #8B5A2B, #6f4722)" }}
                         >
                             <Plus className="h-4 w-4" />
                             <span className="hidden sm:inline">{t("quickAdd.title")}</span>
@@ -554,7 +554,7 @@ export default function DashboardPage() {
                             <button
                                 key={tb.key}
                                 onClick={() => setTab(tb.key)}
-                                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-all ${tab === tb.key ? "bg-sky-500/10 text-sky-500" : "text-themed-secondary"
+                                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-all ${tab === tb.key ? "bg-gold-400/10 text-gold-400" : "text-themed-secondary"
                                     }`}
                                 style={tab !== tb.key ? { background: "transparent" } : {}}
                             >
@@ -575,7 +575,7 @@ export default function DashboardPage() {
             <div className="mx-auto max-w-7xl px-4 lg:px-8 mt-6">
                 {dataLoading ? (
                     <div className="flex items-center justify-center py-20">
-                        <Loader2 className="h-8 w-8 text-sky-500 animate-spin" />
+                        <Loader2 className="h-8 w-8 text-gold-400 animate-spin" />
                     </div>
                 ) : (
                     <>
@@ -862,7 +862,7 @@ export default function DashboardPage() {
                                 {/* Loading State */}
                                 {searching && (
                                     <div className="flex justify-center py-8">
-                                        <Loader2 className="h-6 w-6 text-sky-500 animate-spin" />
+                                        <Loader2 className="h-6 w-6 text-gold-400 animate-spin" />
                                     </div>
                                 )}
 
@@ -872,7 +872,7 @@ export default function DashboardPage() {
                                         <Search className="h-10 w-10 mx-auto mb-3 text-themed-muted" />
                                         <p className="text-sm font-medium text-themed-primary">{t("dash.noResults")}</p>
                                         <p className="text-xs text-themed-secondary mt-1">{t("dash.noResultsHint")}</p>
-                                        {hasActiveFilters && <button onClick={clearFilters} className="mt-3 text-xs text-sky-500 hover:text-sky-400">{t("dash.clearFilters")}</button>}
+                                        {hasActiveFilters && <button onClick={clearFilters} className="mt-3 text-xs text-gold-400 hover:text-gold-300">{t("dash.clearFilters")}</button>}
                                     </div>
                                 )}
 
@@ -1069,7 +1069,7 @@ export default function DashboardPage() {
                             <div className="space-y-6 animate-fade-in">
                                 <div className="flex items-center justify-between gap-3 flex-wrap">
                                     <div className="flex items-center gap-3">
-                                        <Users className="h-6 w-6 text-sky-500" />
+                                        <Users className="h-6 w-6 text-gold-400" />
                                         <h2 className="text-2xl font-bold text-themed-primary">{t("dash.customers")} ({customerTotal})</h2>
                                     </div>
                                     <div className="flex items-center flex-wrap gap-3 w-full sm:w-auto mt-2 sm:mt-0">
@@ -1132,7 +1132,7 @@ export default function DashboardPage() {
                                 {/* Loading State */}
                                 {searching && (
                                     <div className="flex justify-center py-8">
-                                        <Loader2 className="h-6 w-6 text-sky-500 animate-spin" />
+                                        <Loader2 className="h-6 w-6 text-gold-400 animate-spin" />
                                     </div>
                                 )}
 
@@ -1142,7 +1142,7 @@ export default function DashboardPage() {
                                         <Search className="h-10 w-10 mx-auto mb-3 text-themed-muted" />
                                         <p className="text-sm font-medium text-themed-primary">{t("dash.noResults")}</p>
                                         <p className="text-xs text-themed-secondary mt-1">{t("dash.noResultsHint")}</p>
-                                        {customerSearch && <button onClick={() => setCustomerSearch("")} className="mt-3 text-xs text-sky-500 hover:text-sky-400">{t("dash.clearFilters")}</button>}
+                                        {customerSearch && <button onClick={() => setCustomerSearch("")} className="mt-3 text-xs text-gold-400 hover:text-gold-300">{t("dash.clearFilters")}</button>}
                                     </div>
                                 )}
 
@@ -1166,7 +1166,7 @@ export default function DashboardPage() {
                                                             <tr key={u.uid} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
                                                                 <td className="px-5 py-4">
                                                                     <div className="flex items-center gap-3">
-                                                                        <div className="h-8 w-8 rounded-full bg-sky-500/10 text-sky-500 flex items-center justify-center font-bold text-xs shrink-0">
+                                                                        <div className="h-8 w-8 rounded-full bg-gold-400/10 text-gold-400 flex items-center justify-center font-bold text-xs shrink-0">
                                                                             {u.name ? u.name.charAt(0).toUpperCase() : "?"}
                                                                         </div>
                                                                         <div>
@@ -1181,7 +1181,7 @@ export default function DashboardPage() {
                                                                 <td className="px-5 py-4">
                                                                     <div className="flex flex-wrap gap-1.5 max-w-[200px]">
                                                                         {Object.keys(u.measurements || {}).length > 0 ? Object.keys(u.measurements || {}).map(gType => (
-                                                                            <span key={gType} className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-sky-500/10 text-sky-500 border border-sky-500/20">
+                                                                            <span key={gType} className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gold-400/10 text-gold-400 border border-gold-400/20">
                                                                                 {gType}
                                                                             </span>
                                                                         )) : <span className="text-xs text-themed-muted italic">None</span>}
@@ -1193,7 +1193,7 @@ export default function DashboardPage() {
                                                                     </span>
                                                                 </td>
                                                                 <td className="px-5 py-4 text-right">
-                                                                    <button onClick={() => setEditingUser({ ...u })} className="p-2 rounded-lg text-themed-muted hover:text-sky-500 hover:bg-sky-500/10 transition-colors inline-flex items-center opacity-0 group-hover:opacity-100 focus:opacity-100">
+                                                                    <button onClick={() => setEditingUser({ ...u })} className="p-2 rounded-lg text-themed-muted hover:text-gold-400 hover:bg-gold-400/10 transition-colors inline-flex items-center opacity-0 group-hover:opacity-100 focus:opacity-100">
                                                                         <Edit3 className="h-4 w-4" />
                                                                     </button>
                                                                 </td>
@@ -1251,7 +1251,7 @@ export default function DashboardPage() {
                                                             <h4 className="font-semibold text-themed-primary truncate">{u.name || t("dash.unnamed")}</h4>
                                                             <p className="text-sm text-themed-secondary flex items-center gap-1 mt-0.5"><Phone className="h-3 w-3 shrink-0" /><span className="truncate">{u.phoneNumber}</span></p>
                                                         </div>
-                                                        <button onClick={() => setEditingUser({ ...u })} className="p-2 shrink-0 rounded-lg text-themed-muted hover:text-sky-500 transition-colors" style={{ background: "var(--hover-bg)" }}>
+                                                        <button onClick={() => setEditingUser({ ...u })} className="p-2 shrink-0 rounded-lg text-themed-muted hover:text-gold-400 transition-colors" style={{ background: "var(--hover-bg)" }}>
                                                             <Edit3 className="h-4 w-4" />
                                                         </button>
                                                     </div>
@@ -1261,7 +1261,7 @@ export default function DashboardPage() {
                                                         <div className="mt-4 flex flex-wrap gap-2">
                                                             {Object.keys(u.measurements).map((garmentType) => (
                                                                 <span key={garmentType} className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs border" style={{ background: "var(--hover-bg)", borderColor: "var(--glass-border)" }}>
-                                                                    <Ruler className="h-3 w-3 text-sky-500" />
+                                                                    <Ruler className="h-3 w-3 text-gold-400" />
                                                                     <span className="font-medium text-themed-primary">{t(`garment.${garmentType}`) || garmentType}</span>
                                                                     <span className="text-themed-muted ml-0.5">({Object.keys((u.measurements as Record<string, Record<string, number>>)[garmentType] || {}).length})</span>
                                                                 </span>
@@ -1353,7 +1353,7 @@ export default function DashboardPage() {
                                     <div className="glass-card p-6">
                                         {/* Header */}
                                         <div className="flex items-center gap-3 mb-5">
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brown-500/10 text-brown-500">
                                                 <Activity className="h-5 w-5" />
                                             </div>
                                             <div>
@@ -1383,14 +1383,14 @@ export default function DashboardPage() {
                                                 <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid var(--glass-border)" }}>
                                                     <button
                                                         onClick={() => setMonitorViewMode("list")}
-                                                        className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all ${monitorViewMode === "list" ? "bg-sky-500/10 text-sky-500" : "text-themed-secondary hover:text-themed-primary"
+                                                        className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all ${monitorViewMode === "list" ? "bg-gold-400/10 text-gold-400" : "text-themed-secondary hover:text-themed-primary"
                                                             }`}
                                                     >
                                                         <LayoutList className="h-3.5 w-3.5" />
                                                     </button>
                                                     <button
                                                         onClick={() => setMonitorViewMode("grid")}
-                                                        className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all ${monitorViewMode === "grid" ? "bg-sky-500/10 text-sky-500" : "text-themed-secondary hover:text-themed-primary"
+                                                        className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all ${monitorViewMode === "grid" ? "bg-gold-400/10 text-gold-400" : "text-themed-secondary hover:text-themed-primary"
                                                             }`}
                                                     >
                                                         <LayoutGrid className="h-3.5 w-3.5" />
@@ -1418,7 +1418,7 @@ export default function DashboardPage() {
                                                             <tr key={u.uid} className="transition-colors hover:bg-neutral-500/5">
                                                                 <td className="px-5 py-3.5 font-medium text-themed-primary">
                                                                     <div className="flex items-center gap-2">
-                                                                        <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-500 flex items-center justify-center text-xs text-white font-bold flex-shrink-0">
+                                                                        <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-gold-400 to-brown-500 flex items-center justify-center text-xs text-white font-bold flex-shrink-0">
                                                                             {u.name.charAt(0).toUpperCase()}
                                                                         </div>
                                                                         {u.name}
@@ -1426,7 +1426,7 @@ export default function DashboardPage() {
                                                                 </td>
                                                                 <td className="px-5 py-3.5 text-themed-secondary">{u.phoneNumber}</td>
                                                                 <td className="px-5 py-3.5 text-center">
-                                                                    <span className="inline-flex items-center justify-center min-w-[32px] rounded-full px-2 py-1 text-xs font-bold bg-indigo-500/10 text-indigo-500">
+                                                                    <span className="inline-flex items-center justify-center min-w-[32px] rounded-full px-2 py-1 text-xs font-bold bg-brown-500/10 text-brown-500">
                                                                         {u.queryCount || 0}
                                                                     </span>
                                                                 </td>
@@ -1437,7 +1437,7 @@ export default function DashboardPage() {
                                                                     <div className="flex items-center justify-end gap-1">
                                                                         <button
                                                                             onClick={() => window.open(`/tracking?phone=${encodeURIComponent(u.phoneNumber)}`, "_blank")}
-                                                                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-sky-500 hover:bg-sky-500/10 transition-all"
+                                                                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gold-400 hover:bg-gold-400/10 transition-all"
                                                                             title="View Orders"
                                                                         >
                                                                             <Eye className="h-3.5 w-3.5" />
@@ -1469,7 +1469,7 @@ export default function DashboardPage() {
                                                 {monitorPaged.map(u => (
                                                     <div key={u.uid} className="glass-card p-4 flex flex-col gap-3 hover:scale-[1.01] transition-transform">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-500 flex items-center justify-center text-sm text-white font-bold flex-shrink-0">
+                                                            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-gold-400 to-brown-500 flex items-center justify-center text-sm text-white font-bold flex-shrink-0">
                                                                 {u.name.charAt(0).toUpperCase()}
                                                             </div>
                                                             <div className="min-w-0">
@@ -1479,7 +1479,7 @@ export default function DashboardPage() {
                                                         </div>
                                                         <div className="flex items-center justify-between">
                                                             <div>
-                                                                <span className="inline-flex items-center justify-center rounded-full px-2.5 py-1 text-xs font-bold bg-indigo-500/10 text-indigo-500">
+                                                                <span className="inline-flex items-center justify-center rounded-full px-2.5 py-1 text-xs font-bold bg-brown-500/10 text-brown-500">
                                                                     {u.queryCount || 0} queries
                                                                 </span>
                                                             </div>
@@ -1490,7 +1490,7 @@ export default function DashboardPage() {
                                                         <div className="flex gap-2">
                                                             <button
                                                                 onClick={() => window.open(`/tracking?phone=${encodeURIComponent(u.phoneNumber)}`, "_blank")}
-                                                                className="flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-sky-500 hover:bg-sky-500/10 transition-all flex-1"
+                                                                className="flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-gold-400 hover:bg-gold-400/10 transition-all flex-1"
                                                                 style={{ border: "1px solid var(--glass-border)" }}
                                                             >
                                                                 <Eye className="h-3.5 w-3.5" /> View
@@ -1556,7 +1556,7 @@ export default function DashboardPage() {
                                 <div className="space-y-6">
                                     <div className="glass-card p-6">
                                         <h3 className="font-semibold text-themed-primary mb-4 flex items-center gap-2">
-                                            <Settings className="h-5 w-5 text-sky-500" /> {t("dash.capacitySettings")}
+                                            <Settings className="h-5 w-5 text-gold-400" /> {t("dash.capacitySettings")}
                                         </h3>
                                         <div>
                                             <label className="text-sm font-medium text-themed-secondary mb-2 block">{t("dash.dailyStitchCapacity")}</label>
@@ -1595,7 +1595,7 @@ export default function DashboardPage() {
                                                         </div>
                                                         <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--bg-tertiary)" }}>
                                                             <div
-                                                                className={`h-full rounded-full transition-all duration-500 ${isFull ? "bg-red-500" : "bg-sky-500"}`}
+                                                                className={`h-full rounded-full transition-all duration-500 ${isFull ? "bg-red-500" : "bg-gold-400"}`}
                                                                 style={{ width: `${pct}%` }}
                                                             />
                                                         </div>
@@ -1643,7 +1643,7 @@ export default function DashboardPage() {
                             <div className="space-y-6 animate-fade-in glass-card p-6">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-500/10 text-sky-500">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold-400/10 text-gold-400">
                                             <FileText className="h-5 w-5" />
                                         </div>
                                         <div>
@@ -1730,7 +1730,7 @@ export default function DashboardPage() {
                                     statusNotify.garmentType
                                 )}
                                 className="flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] active:scale-95"
-                                style={{ background: "#0ea5e9" }}
+                                style={{ background: "#D4AF37" }}
                             >
                                 <Smartphone className="h-4 w-4" />
                                 SMS

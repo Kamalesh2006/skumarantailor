@@ -4,42 +4,44 @@
 
 /* ─── CSS Variables — Dark (default) ─── */
 :root {
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --border-color: rgba(148, 163, 184, 0.12);
-  --brand: #0ea5e9;
-  --brand-glow: rgba(14, 165, 233, 0.15);
-  --glass-bg: rgba(30, 41, 59, 0.6);
-  --glass-border: rgba(148, 163, 184, 0.12);
-  --card-bg: rgba(30, 41, 59, 0.6);
-  --input-bg: rgba(30, 41, 59, 0.8);
-  --nav-bg: rgba(15, 23, 42, 0.8);
-  --hover-bg: rgba(51, 65, 85, 0.5);
-  --shadow-color: rgba(0, 0, 0, 0.3);
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #242424;
+  --bg-tertiary: #2e2e2e;
+  --text-primary: #F5F2F0;
+  --text-secondary: #B0AAA2;
+  --text-muted: #7a7570;
+  --border-color: rgba(212, 175, 55, 0.12);
+  --brand: #D4AF37;
+  --brand-glow: rgba(212, 175, 55, 0.15);
+  --brand-secondary: #8B5A2B;
+  --glass-bg: rgba(36, 36, 36, 0.8);
+  --glass-border: rgba(212, 175, 55, 0.1);
+  --card-bg: rgba(36, 36, 36, 0.8);
+  --input-bg: rgba(36, 36, 36, 0.9);
+  --nav-bg: rgba(26, 26, 26, 0.95);
+  --hover-bg: rgba(46, 46, 46, 0.6);
+  --shadow-color: rgba(0, 0, 0, 0.4);
 }
 
 /* ─── CSS Variables — Light ─── */
 .light {
-  --bg-primary: #f8fafc;
+  --bg-primary: #F5F2F0;
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f1f5f9;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --border-color: rgba(148, 163, 184, 0.25);
-  --brand: #0284c7;
-  --brand-glow: rgba(2, 132, 199, 0.1);
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(148, 163, 184, 0.2);
-  --card-bg: rgba(255, 255, 255, 0.8);
-  --input-bg: rgba(241, 245, 249, 0.9);
-  --nav-bg: rgba(248, 250, 252, 0.85);
-  --hover-bg: rgba(241, 245, 249, 0.8);
-  --shadow-color: rgba(0, 0, 0, 0.08);
+  --bg-tertiary: #EDE9E5;
+  --text-primary: #2D2D2D;
+  --text-secondary: #68635C;
+  --text-muted: #8C867E;
+  --border-color: rgba(139, 90, 43, 0.15);
+  --brand: #8B5A2B;
+  --brand-glow: rgba(139, 90, 43, 0.1);
+  --brand-secondary: #D4AF37;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(139, 90, 43, 0.12);
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --input-bg: rgba(237, 233, 229, 0.7);
+  --nav-bg: rgba(245, 242, 240, 0.9);
+  --hover-bg: rgba(237, 233, 229, 0.7);
+  --shadow-color: rgba(0, 0, 0, 0.06);
 }
 
 /* ─── Base Styles ─── */
@@ -74,14 +76,14 @@ body {
     transition: background-color 0.3s ease, border-color 0.3s ease;
   }
 
-  /* Brand gradient background */
+  /* Brand gradient background — gold-brown */
   .brand-gradient {
-    background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 50%, #0c4a6e 100%);
+    background: linear-gradient(135deg, #D4AF37 0%, #8B5A2B 50%, #6f4722 100%);
   }
 
-  /* Subtle brand glow */
+  /* Subtle brand glow — gold */
   .brand-glow {
-    box-shadow: 0 0 40px var(--brand-glow), 0 0 80px rgba(14, 165, 233, 0.05);
+    box-shadow: 0 0 40px var(--brand-glow), 0 0 80px rgba(212, 175, 55, 0.05);
   }
 
   /* Form inputs — touch-target safe, prevents iOS zoom */
@@ -104,18 +106,21 @@ body {
     box-shadow: 0 0 0 3px var(--brand-glow);
   }
 
-  /* Primary action button */
+  /* Primary action button — charcoal bg with gold text */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-base font-semibold text-white transition-all duration-200;
-    background: var(--brand);
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-base font-semibold transition-all duration-200;
+    background: #2D2D2D;
+    color: #D4AF37;
     min-height: 44px;
-    box-shadow: 0 4px 14px rgba(14, 165, 233, 0.25);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
   }
 
   .btn-primary:hover:not(:disabled) {
-    box-shadow: 0 8px 25px rgba(14, 165, 233, 0.35);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     transform: translateY(-1px);
-    filter: brightness(1.1);
+    background: #383838;
+    border-color: rgba(212, 175, 55, 0.5);
   }
 
   .btn-primary:active:not(:disabled) {
@@ -125,6 +130,17 @@ body {
   .btn-primary:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  /* Light mode button override */
+  .light .btn-primary {
+    background: #2D2D2D;
+    color: #F5F2F0;
+    border: 1px solid transparent;
+  }
+
+  .light .btn-primary:hover:not(:disabled) {
+    background: #383838;
   }
 
   /* Ghost/secondary button */
@@ -184,6 +200,15 @@ body {
   .nav-bg {
     background: var(--nav-bg);
   }
+
+  /* Brand accent text */
+  .text-brand {
+    color: var(--brand);
+  }
+
+  .text-brand-secondary {
+    color: var(--brand-secondary);
+  }
 }
 
 /* ─── Scrollbar Styling ─── */
@@ -197,12 +222,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.2);
+  background: rgba(212, 175, 55, 0.15);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.4);
+  background: rgba(212, 175, 55, 0.3);
 }
 
 /* ─── Custom Range Slider ─── */
@@ -224,7 +249,7 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 50%;
   background: var(--brand);
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
   transition: transform 0.15s ease;
 }
 
@@ -239,7 +264,7 @@ input[type="range"]::-moz-range-thumb {
   background: var(--brand);
   cursor: pointer;
   border: none;
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
 }
 
 /* Navbar brand gradient animation */

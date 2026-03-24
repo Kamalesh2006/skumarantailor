@@ -34,14 +34,14 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                 transition: phase === "exit" ? "opacity 600ms ease" : "none",
             }}
         >
-            {/* Animated ambient glow */}
+            {/* Animated ambient glow — gold */}
             <div className="absolute inset-0 overflow-hidden">
                 <div
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
                     style={{
                         width: "600px",
                         height: "600px",
-                        background: "radial-gradient(circle, rgba(14, 165, 233, 0.12) 0%, transparent 70%)",
+                        background: "radial-gradient(circle, rgba(212, 175, 55, 0.12) 0%, transparent 70%)",
                         animation: "splashGlowPulse 2s ease-in-out infinite",
                     }}
                 />
@@ -50,7 +50,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                     style={{
                         width: "400px",
                         height: "400px",
-                        background: "radial-gradient(circle, rgba(14, 165, 233, 0.08) 0%, transparent 70%)",
+                        background: "radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%)",
                         animation: "splashGlowPulse 2s ease-in-out 0.5s infinite",
                     }}
                 />
@@ -67,13 +67,13 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                     opacity: phase === "enter" ? 0 : undefined,
                 }}
             >
-                {/* Logo container with simple glow */}
+                {/* Logo container with gold glow */}
                 <div className="relative flex items-center justify-center p-4">
                     {/* Pulsing ambient glow behind icon */}
                     <div
                         className="absolute inset-0 rounded-full"
                         style={{
-                            boxShadow: "0 0 60px rgba(14, 165, 233, 0.4), 0 0 100px rgba(14, 165, 233, 0.2)",
+                            boxShadow: "0 0 60px rgba(212, 175, 55, 0.4), 0 0 100px rgba(212, 175, 55, 0.2)",
                             animation: "splashRingPulse 2s ease-in-out infinite",
                         }}
                     />
@@ -86,7 +86,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                         }}
                     >
                         <TailorIcon
-                            className="text-themed-primary drop-shadow-[0_0_15px_rgba(14,165,233,0.5)]"
+                            className="text-themed-primary drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]"
                             size={120}
                         />
                     </div>
@@ -99,7 +99,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                         animation: phase === "hold" ? "splashTextFadeIn 600ms 300ms ease-out both" : "none",
                     }}
                 >
-                    <h1 className="text-3xl font-bold tracking-tight text-themed-primary">
+                    <h1 className="text-3xl font-serif font-bold tracking-tight text-themed-primary">
                         {t("app.name")}
                     </h1>
                     <p className="mt-1.5 text-sm text-themed-secondary">

@@ -14,18 +14,8 @@ export default function Footer() {
                     {/* Brand */}
                     <div className="flex flex-col items-center md:items-start gap-2">
                         <div className="flex items-center gap-2">
-                            <TailorIcon className="text-sky-500" size={18} />
-                            <span
-                                className="font-bold text-sm"
-                                style={{
-                                    background: "linear-gradient(135deg, #0ea5e9 0%, #6366f1 40%, #a855f7 70%, #0ea5e9 100%)",
-                                    backgroundSize: "200% 200%",
-                                    WebkitBackgroundClip: "text",
-                                    WebkitTextFillColor: "transparent",
-                                    backgroundClip: "text",
-                                    animation: "navGradientShift 4s ease-in-out infinite",
-                                }}
-                            >
+                            <TailorIcon className="text-gold-400" size={18} />
+                            <span className="font-serif font-bold text-sm text-themed-primary">
                                 {t("app.name")}
                             </span>
                         </div>
@@ -34,13 +24,13 @@ export default function Footer() {
 
                     {/* Contact quick links */}
                     <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-themed-secondary">
-                        <a href="tel:+919442898544" className="flex items-center gap-1.5 hover:text-sky-500 transition-colors">
+                        <a href="tel:+919442898544" className="flex items-center gap-1.5 hover:text-gold-400 transition-colors">
                             <Phone className="h-3 w-3" /> +91 94428 98544
                         </a>
-                        <a href="mailto:skumarantailorscuddalore@gmail.com" className="flex items-center gap-1.5 hover:text-sky-500 transition-colors">
+                        <a href="mailto:skumarantailorscuddalore@gmail.com" className="flex items-center gap-1.5 hover:text-gold-400 transition-colors">
                             <Mail className="h-3 w-3" /> skumarantailorscuddalore@gmail.com
                         </a>
-                        <a href="https://maps.app.goo.gl/JRro36KmqkzCneSS6" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-sky-500 transition-colors">
+                        <a href="https://maps.app.goo.gl/JRro36KmqkzCneSS6" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-gold-400 transition-colors">
                             <MapPin className="h-3 w-3" /> Cuddalore, Tamil Nadu
                         </a>
                     </div>

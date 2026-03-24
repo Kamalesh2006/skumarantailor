@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { logger } from "@/lib/logger";
@@ -9,7 +10,6 @@ import TailorIcon from "@/components/TailorIcon";
 import {
     Phone,
     Lock,
-    ArrowRight,
     Loader2,
     Sparkles,
     AlertCircle,
@@ -28,6 +28,7 @@ export default function LoginPage() {
     const [countryCode] = useState("+91");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [keepSignedIn, setKeepSignedIn] = useState(false);
 
     // Redirect if already authenticated
     useEffect(() => {
@@ -56,7 +57,6 @@ export default function LoginPage() {
         try {
             const fullPhone = `${countryCode}${cleanedPhone}`;
             await login(fullPhone, password);
-            // Redirect is handled by the useEffect above
         } catch (err: unknown) {
             logger.error("Login error:", err);
             const fbErr = err as { code?: string; message?: string };
@@ -78,81 +78,115 @@ export default function LoginPage() {
 
     if (authLoading) {
         return (
-            <div className="flex min-h-screen items-center justify-center">
-                <Loader2 className="h-8 w-8 text-sky-500 animate-spin" />
+            <div className="flex min-h-screen items-center justify-center" style={{ background: "var(--bg-primary)" }}>
+                <Loader2 className="h-8 w-8 text-gold-400 animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12">
-            {/* Ambient Background */}
-            <div className="absolute inset-0">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[600px] w-[800px] rounded-full bg-sky-500/[0.07] blur-[150px]" />
-                <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-sky-700/[0.05] blur-[120px]" />
+        <div className="relative flex min-h-screen overflow-hidden">
+            {/* ─── Left Side: Hero Image Panel (Desktop) ─── */}
+            <div className="hidden lg:block lg:w-[50%] relative">
+                {/* Full-bleed image */}
+                <Image
+                    src="/tailor-hero.png"
+                    alt="Master tailor at work"
+                    fill
+                    className="object-cover"
+                    priority
+                />
+                {/* Dark overlay for contrast */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/70" />
+                {/* Gold accent line on the right edge */}
+                <div className="absolute right-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-transparent via-gold-400/40 to-transparent" />
+
+                {/* Overlay brand content — centered logo */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                    <TailorIcon invertForDark size={80} />
+                    <h1 className="font-serif text-3xl xl:text-4xl font-bold text-white tracking-tight mt-4">
+                        S. Kumaran Tailors
+                    </h1>
+                    <p className="text-xs text-gold-400/90 uppercase tracking-[0.3em] mt-2">
+                        Since 1986
+                    </p>
+                </div>
             </div>
 
-            <div className="relative w-full max-w-md animate-slide-up">
-                {/* Brand */}
-                <div className="mb-8 flex flex-col items-center text-center">
-                    <div className="relative mb-6">
-                        {/* Ambient Glow */}
-                        <div
-                            className="absolute inset-0 rounded-full"
-                            style={{
-                                boxShadow: "0 0 40px rgba(14, 165, 233, 0.3), 0 0 80px rgba(14, 165, 233, 0.15)",
-                            }}
-                        />
-                        {/* Bare Icon */}
-                        <div className="relative z-10 flex items-center justify-center p-2">
+            {/* ─── Mobile Background Image (shown only on mobile/tablet) ─── */}
+            <div className="lg:hidden absolute inset-0 z-0">
+                <Image
+                    src="/tailor-hero.png"
+                    alt="Master tailor at work"
+                    fill
+                    className="object-cover"
+                    priority
+                />
+                {/* Dark overlay to make form readable */}
+                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+            </div>
+
+            {/* ─── Right Side: Login Form ─── */}
+            <div
+                className="relative z-10 flex-1 flex items-center justify-center px-6 py-12 lg:bg-[var(--bg-primary)]"
+            >
+                <div className="w-full max-w-md animate-slide-up">
+                    {/* Mobile Brand — only visible on mobile */}
+                    <div className="mb-8 flex flex-col items-center text-center lg:hidden">
+                        <div className="relative mb-4">
                             <TailorIcon
-                                className="text-themed-primary drop-shadow-[0_0_10px_rgba(14,165,233,0.4)]"
+                                invertForDark
                                 size={56}
                             />
                         </div>
+                        <h1 className="font-serif text-2xl font-bold tracking-tight text-white">
+                            S. Kumaran Tailors
+                        </h1>
+                        <p className="text-[10px] text-gold-400/80 uppercase tracking-[0.25em] mt-1">
+                            Established 1986
+                        </p>
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight text-themed-primary">{t("login.welcome")}</h1>
-                    <p className="mt-1.5 text-sm text-themed-secondary">{t("login.subtitle")}</p>
-                </div>
 
-                {/* Card */}
-                <div className="glass-card p-6 sm:p-8 brand-glow">
+                    {/* Welcome heading */}
+                    <div className="mb-8">
+                        <h2 className="text-2xl font-bold tracking-tight text-themed-primary lg:text-themed-primary text-white">{t("login.welcome")}</h2>
+                        <p className="mt-1.5 text-sm text-white/70 lg:text-themed-secondary">{t("login.subtitle")}</p>
+                    </div>
+
+                    {/* Form */}
                     <form onSubmit={handleLogin} className="space-y-5 animate-fade-in">
                         {/* Phone Number */}
                         <div>
-                            <label htmlFor="phone" className="mb-2 block text-sm font-medium text-themed-secondary">
+                            <label htmlFor="phone" className="mb-2 block text-xs font-semibold text-white/80 lg:text-themed-secondary uppercase tracking-wider">
                                 {t("login.phoneLabel")}
                             </label>
-                            <div className="flex gap-2">
-                                <div
-                                    className="flex items-center rounded-xl px-3 text-sm font-medium min-w-[72px] justify-center text-themed-secondary"
-                                    style={{ background: "var(--input-bg)", border: "1px solid var(--glass-border)" }}
-                                >
-                                    {countryCode}
-                                </div>
-                                <div className="relative flex-1">
-                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-themed-muted" />
-                                    <input
-                                        id="phone"
-                                        type="tel"
-                                        placeholder={t("login.phonePlaceholder")}
-                                        value={phone}
-                                        onChange={(e) => setPhone(e.target.value)}
-                                        className="form-input pl-10"
-                                        maxLength={10}
-                                        autoComplete="tel"
-                                        inputMode="numeric"
-                                        autoFocus
-                                    />
-                                </div>
+                            <div className="relative">
+                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-themed-muted" />
+                                <input
+                                    id="phone"
+                                    type="tel"
+                                    placeholder={t("login.phonePlaceholder")}
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    className="form-input pl-10"
+                                    maxLength={10}
+                                    autoComplete="tel"
+                                    inputMode="numeric"
+                                    autoFocus
+                                />
                             </div>
                         </div>
 
                         {/* Password */}
                         <div>
-                            <label htmlFor="password" className="mb-2 block text-sm font-medium text-themed-secondary">
-                                கடவுச்சொல் / Password
-                            </label>
+                            <div className="flex items-center justify-between mb-2">
+                                <label htmlFor="password" className="block text-xs font-semibold text-white/80 lg:text-themed-secondary uppercase tracking-wider">
+                                    கடவுச்சொல் / PASSWORD
+                                </label>
+                                <button type="button" className="text-xs text-white/50 hover:text-gold-400 lg:text-themed-muted lg:hover:text-gold-400 transition-colors">
+                                    FORGOT?
+                                </button>
+                            </div>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-themed-muted" />
                                 <input
@@ -175,6 +209,17 @@ export default function LoginPage() {
                             </div>
                         </div>
 
+                        {/* Keep signed in */}
+                        <label className="flex items-center gap-2 text-sm text-white/70 lg:text-themed-secondary cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={keepSignedIn}
+                                onChange={(e) => setKeepSignedIn(e.target.checked)}
+                                className="rounded border-gold-400/30 accent-gold-400"
+                            />
+                            Keep me signed in for this session
+                        </label>
+
                         {error && (
                             <div className="flex items-start gap-2 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400 animate-fade-in">
                                 <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
@@ -182,23 +227,42 @@ export default function LoginPage() {
                             </div>
                         )}
 
+                        {/* Sign In Button */}
                         <button
                             type="submit"
                             disabled={loading || phone.replace(/\s/g, "").length < 10 || !password}
-                            className="btn-primary w-full"
+                            className="btn-primary w-full !py-3.5 !text-base"
                         >
                             {loading ? (
                                 <><Loader2 className="h-4 w-4 animate-spin" />உள்நுழைகிறது... / Signing in...</>
                             ) : (
-                                <>உள்நுழை / Sign In<ArrowRight className="h-4 w-4" /></>
+                                <>உள்நுழை / SIGN IN <Sparkles className="h-4 w-4" /></>
                             )}
                         </button>
                     </form>
-                </div>
 
-                <p className="mt-6 text-center text-xs text-themed-muted">
-                    {t("login.terms")}
-                </p>
+                    {/* Track Order Button */}
+                    <div className="mt-6">
+                        <button
+                            onClick={() => router.push("/tracking")}
+                            className="w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-200 hover:scale-[1.02]"
+                            style={{ border: "1px dashed rgba(212, 175, 55, 0.5)", color: "#D4AF37", background: "rgba(212, 175, 55, 0.05)" }}
+                        >
+                            <Sparkles className="h-4 w-4" />
+                            ஆர்டர் பின்தொடர் / TRACK ORDER
+                        </button>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="mt-8 text-center space-y-1">
+                        <p className="text-[11px] text-white/40 lg:text-themed-muted">
+                            Authorized Access Only. All transactions and measurements are recorded for quality assurance.
+                        </p>
+                        <p className="text-[11px] text-white/40 lg:text-themed-muted">
+                            © 2024 S. Kumaran Tailors. Measured Precision.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     );
