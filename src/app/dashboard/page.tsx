@@ -90,7 +90,7 @@ export default function DashboardPage() {
     const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
     // View mode: list (paginated) vs grid (lazy load)
-    const [viewMode, setViewMode] = useState<ViewMode>("list");
+    const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
     // List view pagination state
     const [listOrders, setListOrders] = useState<OrderData[]>([]);
@@ -163,7 +163,7 @@ export default function DashboardPage() {
     });
 
     // View mode for customers
-    const [customerViewMode, setCustomerViewMode] = useState<ViewMode>("list");
+    const [customerViewMode, setCustomerViewMode] = useState<ViewMode>("grid");
 
     // Customer list pagination state
     const [listCustomers, setListCustomers] = useState<UserData[]>([]);
@@ -185,7 +185,7 @@ export default function DashboardPage() {
     // Monitoring tab state
     const [monitorSearch, setMonitorSearch] = useState("");
     const [monitorPage, setMonitorPage] = useState(1);
-    const [monitorViewMode, setMonitorViewMode] = useState<ViewMode>("list");
+    const [monitorViewMode, setMonitorViewMode] = useState<ViewMode>("grid");
 
     useEffect(() => {
         if (!authLoading) {
