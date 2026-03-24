@@ -62,6 +62,7 @@ import {
     Send,
     Trash2,
 } from "lucide-react";
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 
 type Tab = "overview" | "orders" | "customers" | "monitoring" | "settings" | "logs";
 type ViewMode = "list" | "grid";
@@ -89,6 +90,25 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
     const [statusFilter, setStatusFilter] = useState<OrderStatus | "">("");
     const [searching, setSearching] = useState(false);
     const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Hydrate search queries from URL safely after mount
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            const q = params.get("q");
+            const dFrom = params.get("dateFrom");
+            const dTo = params.get("dateTo");
+            const st = params.get("status") as OrderStatus;
+
+            if (q) {
+                setSearchQuery(q);
+                setDebouncedQuery(q);
+            }
+            if (dFrom) setDateFrom(dFrom);
+            if (dTo) setDateTo(dTo);
+            if (st) setStatusFilter(st);
+        }
+    }, []);
 
     // View mode: list (paginated) vs grid (lazy load)
     const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -364,10 +384,10 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
     const capacity = settings?.dailyStitchCapacity || 50;
 
     const stats = [
-        { label: t("dash.stat.activeOrders"), value: activeOrders, icon: PackageSearch, color: "text-gold-400", bg: "bg-gold-400/10" },
-        { label: t("dash.stat.todayLoad"), value: `${todayLoad}/${capacity}`, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-        { label: t("dash.stat.readyPickup"), value: readyOrders, icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10" },
-        { label: t("dash.stat.pendingApproval"), value: pendingOrders, icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10" },
+        { label: t("dash.stat.activeOrders"), value: activeOrders, icon: PackageSearch, color: "text-gold-400", bg: "bg-gold-400/10", nav: "/orders" },
+        { label: t("dash.stat.todayLoad"), value: `${todayLoad}/${capacity}`, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10", nav: `/orders?dateFrom=${todayKey}&dateTo=${todayKey}` },
+        { label: t("dash.stat.readyPickup"), value: readyOrders, icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10", nav: "/orders?status=Ready" },
+        { label: t("dash.stat.pendingApproval"), value: pendingOrders, icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10", nav: "/orders?status=Pending" },
     ];
 
     const tabs: { key: Tab; label: string; icon: typeof LayoutDashboard }[] = [
@@ -698,7 +718,11 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                     {/* Stats */}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                         {stats.map((s) => (
-                                            <div key={s.label} className="glass-card p-5">
+                                            <div 
+                                                key={s.label} 
+                                                className="glass-card p-5 cursor-pointer hover:scale-[1.02] transition-transform active:scale-95"
+                                                onClick={() => router.push(s.nav)}
+                                            >
                                                 <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${s.bg} mb-3`}>
                                                     <s.icon className={`h-5 w-5 ${s.color}`} />
                                                 </div>
@@ -708,19 +732,49 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                         ))}
                                     </div>
 
-                                    {/* Capacity Bar */}
-                                    {settings && (
-                                        <div className="glass-card p-5">
-                                            <h3 className="font-semibold text-themed-primary mb-3">{t("dash.todayCapacity")}</h3>
-                                            <div className="h-4 rounded-full overflow-hidden" style={{ background: "var(--bg-tertiary)" }}>
-                                                <div
-                                                    className="h-full rounded-full brand-gradient transition-all duration-700"
-                                                    style={{ width: `${Math.min((todayLoad / capacity) * 100, 100)}%` }}
-                                                />
+                                    {/* Capacity Bar & Charts */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                        {settings && (
+                                            <div className="glass-card p-5 flex flex-col justify-center">
+                                                <h3 className="font-semibold text-themed-primary mb-3">{t("dash.todayCapacity")}</h3>
+                                                <div className="h-4 rounded-full overflow-hidden" style={{ background: "var(--bg-tertiary)" }}>
+                                                    <div
+                                                        className="h-full rounded-full brand-gradient transition-all duration-700"
+                                                        style={{ width: `${Math.min((todayLoad / capacity) * 100, 100)}%` }}
+                                                    />
+                                                </div>
+                                                <p className="text-xs text-themed-secondary mt-2">{todayLoad} {t("dash.ordersOf")} {capacity} {t("dash.ordersText")} ({Math.round((todayLoad / capacity) * 100)}%)</p>
                                             </div>
-                                            <p className="text-xs text-themed-secondary mt-2">{todayLoad} {t("dash.ordersOf")} {capacity} {t("dash.ordersText")} ({Math.round((todayLoad / capacity) * 100)}%)</p>
+                                        )}
+
+                                        <div className="glass-card p-4 h-[250px] flex flex-col justify-center">
+                                            <h3 className="font-semibold text-themed-primary mb-2 text-center text-sm">Orders by Status</h3>
+                                            {orders.length === 0 ? (
+                                                <p className="text-xs text-center text-themed-muted my-auto">No orders to display</p>
+                                            ) : (
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <PieChart>
+                                                        <Pie
+                                                            data={ORDER_STATUSES.map(s => ({ name: statusLabel(s), value: orders.filter(o => o.status === s).length, status: s })).filter(d => d.value > 0)}
+                                                            cx="50%"
+                                                            cy="50%"
+                                                            innerRadius={45}
+                                                            outerRadius={70}
+                                                            paddingAngle={3}
+                                                            dataKey="value"
+                                                            stroke="none"
+                                                        >
+                                                            {ORDER_STATUSES.map((s, index) => {
+                                                                const colors: Record<string, string> = { "Pending": "#f59e0b", "Cutting": "#3b82f6", "Stitching": "#9333ea", "Alteration": "#f97316", "Ready": "#10b981", "Delivered": "#6b7280" };
+                                                                return <Cell key={`cell-${index}`} fill={colors[s] || "#8B5A2B"} />;
+                                                            })}
+                                                        </Pie>
+                                                        <RechartsTooltip contentStyle={{ background: "var(--bg-secondary)", border: "1px solid var(--glass-border)", borderRadius: "8px", fontSize: "12px", color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }} />
+                                                    </PieChart>
+                                                </ResponsiveContainer>
+                                            )}
                                         </div>
-                                    )}
+                                    </div>
 
                                     {/* Today's Tasks Header */}
                                     <div className="flex items-center justify-between">
