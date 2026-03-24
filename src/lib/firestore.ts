@@ -324,6 +324,16 @@ export async function createUser(user: Omit<UserData, "uid">): Promise<UserData>
     return newUser;
 }
 
+export async function deleteUser(uid: string): Promise<boolean> {
+    try {
+        await deleteDoc(doc(db, "users", uid));
+        return true;
+    } catch (error) {
+        logger.error("Error deleting user", error);
+        return false;
+    }
+}
+
 // ── Settings ────────────────────────────────────────────────
 
 export async function getSettings(): Promise<SettingsData> {

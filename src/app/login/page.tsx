@@ -183,7 +183,14 @@ export default function LoginPage() {
                                 <label htmlFor="password" className="block text-xs font-semibold text-white/80 lg:text-themed-secondary uppercase tracking-wider">
                                     கடவுச்சொல் / PASSWORD
                                 </label>
-                                <button type="button" className="text-xs text-white/50 hover:text-gold-400 lg:text-themed-muted lg:hover:text-gold-400 transition-colors">
+                                <button type="button" onClick={() => {
+                                    if (phone.length >= 10) {
+                                        const text = encodeURIComponent(`Hi, I need to reset my password for my account (Phone: ${countryCode}${phone}).`);
+                                        window.open(`https://wa.me/919442898544?text=${text}`, "_blank");
+                                    } else {
+                                        setError("Please enter your registered phone number first to request a password reset.");
+                                    }
+                                }} className="text-xs text-white/50 hover:text-gold-400 lg:text-themed-muted lg:hover:text-gold-400 transition-colors">
                                     FORGOT?
                                 </button>
                             </div>

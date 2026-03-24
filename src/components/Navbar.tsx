@@ -18,44 +18,52 @@ import {
     Plus,
 } from "lucide-react";
 
+import { usePathname } from "next/navigation";
+
 export default function Navbar() {
     const { user, role, loading, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const { lang, toggleLang, t } = useLanguage();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [showQuickAdd, setShowQuickAdd] = useState(false);
+    const pathname = usePathname();
+
+    const isFullBleed = pathname === "/" || pathname === "/login";
 
     // Show minimal navbar (brand + language/theme) for unauthenticated users
     if (loading || !user) {
         return (
-            <nav className="fixed top-0 left-0 right-0 z-50 border-b nav-bg backdrop-blur-xl" style={{ borderColor: "var(--border-color)" }}>
-                <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-                    <Link href="/" className="flex items-center gap-2.5 group">
-                        <TailorIcon size={32} />
-                        <span className="text-lg font-serif font-bold tracking-tight text-themed-primary">
-                            {t("app.name")}
-                        </span>
-                    </Link>
-                    <div className="flex items-center gap-4">
-                        <Link
-                            href="/tracking"
-                            className="hidden sm:flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:bg-gold-400/10 hover:text-gold-400"
-                        >
-                            <span className="h-4 w-4">📦</span>
-                            {t("track.trackOrder")}
+            <>
+                <nav className="fixed top-0 left-0 right-0 z-50 border-b nav-bg backdrop-blur-xl" style={{ borderColor: "var(--border-color)" }}>
+                    <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+                        <Link href="/" className="flex items-center gap-2.5 group">
+                            <TailorIcon size={32} />
+                            <span className="text-lg font-serif font-bold tracking-tight text-themed-primary">
+                                {t("app.name")}
+                            </span>
                         </Link>
-                        <div className="flex items-center gap-2">
-                            <button onClick={toggleLang} className="flex items-center gap-1.5 h-9 rounded-lg px-2.5 text-themed-secondary transition-all duration-200 hover:bg-gold-400/10 hover:text-gold-400" title="Language">
-                                <Languages className="h-4 w-4" />
-                                <span className="text-xs">{lang === "en" ? "தமிழ்" : "English"}</span>
-                            </button>
-                            <button onClick={toggleTheme} className="flex items-center justify-center h-9 w-9 rounded-lg text-themed-secondary transition-all duration-200 hover:bg-gold-400/10 hover:text-gold-400" title="Theme">
-                                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                            </button>
+                        <div className="flex items-center gap-4">
+                            <Link
+                                href="/tracking"
+                                className="hidden sm:flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:bg-gold-400/10 hover:text-gold-400"
+                            >
+                                <span className="h-4 w-4">📦</span>
+                                {t("track.trackOrder")}
+                            </Link>
+                            <div className="flex items-center gap-2">
+                                <button onClick={toggleLang} className="flex items-center gap-1.5 h-9 rounded-lg px-2.5 text-themed-secondary transition-all duration-200 hover:bg-gold-400/10 hover:text-gold-400" title="Language">
+                                    <Languages className="h-4 w-4" />
+                                    <span className="text-xs">{lang === "en" ? "தமிழ்" : "English"}</span>
+                                </button>
+                                <button onClick={toggleTheme} className="flex items-center justify-center h-9 w-9 rounded-lg text-themed-secondary transition-all duration-200 hover:bg-gold-400/10 hover:text-gold-400" title="Theme">
+                                    {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </nav>
+                </nav>
+                {!isFullBleed && <div className="h-14" />}
+            </>
         );
     }
 

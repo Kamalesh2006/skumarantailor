@@ -15,6 +15,8 @@ import {
     updateUser,
     updateOrder,
     createUser,
+    deleteUser,
+    deleteOrder,
     updateSettings,
     createOrder,
     OrderData,
@@ -58,6 +60,7 @@ import {
     MessageCircle,
     Smartphone,
     Send,
+    Trash2,
 } from "lucide-react";
 
 type Tab = "overview" | "orders" | "customers" | "monitoring" | "settings" | "logs";
@@ -480,6 +483,29 @@ export default function DashboardPage() {
         }
         setEditingUser(null);
         loadData();
+    };
+
+    // ─── Delete Customer ───
+    const handleDeleteCustomer = async (uid: string, phone: string) => {
+        if (!window.confirm("Are you sure you want to delete this customer? This action is irreversible.")) return;
+
+        const confirmDeleteOrders = window.confirm("Do you also want to delete all orders for this customer?");
+
+        try {
+            await deleteUser(uid);
+            if (confirmDeleteOrders) {
+                const customerOrders = orders.filter((o) => o.customerPhone === phone);
+                for (const order of customerOrders) {
+                    await deleteOrder(order.orderId);
+                }
+            }
+            
+            // Reload all data so that the customer list reflects the changes
+            loadData();
+        } catch (e) {
+            console.error(e);
+            alert("Error deleting customer");
+        }
     };
 
     // ─── Create Order ───
@@ -1193,9 +1219,14 @@ export default function DashboardPage() {
                                                                     </span>
                                                                 </td>
                                                                 <td className="px-5 py-4 text-right">
-                                                                    <button onClick={() => setEditingUser({ ...u })} className="p-2 rounded-lg text-themed-muted hover:text-gold-400 hover:bg-gold-400/10 transition-colors inline-flex items-center opacity-0 group-hover:opacity-100 focus:opacity-100">
-                                                                        <Edit3 className="h-4 w-4" />
-                                                                    </button>
+                                                                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
+                                                                        <button onClick={() => setEditingUser({ ...u })} className="p-2 rounded-lg text-themed-muted hover:text-gold-400 hover:bg-gold-400/10 transition-colors inline-flex items-center">
+                                                                            <Edit3 className="h-4 w-4" />
+                                                                        </button>
+                                                                        <button onClick={() => handleDeleteCustomer(u.uid, u.phoneNumber)} className="p-2 rounded-lg text-themed-muted hover:text-red-500 hover:bg-red-500/10 transition-colors inline-flex items-center">
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                        </button>
+                                                                    </div>
                                                                 </td>
                                                             </tr>
                                                         ))}
@@ -1251,9 +1282,14 @@ export default function DashboardPage() {
                                                             <h4 className="font-semibold text-themed-primary truncate">{u.name || t("dash.unnamed")}</h4>
                                                             <p className="text-sm text-themed-secondary flex items-center gap-1 mt-0.5"><Phone className="h-3 w-3 shrink-0" /><span className="truncate">{u.phoneNumber}</span></p>
                                                         </div>
-                                                        <button onClick={() => setEditingUser({ ...u })} className="p-2 shrink-0 rounded-lg text-themed-muted hover:text-gold-400 transition-colors" style={{ background: "var(--hover-bg)" }}>
-                                                            <Edit3 className="h-4 w-4" />
-                                                        </button>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            <button onClick={() => setEditingUser({ ...u })} className="p-2 rounded-lg text-themed-muted hover:text-gold-400 transition-colors" style={{ background: "var(--hover-bg)" }}>
+                                                                <Edit3 className="h-4 w-4" />
+                                                            </button>
+                                                            <button onClick={() => handleDeleteCustomer(u.uid, u.phoneNumber)} className="p-2 rounded-lg text-themed-muted hover:text-red-500 transition-colors" style={{ background: "var(--hover-bg)" }}>
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </button>
+                                                        </div>
                                                     </div>
 
                                                     {/* Garment Profiles */}

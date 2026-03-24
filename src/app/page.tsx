@@ -119,7 +119,7 @@ export default function Home() {
   ];
 
   const handleGetStarted = () => {
-    router.push("/tracking");
+    router.push("/login");
   };
 
   return (
