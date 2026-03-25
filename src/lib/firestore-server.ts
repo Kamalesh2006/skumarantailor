@@ -7,6 +7,8 @@
 import { db } from "./firebase";
 import {
     collection,
+    doc,
+    setDoc,
     getDocs,
     updateDoc,
     query,
@@ -53,7 +55,7 @@ export async function getOrdersByPhone(phone: string): Promise<OrderData[]> {
 
 // ── Increment User Query Count ──────────────────────────────
 
-export async function incrementUserQueryCount(phone: string): Promise<void> {
+export async function incrementUserQueryCount(phone: string): Promise<boolean> {
     try {
         const q = query(usersCol, where("phoneNumber", "==", phone));
         const snapshot = await getDocs(q);
@@ -62,8 +64,24 @@ export async function incrementUserQueryCount(phone: string): Promise<void> {
                 queryCount: increment(1),
                 lastQueryAt: Date.now(),
             });
+            return false; // Existing user
+        } else {
+            // New user from WhatsApp unknown number
+            const uid = "user_" + Date.now().toString() + Math.random().toString(36).substring(2, 7);
+            await setDoc(doc(db, "users", uid), {
+                uid,
+                phoneNumber: phone,
+                role: "customer",
+                name: "Unknown (WhatsApp)",
+                createdAt: Date.now(),
+                queryCount: 1,
+                lastQueryAt: Date.now(),
+                measurements: {},
+            });
+            return true; // New user
         }
     } catch (error) {
         console.error("Error incrementing user query count (server)", error);
+        return false;
     }
 }

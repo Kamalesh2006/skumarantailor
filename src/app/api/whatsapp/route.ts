@@ -47,11 +47,20 @@ async function sendWhatsAppMessage(to: string, body: string): Promise<boolean> {
 
 // ── Helper: Build the bilingual order-status reply ──────────
 
-function buildOrderReply(phone: string, orders: OrderData[]): string {
+function buildOrderReply(phone: string, orders: OrderData[], isNewUser: boolean): string {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://skumarantailors.vercel.app";
     const trackingLink = `${siteUrl}/tracking?phone=${encodeURIComponent(phone)}`;
 
     if (orders.length === 0) {
+        if (isNewUser) {
+            return (
+                `🧵 *எஸ் குமரன் டெய்லர்ஸ் | S Kumaran Tailors*\n\n` +
+                `உங்கள் துணி ஆர்டர் எங்கள் சிஸ்டத்தில் இல்லை. ஒரு நாள் காத்திருங்கள், நாங்கள் அட்மினுக்கு தெரிவிப்போம். அவர்கள் ஆரடரை அப்டேட் செய்தவுடன் நீங்கள் மீண்டும் சரிபார்க்கலாம்.\n` +
+                `Your dress order is not in our system. Wait for one day we will notify the admin, they will update so you can retry one day later.\n\n` +
+                `📞 தொடர்புக்கு / Contact: +91 94428 98544\n` +
+                `🌐 வலைதளம் / Website: ${siteUrl}`
+            );
+        }
         return (
             `🧵 *எஸ் குமரன் டெய்லர்ஸ் | S Kumaran Tailors*\n\n` +
             `வணக்கம்! 🙏\n` +
@@ -144,14 +153,14 @@ export async function POST(req: Request) {
 
                     console.log(`📩 WhatsApp message from ${normalizedPhone}`);
 
-                    // 1. Increment monitoring query count
-                    await incrementUserQueryCount(normalizedPhone);
+                    // 1. Increment monitoring query count and check if new user
+                    const isNewUser = await incrementUserQueryCount(normalizedPhone);
 
                     // 2. Lookup orders
                     const orders = await getOrdersByPhone(normalizedPhone);
 
                     // 3. Build and send reply
-                    const replyText = buildOrderReply(normalizedPhone, orders);
+                    const replyText = buildOrderReply(normalizedPhone, orders, isNewUser);
                     await sendWhatsAppMessage(senderPhone, replyText);
 
                     console.log(`✅ Replied to ${normalizedPhone} with ${orders.length} order(s)`);
