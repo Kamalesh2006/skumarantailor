@@ -171,6 +171,16 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
     useEffect(() => {
         if (tab === "logs") {
             loadLogs();
+        } else if (tab === "monitoring") {
+            // Auto-refresh users when switching to Monitoring tab
+            setDataLoading(true);
+            getUsers().then(u => {
+                setAllUsers(u);
+                setDataLoading(false);
+            }).catch(err => {
+                console.error("Failed to refresh users", err);
+                setDataLoading(false);
+            });
         }
     }, [tab, loadLogs]);
 
@@ -1452,14 +1462,33 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                 <div className="space-y-6 animate-fade-in">
                                     <div className="glass-card p-6">
                                         {/* Header */}
-                                        <div className="flex items-center gap-3 mb-5">
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brown-500/10 text-brown-500">
-                                                <Activity className="h-5 w-5" />
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brown-500/10 text-brown-500">
+                                                    <Activity className="h-5 w-5" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-semibold text-themed-primary">Customer Query Monitoring</h3>
+                                                    <p className="text-sm text-themed-secondary">Track how often customers check their order status via WhatsApp or Public Tracker.</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h3 className="font-semibold text-themed-primary">Customer Query Monitoring</h3>
-                                                <p className="text-sm text-themed-secondary">Track how often customers check their order status via WhatsApp or Public Tracker.</p>
-                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    setDataLoading(true);
+                                                    getUsers().then(u => {
+                                                        setAllUsers(u);
+                                                        setDataLoading(false);
+                                                    }).catch(err => {
+                                                        console.error("Failed to refresh users", err);
+                                                        setDataLoading(false);
+                                                    });
+                                                }}
+                                                disabled={dataLoading}
+                                                className="btn-secondary h-9 px-4 text-xs font-medium flex items-center gap-2"
+                                            >
+                                                <RefreshCw className={`h-3.5 w-3.5 ${dataLoading ? "animate-spin" : ""}`} />
+                                                {dataLoading ? "Refreshing..." : "Refresh"}
+                                            </button>
                                         </div>
 
                                         {/* Controls: Search + View Toggle */}
