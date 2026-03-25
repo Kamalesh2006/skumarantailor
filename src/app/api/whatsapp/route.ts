@@ -1,76 +1,170 @@
-import { NextResponse } from "next/server";
-import { getOrdersByPhone, incrementUserQueryCount } from "@/lib/firestore";
+import { NextResponse, NextRequest } from "next/server";
+import { getOrdersByPhone, incrementUserQueryCount, OrderData } from "@/lib/firestore-server";
 
 export const revalidate = 0;
+export const dynamic = "force-dynamic";
+
+// ── Helper: Send a WhatsApp text message via Meta Cloud API ─
+
+async function sendWhatsAppMessage(to: string, body: string): Promise<boolean> {
+    const token = process.env.WHATSAPP_ACCESS_TOKEN;
+    const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+
+    if (!token || !phoneNumberId) {
+        console.error("WhatsApp credentials not configured (WHATSAPP_ACCESS_TOKEN or WHATSAPP_PHONE_NUMBER_ID)");
+        return false;
+    }
+
+    try {
+        const res = await fetch(
+            `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    messaging_product: "whatsapp",
+                    to,
+                    type: "text",
+                    text: { body },
+                }),
+            }
+        );
+
+        if (!res.ok) {
+            const err = await res.text();
+            console.error("WhatsApp send failed:", res.status, err);
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error("WhatsApp send error:", error);
+        return false;
+    }
+}
+
+// ── Helper: Build the bilingual order-status reply ──────────
+
+function buildOrderReply(phone: string, orders: OrderData[]): string {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://skumarantailors.vercel.app";
+    const trackingLink = `${siteUrl}/tracking?phone=${encodeURIComponent(phone)}`;
+
+    if (orders.length === 0) {
+        return (
+            `🧵 *எஸ் குமரன் டெய்லர்ஸ் | S Kumaran Tailors*\n\n` +
+            `வணக்கம்! 🙏\n` +
+            `Hello from S Kumaran Tailors!\n\n` +
+            `${phone} என்ற எண்ணில் ஆர்டர்கள் எதுவும் இல்லை.\n` +
+            `We couldn't find any orders under the number ${phone}.\n\n` +
+            `சமீபத்தில் ஆர்டர் செய்திருந்தால், கடையை நேரடியாக தொடர்பு கொள்ளுங்கள்.\n` +
+            `If you recently placed an order, please contact us directly.\n\n` +
+            `📞 தொடர்புக்கு / Contact: +91 94428 98544\n` +
+            `🌐 வலைதளம் / Website: ${siteUrl}`
+        );
+    }
+
+    let text =
+        `🧵 *எஸ் குமரன் டெய்லர்ஸ் | S Kumaran Tailors* ✂️\n\n` +
+        `வணக்கம்! உங்கள் ஆர்டர் நிலை:\n` +
+        `Hello! Here is the status of your orders:\n\n`;
+
+    orders.forEach((order, index) => {
+        const emoji =
+            order.status === "Ready" ? "✅" :
+            order.status === "Delivered" ? "🛍️" : "⏳";
+
+        text += `*ஆர்டர் / Order #${order.orderId}* — ${order.garmentType}\n`;
+        text += `நிலை / Status: ${emoji} ${order.status}\n`;
+        text += `டெலிவரி தேதி / Due Date: 📅 ${order.targetDeliveryDate}\n`;
+
+        if (index < orders.length - 1) {
+            text += `\n---\n\n`;
+        }
+    });
+
+    text += `\n\n📱 ஆர்டர் நிலையை இங்கே பாருங்கள் / Track your order online:\n${trackingLink}\n`;
+    text += `📞 தொடர்புக்கு / Contact: +91 94428 98544\n\n`;
+    text += `எஸ் குமரன் டெய்லர்ஸை தேர்ந்தெடுத்ததற்கு நன்றி!\nThank you for choosing S Kumaran Tailors! 🙏`;
+
+    return text;
+}
+
+// ────────────────────────────────────────────────────────────
+// GET — Webhook Verification (Meta sends this during setup)
+// ────────────────────────────────────────────────────────────
+
+export async function GET(req: NextRequest) {
+    const { searchParams } = new URL(req.url);
+
+    const mode = searchParams.get("hub.mode");
+    const token = searchParams.get("hub.verify_token");
+    const challenge = searchParams.get("hub.challenge");
+
+    const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
+
+    if (mode === "subscribe" && token === verifyToken) {
+        console.log("✅ WhatsApp webhook verified");
+        return new NextResponse(challenge, { status: 200 });
+    }
+
+    console.warn("❌ WhatsApp webhook verification failed");
+    return new NextResponse("Forbidden", { status: 403 });
+}
+
+// ────────────────────────────────────────────────────────────
+// POST — Incoming WhatsApp Messages (webhook callback)
+// ────────────────────────────────────────────────────────────
 
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const phoneNumber = body.phoneNumber;
 
-        if (!phoneNumber) {
-            return NextResponse.json(
-                { error: "phoneNumber is required in the JSON body." },
-                { status: 400, headers: { "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate" } }
-            );
+        // Meta always wraps the payload in { object, entry[] }
+        if (body.object !== "whatsapp_business_account") {
+            return NextResponse.json({ status: "ignored" }, { status: 200 });
         }
 
-        // Atomically increment the query count for monitoring
-        await incrementUserQueryCount(phoneNumber);
+        // Process each entry/change
+        for (const entry of body.entry || []) {
+            for (const change of entry.changes || []) {
+                const value = change.value;
+                if (!value?.messages) continue;
 
-        // Fetch their orders
-        const orders = await getOrdersByPhone(phoneNumber);
+                for (const message of value.messages) {
+                    // We respond to any incoming message (text, image, etc.)
+                    const senderPhone = message.from; // e.g. "919442898544"
 
-        // Build site URL from NEXT_PUBLIC env var or request headers
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://skumarantailors.vercel.app";
-        const trackingLink = `${siteUrl}/tracking?phone=${encodeURIComponent(phoneNumber)}`;
+                    // Normalize the phone number for Firestore lookup
+                    // WhatsApp sends without "+", Firestore stores with "+91"
+                    const normalizedPhone = senderPhone.startsWith("+")
+                        ? senderPhone
+                        : `+${senderPhone}`;
 
-        if (orders.length === 0) {
-            return new NextResponse(
-                `🧵 *எஸ் குமரன் டெய்லர்ஸ் | S Kumaran Tailors*\n\n` +
-                `வணக்கம்! 🙏\n` +
-                `Hello from S Kumaran Tailors!\n\n` +
-                `${phoneNumber} என்ற எண்ணில் ஆர்டர்கள் எதுவும் இல்லை.\n` +
-                `We couldn't find any orders under the number ${phoneNumber}.\n\n` +
-                `சமீபத்தில் ஆர்டர் செய்திருந்தால், கடையை நேரடியாக தொடர்பு கொள்ளுங்கள்.\n` +
-                `If you recently placed an order, please contact us directly.\n\n` +
-                `📞 தொடர்புக்கு / Contact: +91 94428 98544\n` +
-                `🌐 வலைதளம் / Website: ${siteUrl}`,
-                { status: 200, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate" } }
-            );
-        }
+                    console.log(`📩 WhatsApp message from ${normalizedPhone}`);
 
-        // Format orders for WhatsApp text (bilingual)
-        let responseText =
-            `🧵 *எஸ் குமரன் டெய்லர்ஸ் | S Kumaran Tailors* ✂️\n\n` +
-            `வணக்கம்! உங்கள் ஆர்டர் நிலை:\n` +
-            `Hello! Here is the status of your orders:\n\n`;
+                    // 1. Increment monitoring query count
+                    await incrementUserQueryCount(normalizedPhone);
 
-        orders.forEach((order, index) => {
-            const statusEmoji = order.status === "Ready" ? "✅" : (order.status === "Delivered" ? "🛍️" : "⏳");
-            responseText += `*ஆர்டர் / Order #${order.orderId}* - ${order.garmentType}\n`;
-            responseText += `நிலை / Status: ${statusEmoji} ${order.status}\n`;
-            responseText += `டெலிவரி தேதி / Due Date: 📅 ${order.targetDeliveryDate}\n`;
+                    // 2. Lookup orders
+                    const orders = await getOrdersByPhone(normalizedPhone);
 
-            if (index < orders.length - 1) {
-                responseText += `\n---\n\n`;
+                    // 3. Build and send reply
+                    const replyText = buildOrderReply(normalizedPhone, orders);
+                    await sendWhatsAppMessage(senderPhone, replyText);
+
+                    console.log(`✅ Replied to ${normalizedPhone} with ${orders.length} order(s)`);
+                }
             }
-        });
+        }
 
-        responseText += `\n\n📱 ஆர்டர் நிலையை இங்கே பாருங்கள் / Track your order online:\n${trackingLink}\n`;
-        responseText += `📞 தொடர்புக்கு / Contact: +91 94428 98544\n\n`;
-        responseText += `எஸ் குமரன் டெய்லர்ஸை தேர்ந்தெடுத்ததற்கு நன்றி!\nThank you for choosing S Kumaran Tailors! 🙏`;
-
-        return new NextResponse(responseText, {
-            status: 200,
-            headers: { "Content-Type": "text/plain", "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate" }
-        });
+        // Always return 200 to acknowledge the webhook
+        return NextResponse.json({ status: "ok" }, { status: 200 });
 
     } catch (error) {
-        console.error("WhatsApp API Error:", error);
-        return NextResponse.json(
-            { error: "Internal Server Error while resolving WhatsApp query." },
-            { status: 500, headers: { "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate" } }
-        );
+        console.error("WhatsApp Webhook Error:", error);
+        // Still return 200 to prevent Meta from retrying
+        return NextResponse.json({ status: "error" }, { status: 200 });
     }
 }
