@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import {
     getOrders,
+    getUsers,
     searchOrdersPaginated,
     searchOrdersCursor,
     searchUsersPaginated,
@@ -78,6 +79,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
 
     const tab = activeTab;
     const [orders, setOrders] = useState<OrderData[]>([]);
+    const [allUsers, setAllUsers] = useState<UserData[]>([]);
     const [settings, setSettingsState] = useState<SettingsData | null>(null);
     const [customerSearch, setCustomerSearch] = useState("");
     const [dataLoading, setDataLoading] = useState(true);
@@ -218,9 +220,10 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
     const loadData = useCallback(async () => {
         setDataLoading(true);
         try {
-            const [o, s] = await Promise.all([getOrders(), getSettings()]);
+            const [o, s, u] = await Promise.all([getOrders(), getSettings(), getUsers()]);
             setOrders(o);
             setSettingsState(s);
+            setAllUsers(u);
             setCapacityInput(String(s.dailyStitchCapacity));
             if (s.garmentPrices) {
                 const formatted: Record<string, string> = {};
@@ -1412,8 +1415,8 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                         {/* ━━━ MONITORING TAB ━━━ */}
                         {tab === "monitoring" && (() => {
                             const MONITOR_PAGE_SIZE = 8;
-                            const allMonitorUsers = [...listCustomers, ...gridCustomers]
-                                .filter((u, i, arr) => arr.findIndex(x => x.uid === u.uid) === i)
+                            const allMonitorUsers = allUsers
+                                .filter(u => u.role === "customer")
                                 .sort((a, b) => (b.queryCount || 0) - (a.queryCount || 0));
 
                             const filteredMonitorUsers = monitorSearch
