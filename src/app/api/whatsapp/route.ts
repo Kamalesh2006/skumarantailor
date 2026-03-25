@@ -55,8 +55,8 @@ function buildOrderReply(phone: string, orders: OrderData[], isNewUser: boolean)
         if (isNewUser) {
             return (
                 `🧵 *எஸ் குமரன் டெய்லர்ஸ் | S Kumaran Tailors*\n\n` +
-                `உங்கள் துணி ஆர்டர் எங்கள் சிஸ்டத்தில் இல்லை. ஒரு நாள் காத்திருங்கள், நாங்கள் அட்மினுக்கு தெரிவிப்போம். அவர்கள் ஆரடரை அப்டேட் செய்தவுடன் நீங்கள் மீண்டும் சரிபார்க்கலாம்.\n` +
-                `Your dress order is not in our system. Wait for one day we will notify the admin, they will update so you can retry one day later.\n\n` +
+                `வணக்கம்! 🙏\nஉங்கள் புதிய ஆர்டர் விவரங்கள் இன்னும் பதிவாகவில்லை. நீங்கள் சமீபத்தில் ஆர்டர் கொடுத்திருந்தால், தயவுசெய்து ஒரு நாள் பொறுத்திருங்கள். கடை உங்கள் ஆர்டரை பதிவு செய்த பிறகு மீண்டும் சரிபார்க்கலாம்.\n\n` +
+                `Hello! Your order details are not yet recorded. If you recently placed an order, please give us a day to update our system. You can check your status again tomorrow.\n\n` +
                 `📞 தொடர்புக்கு / Contact: +91 94428 98544\n` +
                 `🌐 வலைதளம் / Website: ${siteUrl}`
             );
