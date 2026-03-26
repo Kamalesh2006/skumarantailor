@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLanguage } from "@/lib/LanguageContext";
-import { OrderData, getOrdersByPhone } from "@/lib/firestore";
+import { OrderData, getOrdersByPhone, incrementUserQueryCount } from "@/lib/firestore";
 import LogoLoading from "@/components/LogoLoading";
 import {
     PackageSearch,
@@ -45,6 +45,7 @@ function TrackingPageContent() {
             const data = await getOrdersByPhone(phone);
             setOrders(data || []);
             setHasSearched(true);
+            await incrementUserQueryCount(phone, "Tracker", "Checked via website tracker");
         } catch (err) {
             console.error(err);
 

@@ -14,9 +14,16 @@ import {
     query,
     where,
     increment,
+    arrayUnion
 } from "firebase/firestore";
 
 // ── Types (mirrored from firestore.ts) ──────────────────────
+
+export interface QueryHistoryItem {
+    timestamp: number;
+    source: "WhatsApp" | "Tracker";
+    text?: string;
+}
 
 export interface OrderData {
     orderId: string;
@@ -55,19 +62,26 @@ export async function getOrdersByPhone(phone: string): Promise<OrderData[]> {
 
 // ── Increment User Query Count ──────────────────────────────
 
-export async function incrementUserQueryCount(phone: string): Promise<boolean> {
+export async function incrementUserQueryCount(phone: string, source: "WhatsApp" | "Tracker" = "WhatsApp", text?: string): Promise<boolean> {
     try {
         const q = query(usersCol, where("phoneNumber", "==", phone));
         const snapshot = await getDocs(q);
         if (!snapshot.empty) {
+            const queryItem: Partial<QueryHistoryItem> = { timestamp: Date.now(), source };
+            if (text) queryItem.text = text;
+
             await updateDoc(snapshot.docs[0].ref, {
                 queryCount: increment(1),
                 lastQueryAt: Date.now(),
+                queryHistory: arrayUnion(queryItem),
             });
             return false; // Existing user
         } else {
-            // New user from WhatsApp unknown number
+            // New user from WhatsApp unknown
             const uid = "user_" + Date.now().toString() + Math.random().toString(36).substring(2, 7);
+            const queryItem: Partial<QueryHistoryItem> = { timestamp: Date.now(), source };
+            if (text) queryItem.text = text;
+
             await setDoc(doc(db, "users", uid), {
                 uid,
                 phoneNumber: phone,
@@ -77,6 +91,7 @@ export async function incrementUserQueryCount(phone: string): Promise<boolean> {
                 queryCount: 1,
                 lastQueryAt: Date.now(),
                 measurements: {},
+                queryHistory: [queryItem],
             });
             return true; // New user
         }

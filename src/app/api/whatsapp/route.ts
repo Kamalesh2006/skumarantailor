@@ -154,7 +154,11 @@ export async function POST(req: Request) {
                     console.log(`📩 WhatsApp message from ${normalizedPhone}`);
 
                     // 1. Increment monitoring query count and check if new user
-                    const isNewUser = await incrementUserQueryCount(normalizedPhone);
+                    const isNewUser = await incrementUserQueryCount(
+                        normalizedPhone,
+                        "WhatsApp",
+                        message.text?.body || "Media/Other Message"
+                    );
 
                     // 2. Lookup orders
                     const orders = await getOrdersByPhone(normalizedPhone);

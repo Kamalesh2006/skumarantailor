@@ -219,6 +219,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
     const [monitorSearch, setMonitorSearch] = useState("");
     const [monitorPage, setMonitorPage] = useState(1);
     const [monitorViewMode, setMonitorViewMode] = useState<ViewMode>("grid");
+    const [viewingQueriesFor, setViewingQueriesFor] = useState<UserData | null>(null);
 
     useEffect(() => {
         if (!authLoading) {
@@ -1427,6 +1428,16 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                             const MONITOR_PAGE_SIZE = 8;
                             const allMonitorUsers = allUsers
                                 .filter(u => u.role === "customer")
+                                .map(u => {
+                                    const userOrders = orders.filter(o => o.customerPhone === u.phoneNumber);
+                                    const activeOrdersCount = userOrders.filter(o => o.status !== "Delivered").length;
+                                    return {
+                                        ...u,
+                                        totalOrders: userOrders.length,
+                                        activeOrdersCount
+                                    };
+                                })
+                                .filter(u => u.totalOrders > 0 && u.activeOrdersCount > 0)
                                 .sort((a, b) => (b.queryCount || 0) - (a.queryCount || 0));
 
                             const filteredMonitorUsers = monitorSearch
@@ -1538,6 +1549,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                             <th className="px-5 py-3 font-semibold">Customer</th>
                                                             <th className="px-5 py-3 font-semibold">Phone #</th>
                                                             <th className="px-5 py-3 font-semibold text-center">Total Queries</th>
+                                                            <th className="px-5 py-3 font-semibold text-center">Orders</th>
                                                             <th className="px-5 py-3 font-semibold text-right">Last Queried At</th>
                                                             <th className="px-5 py-3 font-semibold text-right">Action</th>
                                                         </tr>
@@ -1555,8 +1567,17 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                                 </td>
                                                                 <td className="px-5 py-3.5 text-themed-secondary">{u.phoneNumber}</td>
                                                                 <td className="px-5 py-3.5 text-center">
-                                                                    <span className="inline-flex items-center justify-center min-w-[32px] rounded-full px-2 py-1 text-xs font-bold bg-brown-500/10 text-brown-500">
+                                                                    <button 
+                                                                        onClick={() => setViewingQueriesFor(u)}
+                                                                        className="inline-flex items-center justify-center min-w-[32px] rounded-full px-2 py-1 text-xs font-bold bg-brown-500/10 text-brown-500 hover:bg-brown-500/20 transition-all cursor-pointer"
+                                                                        title="View Query History"
+                                                                    >
                                                                         {u.queryCount || 0}
+                                                                    </button>
+                                                                </td>
+                                                                <td className="px-5 py-3.5 text-center">
+                                                                    <span className="inline-flex items-center justify-center min-w-[32px] rounded-full px-2 py-1 text-xs font-bold bg-gold-400/10 text-gold-400">
+                                                                        {u.totalOrders}
                                                                     </span>
                                                                 </td>
                                                                 <td className="px-5 py-3.5 text-right text-themed-muted text-xs">
@@ -1607,9 +1628,16 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center justify-between">
-                                                            <div>
-                                                                <span className="inline-flex items-center justify-center rounded-full px-2.5 py-1 text-xs font-bold bg-brown-500/10 text-brown-500">
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    onClick={() => setViewingQueriesFor(u)}
+                                                                    className="inline-flex items-center justify-center rounded-full px-2.5 py-1 text-xs font-bold bg-brown-500/10 text-brown-500 hover:bg-brown-500/20 transition-all cursor-pointer"
+                                                                    title="View Query History"
+                                                                >
                                                                     {u.queryCount || 0} queries
+                                                                </button>
+                                                                <span className="inline-flex items-center justify-center rounded-full px-2.5 py-1 text-xs font-bold bg-gold-400/10 text-gold-400">
+                                                                    {u.totalOrders} orders
                                                                 </span>
                                                             </div>
                                                             <p className="text-xs text-themed-muted">
@@ -1674,6 +1702,54 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                             </div>
                                         )}
                                     </div>
+
+                                    {/* Queries History Modal */}
+                                    {viewingQueriesFor && (
+                                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in" onClick={() => setViewingQueriesFor(null)}>
+                                            <div className="glass-card w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden animate-slide-up" style={{ background: "var(--bg-secondary)" }} onClick={e => e.stopPropagation()}>
+                                                <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: "var(--glass-border)" }}>
+                                                    <div>
+                                                        <h3 className="text-lg font-bold text-themed-primary flex items-center gap-2">
+                                                            <Activity className="h-5 w-5 text-brown-500" />
+                                                            Query History
+                                                        </h3>
+                                                        <p className="text-sm text-themed-secondary mt-0.5">{viewingQueriesFor.name} <span className="opacity-70">({viewingQueriesFor.phoneNumber})</span></p>
+                                                    </div>
+                                                    <button onClick={() => setViewingQueriesFor(null)} className="rounded-lg p-2 text-themed-muted hover:bg-neutral-500/10 transition-colors">
+                                                        <X className="h-5 w-5" />
+                                                    </button>
+                                                </div>
+                                                <div className="flex-1 overflow-y-auto p-5 scrollbar-thin">
+                                                    {!viewingQueriesFor.queryHistory || viewingQueriesFor.queryHistory.length === 0 ? (
+                                                        <div className="text-center py-8">
+                                                            <Activity className="h-10 w-10 text-themed-muted mx-auto mb-3 opacity-30" />
+                                                            <p className="text-themed-secondary text-sm">No detailed query history found for this user.</p>
+                                                            <p className="text-themed-muted text-xs mt-1">Older queries might only have a numeric count.</p>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="space-y-3">
+                                                            {[...viewingQueriesFor.queryHistory].sort((a,b) => b.timestamp - a.timestamp).map((q, i) => (
+                                                                <div key={i} className="rounded-xl p-4 transition-colors relative" style={{ background: "var(--bg-tertiary)", border: "1px solid var(--glass-border)" }}>
+                                                                    <div className="flex items-center justify-between mb-3">
+                                                                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide ${q.source === 'WhatsApp' ? 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30' : 'bg-blue-500/15 text-blue-500 border border-blue-500/30'}`}>
+                                                                            {q.source || 'Unknown'}
+                                                                        </span>
+                                                                        <span className="text-[11px] text-themed-muted font-medium flex items-center gap-1">
+                                                                            <Clock className="h-3 w-3" />
+                                                                            {new Date(q.timestamp).toLocaleString(undefined, {
+                                                                                month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+                                                                            })}
+                                                                        </span>
+                                                                    </div>
+                                                                    <p className="text-sm text-themed-primary leading-relaxed p-3 rounded-lg font-medium" style={{ background: "var(--hover-bg)", border: "1px solid var(--glass-border)" }}>&quot;{q.text || "Checked order status"}&quot;</p>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })()}

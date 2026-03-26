@@ -19,6 +19,7 @@ import {
     where,
     increment,
     writeBatch,
+    arrayUnion,
 } from "firebase/firestore";
 
 // ── Types ───────────────────────────────────────────────────
@@ -40,6 +41,12 @@ export interface OrderData {
     notes: string;
 }
 
+export interface QueryHistoryItem {
+    timestamp: number;
+    source: "WhatsApp" | "Tracker";
+    text?: string;
+}
+
 export interface UserData {
     uid: string;
     phoneNumber: string;
@@ -49,6 +56,7 @@ export interface UserData {
     createdAt?: number;
     queryCount?: number;
     lastQueryAt?: number;
+    queryHistory?: QueryHistoryItem[];
     measurements: Record<string, Record<string, number>>;
 }
 
@@ -396,14 +404,18 @@ export const ORDER_STATUSES = [
 
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
-export const incrementUserQueryCount = async (phone: string) => {
+export const incrementUserQueryCount = async (phone: string, source: "WhatsApp" | "Tracker" = "Tracker", text?: string) => {
     try {
         const q = query(usersCol, where("phoneNumber", "==", phone));
         const snapshot = await getDocs(q);
         if (!snapshot.empty) {
+            const queryItem: Partial<QueryHistoryItem> = { timestamp: Date.now(), source };
+            if (text) queryItem.text = text;
+
             await updateDoc(snapshot.docs[0].ref, {
                 queryCount: increment(1),
                 lastQueryAt: Date.now(),
+                queryHistory: arrayUnion(queryItem),
             });
         }
     } catch (error) {
