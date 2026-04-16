@@ -143,6 +143,11 @@ function applyFilters(items: OrderData[], filters: OrderSearchFilters): OrderDat
     if (filters.dateFrom) results = results.filter((o) => o.submissionDate >= filters.dateFrom!);
     if (filters.dateTo) results = results.filter((o) => o.submissionDate <= filters.dateTo!);
     if (filters.status) results = results.filter((o) => o.status === filters.status);
+    // Always newest first — most recently submitted orders at the top
+    results = [...results].sort((a, b) => {
+        if (b.submissionDate !== a.submissionDate) return b.submissionDate.localeCompare(a.submissionDate);
+        return b.orderId.localeCompare(a.orderId);
+    });
     return results;
 }
 

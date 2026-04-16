@@ -19,3 +19,5 @@
 [2026-03-01T13:01:09.421Z] [ERROR] Error incrementing user query count | Details: {"code":"permission-denied","name":"FirebaseError"}
 [2026-03-08T05:28:51.612Z] [ERROR] Login error: | Details: {"code":"auth/invalid-credential","customData":{},"name":"FirebaseError"}
 [2026-03-24T04:28:38.421Z] [ERROR] Login error: | Details: {"code":"auth/invalid-credential","customData":{},"name":"FirebaseError"}
+[2026-04-16T18:01:57.776Z] [ERROR] Error updating user | Details: {"code":"permission-denied","name":"FirebaseError"}
+[2026-04-16T18:03:19.477Z] [ERROR] Error updating user | Details: {"code":"permission-denied","name":"FirebaseError"}

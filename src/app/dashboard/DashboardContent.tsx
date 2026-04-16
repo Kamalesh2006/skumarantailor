@@ -70,6 +70,7 @@ type ViewMode = "list" | "grid";
 
 import MeasurementForm from "./components/MeasurementForm";
 import QuickAddModal from "@/components/QuickAddModal";
+import CreateOrderModal from "./components/CreateOrderModal";
 import TailorIcon from "@/components/TailorIcon";
 
 export default function DashboardContent({ activeTab = "overview" }: { activeTab?: Tab }) {
@@ -184,16 +185,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
         }
     }, [tab, loadLogs]);
 
-    // New order form
-    const [newOrder, setNewOrder] = useState({
-        customerPhone: "",
-        customerName: "",
-        garmentType: "",
-        basePrice: 0,
-        numberOfSets: 1,
-        targetDays: 10,
-        notes: "",
-    });
+    // (new order state is managed inside CreateOrderModal)
 
     // View mode for customers
     const [customerViewMode, setCustomerViewMode] = useState<ViewMode>("grid");
@@ -543,32 +535,6 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
         }
     };
 
-    // ─── Create Order ───
-    const handleCreateOrder = async () => {
-        const today = new Date();
-        const target = new Date(today);
-        target.setDate(target.getDate() + newOrder.targetDays);
-
-        await createOrder({
-            customerPhone: newOrder.customerPhone.startsWith("+") ? newOrder.customerPhone : `+91${newOrder.customerPhone}`,
-            customerName: newOrder.customerName,
-            status: "Pending",
-            binLocation: "",
-            submissionDate: today.toISOString().split("T")[0],
-            targetDeliveryDate: target.toISOString().split("T")[0],
-            basePrice: newOrder.basePrice,
-            numberOfSets: newOrder.numberOfSets,
-            totalAmount: newOrder.basePrice * newOrder.numberOfSets,
-            rushFee: 0,
-            isApprovedRushed: false,
-            garmentType: newOrder.garmentType,
-            notes: newOrder.notes,
-        });
-
-        setShowNewOrder(false);
-        setNewOrder({ customerPhone: "", customerName: "", garmentType: "", basePrice: 0, numberOfSets: 1, targetDays: 10, notes: "" });
-        loadData();
-    };
 
     const statusColor = (s: string) => {
         const map: Record<string, string> = {
@@ -1115,53 +1081,13 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                 )}
 
                                 {/* New Order Modal */}
-                                {showNewOrder && (
-                                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
-                                        <div className="glass-card p-6 w-full max-w-lg animate-slide-up" style={{ background: "var(--bg-secondary)" }}>
-                                            <div className="flex items-center justify-between mb-5">
-                                                <h3 className="text-lg font-semibold text-themed-primary">{t("dash.createOrder")}</h3>
-                                                <button onClick={() => setShowNewOrder(false)} className="text-themed-muted hover:text-themed-primary"><X className="h-5 w-5" /></button>
-                                            </div>
-                                            <div className="space-y-4">
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <div>
-                                                        <label className="text-xs font-medium text-themed-secondary mb-1 block">{t("dash.customerPhone")}</label>
-                                                        <input value={newOrder.customerPhone} onChange={(e) => setNewOrder({ ...newOrder, customerPhone: e.target.value })} className="form-input text-sm" placeholder="9876543210" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-xs font-medium text-themed-secondary mb-1 block">{t("dash.customerName")}</label>
-                                                        <input value={newOrder.customerName} onChange={(e) => setNewOrder({ ...newOrder, customerName: e.target.value })} className="form-input text-sm" placeholder={t("dash.namePlaceholder")} />
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                                    <div>
-                                                        <label className="text-xs font-medium text-themed-secondary mb-1 block">{t("dash.garmentType")}</label>
-                                                        <input value={newOrder.garmentType} onChange={(e) => setNewOrder({ ...newOrder, garmentType: e.target.value })} className="form-input text-sm" placeholder={t("dash.garmentPlaceholder")} />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-xs font-medium text-themed-secondary mb-1 block">Number of Sets</label>
-                                                        <input type="number" min="1" value={newOrder.numberOfSets || ""} onChange={(e) => setNewOrder({ ...newOrder, numberOfSets: Number(e.target.value) })} className="form-input text-sm" placeholder="1" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-xs font-medium text-themed-secondary mb-1 block">{t("dash.basePrice")}</label>
-                                                        <input type="number" value={newOrder.basePrice || ""} onChange={(e) => setNewOrder({ ...newOrder, basePrice: Number(e.target.value) })} className="form-input text-sm" placeholder="2500" />
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <label className="text-xs font-medium text-themed-secondary mb-1 block">{t("dash.deliveryIn")} {newOrder.targetDays} {t("dash.days")}</label>
-                                                    <input type="range" min={1} max={20} value={newOrder.targetDays} onChange={(e) => setNewOrder({ ...newOrder, targetDays: Number(e.target.value) })} />
-                                                </div>
-                                                <div>
-                                                    <label className="text-xs font-medium text-themed-secondary mb-1 block">{t("dash.notes")}</label>
-                                                    <input value={newOrder.notes} onChange={(e) => setNewOrder({ ...newOrder, notes: e.target.value })} className="form-input text-sm" placeholder={t("dash.detailsPlaceholder")} />
-                                                </div>
-                                                <button onClick={handleCreateOrder} className="btn-primary w-full" disabled={!newOrder.customerPhone || !newOrder.customerName || !newOrder.garmentType}>
-                                                    <Plus className="h-4 w-4" /> {t("dash.createOrderBtn")}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
+                                <CreateOrderModal
+                                    isOpen={showNewOrder}
+                                    onClose={() => setShowNewOrder(false)}
+                                    onOrderCreated={() => { setShowNewOrder(false); loadData(); }}
+                                    allUsers={allUsers}
+                                    garmentPrices={settings?.garmentPrices ?? {}}
+                                />
                             </div>
                         )}
 
