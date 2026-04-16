@@ -71,6 +71,7 @@ type ViewMode = "list" | "grid";
 import MeasurementForm from "./components/MeasurementForm";
 import QuickAddModal from "@/components/QuickAddModal";
 import CreateOrderModal from "./components/CreateOrderModal";
+import EditOrderModal from "./components/EditOrderModal";
 import TailorIcon from "@/components/TailorIcon";
 
 export default function DashboardContent({ activeTab = "overview" }: { activeTab?: Tab }) {
@@ -133,6 +134,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
     // Modals
     const [editingUser, setEditingUser] = useState<UserData | null>(null);
     const [showNewOrder, setShowNewOrder] = useState(false);
+    const [editingOrder, setEditingOrder] = useState<OrderData | null>(null);
     const [capacityInput, setCapacityInput] = useState("");
     const [savingCapacity, setSavingCapacity] = useState(false);
     const [pricingInput, setPricingInput] = useState<Record<string, string>>({});
@@ -964,6 +966,13 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-2 flex-wrap">
+                                                            <button
+                                                                onClick={() => setEditingOrder(o)}
+                                                                className="p-2 rounded-lg text-themed-muted hover:text-gold-400 hover:bg-gold-400/10 transition-colors"
+                                                                title="Edit Order"
+                                                            >
+                                                                <Edit3 className="h-4 w-4" />
+                                                            </button>
                                                             <div className="relative">
                                                                 <select value={o.status} onChange={(e) => handleStatusChange(o.orderId, e.target.value as OrderStatus)}
                                                                     className="appearance-none rounded-lg pl-3 pr-8 py-2 text-xs font-medium cursor-pointer"
@@ -1041,6 +1050,13 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                     )}
                                                     {o.isApprovedRushed && <span className="self-start rounded-full px-2 py-0.5 text-xs font-medium bg-red-500/15 text-red-400">{t("common.rush")}</span>}
                                                     <div className="flex items-center gap-2 mt-auto pt-2" style={{ borderTop: "1px solid var(--glass-border)" }}>
+                                                        <button
+                                                            onClick={() => setEditingOrder(o)}
+                                                            className="p-1.5 rounded-lg text-themed-muted hover:text-gold-400 hover:bg-gold-400/10 transition-colors shrink-0"
+                                                            title="Edit Order"
+                                                        >
+                                                            <Edit3 className="h-3.5 w-3.5" />
+                                                        </button>
                                                         <div className="relative flex-1">
                                                             <select value={o.status} onChange={(e) => handleStatusChange(o.orderId, e.target.value as OrderStatus)}
                                                                 className="w-full appearance-none rounded-lg pl-2.5 pr-7 py-1.5 text-xs font-medium cursor-pointer"
@@ -1086,6 +1102,15 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                     onClose={() => setShowNewOrder(false)}
                                     onOrderCreated={() => { setShowNewOrder(false); loadData(); }}
                                     allUsers={allUsers}
+                                    garmentPrices={settings?.garmentPrices ?? {}}
+                                />
+
+                                {/* Edit Order Modal */}
+                                <EditOrderModal
+                                    isOpen={!!editingOrder}
+                                    order={editingOrder}
+                                    onClose={() => setEditingOrder(null)}
+                                    onOrderUpdated={() => { setEditingOrder(null); loadData(); }}
                                     garmentPrices={settings?.garmentPrices ?? {}}
                                 />
                             </div>
