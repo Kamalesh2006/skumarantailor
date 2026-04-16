@@ -956,9 +956,9 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor(o.status)}`}>{statusLabel(o.status)}</span>
                                                                 {o.isApprovedRushed && <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-red-500/15 text-red-400">{t("common.rush")}</span>}
                                                             </div>
-                                                            <p className="text-sm text-themed-secondary mt-1">{o.customerName} — {t(`garment.${o.garmentType}`) || o.garmentType}</p>
+                                                            <p className="text-sm text-themed-secondary mt-1">{o.customerName} — {t(`garment.${o.garmentType}`) || o.garmentType}{o.numberOfSets > 1 ? ` × ${o.numberOfSets}` : ""}</p>
                                                             <div className="flex items-center gap-4 mt-1 text-xs text-themed-muted">
-                                                                <span>₹{o.basePrice + o.rushFee}</span>
+                                                                <span>₹{o.totalAmount.toLocaleString("en-IN")}</span>
                                                                 <span>{t("common.due")}: {o.targetDeliveryDate}</span>
                                                                 {o.binLocation && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{o.binLocation}</span>}
                                                             </div>
@@ -1030,10 +1030,10 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-medium text-themed-primary">{o.customerName}</p>
-                                                        <p className="text-xs text-themed-secondary mt-0.5">{t(`garment.${o.garmentType}`) || o.garmentType}</p>
+                                                        <p className="text-xs text-themed-secondary mt-0.5">{t(`garment.${o.garmentType}`) || o.garmentType}{o.numberOfSets > 1 ? ` × ${o.numberOfSets}` : ""}</p>
                                                     </div>
                                                     <div className="flex items-center justify-between text-xs text-themed-muted pt-2" style={{ borderTop: "1px solid var(--glass-border)" }}>
-                                                        <span className="font-semibold text-themed-primary">₹{o.basePrice + o.rushFee}</span>
+                                                        <span className="font-semibold text-themed-primary">₹{o.totalAmount.toLocaleString("en-IN")}</span>
                                                         <span>{t("common.due")}: {o.targetDeliveryDate}</span>
                                                     </div>
                                                     {o.binLocation && (

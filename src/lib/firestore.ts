@@ -210,7 +210,7 @@ export async function createOrder(order: Omit<OrderData, "orderId">): Promise<Or
     batch.set(doc(db, "orders", orderId), newOrder);
     batch.set(settingsDocRef, {
         orderCounter: newCounter,
-        [`currentLoad.${order.targetDeliveryDate}`]: increment(1),
+        [`currentLoad.${order.targetDeliveryDate}`]: increment(order.numberOfSets),
     }, { merge: true });
     await batch.commit();
 

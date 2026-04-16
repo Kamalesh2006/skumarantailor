@@ -97,7 +97,7 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                         <div className="p-5 space-y-6">
 
                             {/* Basic Info */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div>
                                     <label className="text-xs font-semibold uppercase tracking-wider text-themed-muted mb-2 block">
                                         {t("dash.name")} <span className="text-red-500">*</span>
@@ -110,32 +110,30 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                                     />
                                     {nameError && <p className="text-[10px] text-red-500 mt-1">Name is required.</p>}
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="text-xs font-semibold uppercase tracking-wider text-themed-muted mb-2 block">Phone Number</label>
-                                        <input
-                                            value={phone}
-                                            onChange={(e) => setPhone(e.target.value)}
-                                            className="form-input text-sm w-full font-medium"
-                                            placeholder="+91..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-semibold uppercase tracking-wider text-themed-muted mb-2 block">Gender</label>
-                                        <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-lg border border-black/5 dark:border-white/5">
-                                            <button
-                                                onClick={() => setGender("male")}
-                                                className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-colors ${gender === "male" ? "bg-white text-black shadow-sm dark:bg-zinc-800 dark:text-white" : "text-themed-secondary hover:text-themed-primary"}`}
-                                            >
-                                                Male
-                                            </button>
-                                            <button
-                                                onClick={() => setGender("female")}
-                                                className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-colors ${gender === "female" ? "bg-white text-black shadow-sm dark:bg-zinc-800 dark:text-white" : "text-themed-secondary hover:text-themed-primary"}`}
-                                            >
-                                                Female
-                                            </button>
-                                        </div>
+                                <div>
+                                    <label className="text-xs font-semibold uppercase tracking-wider text-themed-muted mb-2 block">Phone Number</label>
+                                    <input
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                        className="form-input text-sm w-full font-medium"
+                                        placeholder="+91..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-semibold uppercase tracking-wider text-themed-muted mb-2 block">Gender</label>
+                                    <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-lg border border-black/5 dark:border-white/5 h-[38px]">
+                                        <button
+                                            onClick={() => setGender("male")}
+                                            className={`flex-1 text-sm py-1.5 px-3 rounded-md font-medium transition-colors ${gender === "male" ? "bg-white text-black shadow-sm dark:bg-zinc-800 dark:text-white" : "text-themed-secondary hover:text-themed-primary"}`}
+                                        >
+                                            Male
+                                        </button>
+                                        <button
+                                            onClick={() => setGender("female")}
+                                            className={`flex-1 text-sm py-1.5 px-3 rounded-md font-medium transition-colors ${gender === "female" ? "bg-white text-black shadow-sm dark:bg-zinc-800 dark:text-white" : "text-themed-secondary hover:text-themed-primary"}`}
+                                        >
+                                            Female
+                                        </button>
                                     </div>
                                 </div>
                             </div>
