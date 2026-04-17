@@ -58,10 +58,14 @@ function TrackingPageContent() {
     const searchParams = useSearchParams();
 
     useEffect(() => {
-        // Check for ?phone= query param (from monitoring tab View button)
         const phoneParam = searchParams.get("phone");
         if (phoneParam) {
-            const clean = phoneParam.startsWith("+") ? phoneParam : `+91${phoneParam}`;
+            // URL decoding converts '+' to ' ', so ' 919812345678' comes from '+919812345678'
+            // We fix this by replacing leading space or ensuring correct formatting
+            let clean = phoneParam.trim();
+            if (phoneParam.startsWith(" ") && phoneParam.length === 13) {
+                clean = "+" + clean;
+            }
             setPhoneQuery(clean);
             loadData(clean);
         }

@@ -19,7 +19,6 @@ import {
     deleteUser,
     deleteOrder,
     updateSettings,
-    createOrder,
     OrderData,
     UserData,
     SettingsData,
@@ -62,8 +61,11 @@ import {
     Smartphone,
     Send,
     Trash2,
+    ArrowUpRight,
+    Scissors,
+    CheckCircle2,
 } from "lucide-react";
-import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 type Tab = "overview" | "orders" | "customers" | "monitoring" | "settings" | "logs";
 type ViewMode = "list" | "grid";
@@ -72,6 +74,7 @@ import MeasurementForm from "./components/MeasurementForm";
 import QuickAddModal from "@/components/QuickAddModal";
 import CreateOrderModal from "./components/CreateOrderModal";
 import EditOrderModal from "./components/EditOrderModal";
+import CustomerDetailModal from "./components/CustomerDetailModal";
 import TailorIcon from "@/components/TailorIcon";
 
 export default function DashboardContent({ activeTab = "overview" }: { activeTab?: Tab }) {
@@ -79,9 +82,18 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
     const router = useRouter();
     const { t } = useLanguage();
 
-    const tab = activeTab;
+
+    const [currentTab, setCurrentTab] = useState<Tab>(activeTab);
     const [orders, setOrders] = useState<OrderData[]>([]);
     const [allUsers, setAllUsers] = useState<UserData[]>([]);
+
+    // Live clock
+    const [currentTime, setCurrentTime] = useState(new Date());
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+        return () => clearInterval(timer);
+    }, []);
+
     const [settings, setSettingsState] = useState<SettingsData | null>(null);
     const [customerSearch, setCustomerSearch] = useState("");
     const [dataLoading, setDataLoading] = useState(true);
@@ -135,6 +147,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
     const [editingUser, setEditingUser] = useState<UserData | null>(null);
     const [showNewOrder, setShowNewOrder] = useState(false);
     const [editingOrder, setEditingOrder] = useState<OrderData | null>(null);
+    const [viewingCustomer, setViewingCustomer] = useState<UserData | null>(null);
     const [capacityInput, setCapacityInput] = useState("");
     const [savingCapacity, setSavingCapacity] = useState(false);
     const [pricingInput, setPricingInput] = useState<Record<string, string>>({});
@@ -172,9 +185,9 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
     }, []);
 
     useEffect(() => {
-        if (tab === "logs") {
+        if (currentTab === "logs") {
             loadLogs();
-        } else if (tab === "monitoring") {
+        } else if (currentTab === "monitoring") {
             // Auto-refresh users when switching to Monitoring tab
             setDataLoading(true);
             getUsers().then(u => {
@@ -185,7 +198,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                 setDataLoading(false);
             });
         }
-    }, [tab, loadLogs]);
+    }, [currentTab, loadLogs]);
 
     // (new order state is managed inside CreateOrderModal)
 
@@ -566,15 +579,26 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                 <p className="text-sm text-themed-secondary">{t("dash.subtitle")}</p>
                             </div>
                         </div>
-                        <button
-                            onClick={() => setShowQuickAdd(true)}
-                            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white whitespace-nowrap shrink-0 transition-all duration-200 hover:shadow-lg hover:shadow-gold-400/20 hover:scale-[1.03] active:scale-95"
-                            style={{ background: "linear-gradient(135deg, #D4AF37, #8B5A2B, #6f4722)" }}
-                        >
-                            <Plus className="h-4 w-4" />
-                            <span className="hidden sm:inline">{t("quickAdd.title")}</span>
-                            <span className="sm:hidden">Add</span>
-                        </button>
+                        <div className="flex items-center gap-4">
+                            {/* Live Date & Time */}
+                            <div className="hidden md:flex flex-col items-end">
+                                <span className="text-sm font-semibold text-themed-primary">
+                                    {currentTime.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                                </span>
+                                <span className="text-xs text-themed-muted">
+                                    {currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => setShowQuickAdd(true)}
+                                className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white whitespace-nowrap shrink-0 transition-all duration-200 hover:shadow-lg hover:shadow-gold-400/20 hover:scale-[1.03] active:scale-95"
+                                style={{ background: "linear-gradient(135deg, #D4AF37, #8B5A2B, #6f4722)" }}
+                            >
+                                <Plus className="h-4 w-4" />
+                                <span className="hidden sm:inline">{t("quickAdd.title")}</span>
+                                <span className="sm:hidden">Add</span>
+                            </button>
+                        </div>
                     </div>
 
                     {/* Tabs */}
@@ -583,15 +607,13 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                             <button
                                 key={tb.key}
                                 onClick={() => {
-                                    if (tb.key === "overview") {
-                                        router.push("/dashboard");
-                                    } else {
-                                        router.push(`/${tb.key}`);
-                                    }
+                                    setCurrentTab(tb.key as Tab);
+                                    const url = tb.key === "overview" ? "/dashboard" : `/${tb.key}`;
+                                    window.history.replaceState(null, "", url);
                                 }}
-                                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-all ${tab === tb.key ? "bg-gold-400/10 text-gold-400" : "text-themed-secondary"
+                                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-all ${currentTab === tb.key ? "bg-gold-400/10 text-gold-400" : "text-themed-secondary"
                                     }`}
-                                style={tab !== tb.key ? { background: "transparent" } : {}}
+                                style={currentTab !== tb.key ? { background: "transparent" } : {}}
                             >
                                 <tb.icon className="h-4 w-4" />
                                 {tb.label}
@@ -607,6 +629,24 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                 onOrderCreated={loadData}
             />
 
+            {/* New Order Modal */}
+            <CreateOrderModal
+                isOpen={showNewOrder}
+                onClose={() => setShowNewOrder(false)}
+                onOrderCreated={() => { setShowNewOrder(false); loadData(); }}
+                allUsers={allUsers}
+                garmentPrices={settings?.garmentPrices ?? {}}
+            />
+
+            {/* Edit Order Modal */}
+            <EditOrderModal
+                isOpen={!!editingOrder}
+                order={editingOrder}
+                onClose={() => setEditingOrder(null)}
+                onOrderUpdated={() => { setEditingOrder(null); loadData(); }}
+                garmentPrices={settings?.garmentPrices ?? {}}
+            />
+
             <div className="mx-auto max-w-7xl px-4 lg:px-8 mt-6">
                 {dataLoading ? (
                     <div className="flex items-center justify-center py-20">
@@ -615,7 +655,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                 ) : (
                     <>
                         {/* ━━━ OVERVIEW TAB — Today's Tasks ━━━ */}
-                        {tab === "overview" && (() => {
+                        {currentTab === "overview" && (() => {
                             const todayStr = new Date().toISOString().split("T")[0];
 
                             // STATUS_FLOW for advancing status
@@ -695,155 +735,398 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                 loadData();
                             };
 
-                            return (
+                            {
+                                // ── Weekly Analytics Data ──
+                                const weeklyData = (() => {
+                                    const days: { label: string; date: string; orders: number }[] = [];
+                                    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                                    for (let i = 6; i >= 0; i--) {
+                                        const d = new Date();
+                                        d.setDate(d.getDate() - i);
+                                        const dateStr = d.toISOString().split("T")[0];
+                                        const count = orders.filter(o => o.submissionDate === dateStr).length;
+                                        days.push({ label: dayNames[d.getDay()], date: dateStr, orders: count });
+                                    }
+                                    return days;
+                                })();
+
+                                // ── Recent Orders (last 5) ──
+                                const recentOrders = [...orders]
+                                    .sort((a, b) => b.submissionDate.localeCompare(a.submissionDate) || b.orderId.localeCompare(a.orderId))
+                                    .slice(0, 5);
+
+                                // ── Capacity color thresholds ──
+                                const capacityPercent = capacity > 0 ? Math.round((todayLoad / capacity) * 100) : 0;
+                                const capacityColor = capacityPercent >= 85 ? "#ef4444" : capacityPercent >= 60 ? "#f59e0b" : "#10b981";
+
+                                // ── Pie chart data with legend ──
+                                const statusColors: Record<string, string> = {
+                                    "Pending": "#f59e0b", "Cutting": "#3b82f6", "Stitching": "#9333ea",
+                                    "Alteration": "#f97316", "Ready": "#10b981", "Delivered": "#6b7280"
+                                };
+                                const pieData = ORDER_STATUSES
+                                    .map(s => ({ name: statusLabel(s), value: orders.filter(o => o.status === s).length, status: s, color: statusColors[s] || "#8B5A2B" }))
+                                    .filter(d => d.value > 0);
+
+                                // ── Delivered count for stat card subtitle ──
+                                const deliveredThisMonth = (() => {
+                                    const now = new Date();
+                                    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+                                    return orders.filter(o => o.status === "Delivered" && o.submissionDate >= monthStart).length;
+                                })();
+
+                                return (
                                 <div className="space-y-6 animate-fade-in">
-                                    {/* Stats */}
+
+                                    {/* ── ROW 1: Premium Stat Cards ── */}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        {stats.map((s) => (
-                                            <div 
-                                                key={s.label} 
-                                                className="glass-card p-5 cursor-pointer hover:scale-[1.02] transition-transform active:scale-95"
+                                        {/* Accent Card — Active Orders */}
+                                        <div
+                                            className="stat-card-accent p-5 cursor-pointer animate-count-up delay-0"
+                                            onClick={() => router.push(stats[0].nav)}
+                                        >
+                                            <div className="stat-arrow">
+                                                <ArrowUpRight className="h-4 w-4 text-white/70" />
+                                            </div>
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15 mb-3">
+                                                <PackageSearch className="h-5 w-5 text-emerald-300" />
+                                            </div>
+                                            <p className="text-3xl font-bold tracking-tight">{activeOrders}</p>
+                                            <p className="text-sm text-white/70 mt-1">{stats[0].label}</p>
+                                            {deliveredThisMonth > 0 && (
+                                                <p className="text-xs text-emerald-300/80 mt-2 flex items-center gap-1">
+                                                    <TrendingUp className="h-3 w-3" />
+                                                    {deliveredThisMonth} delivered this month
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* Standard Cards */}
+                                        {stats.slice(1).map((s, idx) => (
+                                            <div
+                                                key={s.label}
+                                                className={`stat-card p-5 cursor-pointer animate-count-up delay-${idx + 1}`}
                                                 onClick={() => router.push(s.nav)}
                                             >
+                                                <div className="stat-arrow">
+                                                    <ArrowUpRight className="h-3.5 w-3.5 text-themed-muted" />
+                                                </div>
                                                 <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${s.bg} mb-3`}>
                                                     <s.icon className={`h-5 w-5 ${s.color}`} />
                                                 </div>
-                                                <p className="text-2xl font-bold text-themed-primary">{s.value}</p>
+                                                <p className="text-3xl font-bold text-themed-primary tracking-tight">{s.value}</p>
                                                 <p className="text-sm text-themed-secondary mt-1">{s.label}</p>
                                             </div>
                                         ))}
                                     </div>
 
-                                    {/* Capacity Bar & Charts */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    {/* ── ROW 2: Analytics / Capacity / Pie Chart ── */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+                                        {/* Weekly Analytics Bar Chart */}
+                                        <div className="glass-card p-5">
+                                            <h3 className="dash-section-title mb-4">
+                                                <TrendingUp className="h-4 w-4 text-emerald-500" />
+                                                Weekly Orders
+                                            </h3>
+                                            <div className="h-[200px]">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <BarChart data={weeklyData} barCategoryGap="25%">
+                                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--glass-border)" vertical={false} />
+                                                        <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: "var(--text-muted)", fontSize: 12 }} />
+                                                        <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: "var(--text-muted)", fontSize: 12 }} width={28} />
+                                                        <RechartsTooltip
+                                                            contentStyle={{ background: "var(--bg-secondary)", border: "1px solid var(--glass-border)", borderRadius: "10px", fontSize: "12px", color: "var(--text-primary)", boxShadow: "0 4px 12px var(--shadow-color)" }}
+                                                            itemStyle={{ color: "var(--text-primary)" }}
+                                                            cursor={{ fill: "var(--hover-bg)" }}
+                                                        />
+                                                        <Bar dataKey="orders" radius={[6, 6, 0, 0]} fill="#10b981" />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </div>
+
+                                        {/* Today's Capacity — Enhanced */}
                                         {settings && (
-                                            <div className="glass-card p-5 flex flex-col justify-center">
-                                                <h3 className="font-semibold text-themed-primary mb-3">{t("dash.todayCapacity")}</h3>
-                                                <div className="h-4 rounded-full overflow-hidden" style={{ background: "var(--bg-tertiary)" }}>
-                                                    <div
-                                                        className="h-full rounded-full brand-gradient transition-all duration-700"
-                                                        style={{ width: `${Math.min((todayLoad / capacity) * 100, 100)}%` }}
-                                                    />
+                                            <div className="glass-card p-5 flex flex-col">
+                                                <h3 className="dash-section-title mb-4">
+                                                    <Activity className="h-4 w-4 text-gold-400" />
+                                                    {t("dash.todayCapacity")}
+                                                </h3>
+                                                <div className="flex-1 flex flex-col items-center justify-center">
+                                                    {/* Circular progress ring */}
+                                                    <div className="relative w-32 h-32 mb-3">
+                                                        <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
+                                                            <circle cx="64" cy="64" r="54" fill="none" stroke="var(--bg-tertiary)" strokeWidth="10" />
+                                                            <circle
+                                                                cx="64" cy="64" r="54" fill="none"
+                                                                stroke={capacityColor}
+                                                                strokeWidth="10"
+                                                                strokeLinecap="round"
+                                                                strokeDasharray={`${(Math.min(capacityPercent, 100) / 100) * 339.292} 339.292`}
+                                                                style={{ transition: "stroke-dasharray 0.8s ease" }}
+                                                            />
+                                                        </svg>
+                                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                            <span className="text-2xl font-bold text-themed-primary">{capacityPercent}%</span>
+                                                            <span className="text-xs text-themed-muted">used</span>
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-sm text-themed-secondary text-center">
+                                                        <span className="font-semibold text-themed-primary">{todayLoad}</span> {t("dash.ordersOf")} {capacity} {t("dash.ordersText")}
+                                                    </p>
                                                 </div>
-                                                <p className="text-xs text-themed-secondary mt-2">{todayLoad} {t("dash.ordersOf")} {capacity} {t("dash.ordersText")} ({Math.round((todayLoad / capacity) * 100)}%)</p>
                                             </div>
                                         )}
 
-                                        <div className="glass-card p-4 h-[250px] flex flex-col justify-center">
-                                            <h3 className="font-semibold text-themed-primary mb-2 text-center text-sm">Orders by Status</h3>
+                                        {/* Pie Chart — Enhanced with Legend */}
+                                        <div className="glass-card p-5 flex flex-col">
+                                            <h3 className="dash-section-title mb-3">
+                                                <Scissors className="h-4 w-4 text-purple-500" />
+                                                Orders by Status
+                                            </h3>
                                             {orders.length === 0 ? (
                                                 <p className="text-xs text-center text-themed-muted my-auto">No orders to display</p>
                                             ) : (
-                                                <ResponsiveContainer width="100%" height="100%">
-                                                    <PieChart>
-                                                        <Pie
-                                                            data={ORDER_STATUSES.map(s => ({ name: statusLabel(s), value: orders.filter(o => o.status === s).length, status: s })).filter(d => d.value > 0)}
-                                                            cx="50%"
-                                                            cy="50%"
-                                                            innerRadius={45}
-                                                            outerRadius={70}
-                                                            paddingAngle={3}
-                                                            dataKey="value"
-                                                            stroke="none"
-                                                        >
-                                                            {ORDER_STATUSES.map((s, index) => {
-                                                                const colors: Record<string, string> = { "Pending": "#f59e0b", "Cutting": "#3b82f6", "Stitching": "#9333ea", "Alteration": "#f97316", "Ready": "#10b981", "Delivered": "#6b7280" };
-                                                                return <Cell key={`cell-${index}`} fill={colors[s] || "#8B5A2B"} />;
-                                                            })}
-                                                        </Pie>
-                                                        <RechartsTooltip contentStyle={{ background: "var(--bg-secondary)", border: "1px solid var(--glass-border)", borderRadius: "8px", fontSize: "12px", color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }} />
-                                                    </PieChart>
-                                                </ResponsiveContainer>
+                                                <div className="flex-1 flex flex-col">
+                                                    <div className="relative h-[140px]">
+                                                        <ResponsiveContainer width="100%" height="100%">
+                                                            <PieChart>
+                                                                <Pie
+                                                                    data={pieData}
+                                                                    cx="50%"
+                                                                    cy="50%"
+                                                                    innerRadius={40}
+                                                                    outerRadius={62}
+                                                                    paddingAngle={3}
+                                                                    dataKey="value"
+                                                                    stroke="none"
+                                                                >
+                                                                    {pieData.map((d, i) => (
+                                                                        <Cell key={`cell-${i}`} fill={d.color} />
+                                                                    ))}
+                                                                </Pie>
+                                                                <RechartsTooltip contentStyle={{ background: "var(--bg-secondary)", border: "1px solid var(--glass-border)", borderRadius: "10px", fontSize: "12px", color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }} />
+                                                            </PieChart>
+                                                        </ResponsiveContainer>
+                                                        {/* Center label */}
+                                                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                                            <span className="text-xl font-bold text-themed-primary">{orders.length}</span>
+                                                            <span className="text-[10px] text-themed-muted">total</span>
+                                                        </div>
+                                                    </div>
+                                                    {/* Legend */}
+                                                    <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 mt-3">
+                                                        {pieData.map(d => (
+                                                            <div key={d.status} className="flex items-center gap-1.5">
+                                                                <div className="legend-dot" style={{ background: d.color }} />
+                                                                <span className="text-xs text-themed-secondary truncate">{d.name}</span>
+                                                                <span className="text-xs font-semibold text-themed-primary ml-auto">{d.value}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                             )}
                                         </div>
                                     </div>
 
-                                    {/* Today's Tasks Header */}
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-lg font-bold text-themed-primary flex items-center gap-2">
-                                            📋 {t("dash.todayTasks")}
-                                            <span className="text-sm font-normal text-themed-muted">({scored.length})</span>
-                                        </h3>
-                                        <span className="text-xs font-medium text-themed-muted uppercase tracking-wider">
-                                            {t("dash.taskPriority")}
-                                        </span>
-                                    </div>
-
-                                    {/* Task Cards */}
-                                    {scored.length === 0 ? (
-                                        <div className="glass-card p-10 text-center">
-                                            <p className="text-lg text-themed-secondary">{t("dash.noTasks")}</p>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-3">
-                                            {scored.map(({ order: o, daysLate, isDueToday, isOverdue, isRush }) => (
-                                                <div
-                                                    key={o.orderId}
-                                                    className="glass-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 transition-all"
-                                                    style={isOverdue ? { borderLeft: "3px solid #ef4444" } : isDueToday ? { borderLeft: "3px solid #f59e0b" } : {}}
+                                    {/* ── ROW 3: Recent Orders + Upcoming Deliveries ── */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                        {/* Recent Orders Feed */}
+                                        <div className="glass-card p-5">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h3 className="dash-section-title">
+                                                    <Clock className="h-4 w-4 text-blue-500" />
+                                                    Recent Orders
+                                                </h3>
+                                                <button
+                                                    onClick={() => router.push("/orders")}
+                                                    className="text-xs font-medium text-gold-400 hover:text-gold-300 transition-colors flex items-center gap-1"
                                                 >
-                                                    {/* Left: Order info */}
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 flex-wrap">
-                                                            <span className="font-mono text-sm font-bold text-themed-primary">{o.orderId}</span>
-                                                            <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor(o.status)}`}>
+                                                    View all <ArrowUpRight className="h-3 w-3" />
+                                                </button>
+                                            </div>
+                                            {recentOrders.length === 0 ? (
+                                                <p className="text-sm text-themed-muted text-center py-6">No orders yet</p>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    {recentOrders.map((o) => (
+                                                        <div
+                                                            key={o.orderId}
+                                                            className="flex items-center gap-3 p-3 rounded-xl transition-colors cursor-pointer"
+                                                            style={{ background: "var(--hover-bg)" }}
+                                                            onClick={() => setEditingOrder(o)}
+                                                        >
+                                                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold-400/10 flex-shrink-0">
+                                                                <PackageSearch className="h-4 w-4 text-gold-400" />
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-sm font-semibold text-themed-primary">{o.customerName}</span>
+                                                                    <span className="text-xs text-themed-muted font-mono">{o.orderId}</span>
+                                                                </div>
+                                                                <p className="text-xs text-themed-secondary truncate">
+                                                                    {t(`garment.${o.garmentType}`) || o.garmentType} × {o.numberOfSets} — {o.submissionDate}
+                                                                </p>
+                                                            </div>
+                                                            <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0 ${statusColor(o.status)}`}>
                                                                 {statusLabel(o.status)}
                                                             </span>
-                                                            {isRush && (
-                                                                <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-red-500/15 text-red-400 flex items-center gap-1">
-                                                                    ⚡ Rush
-                                                                </span>
-                                                            )}
-                                                            {isOverdue && (
-                                                                <span className="rounded-full px-2 py-0.5 text-xs font-semibold bg-red-500/15 text-red-400">
-                                                                    🔴 {daysLate} {daysLate === 1 ? t("dash.dayLate") : t("dash.daysLate")}
-                                                                </span>
-                                                            )}
-                                                            {isDueToday && !isOverdue && (
-                                                                <span className="rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-500/15 text-amber-500">
-                                                                    🟡 {t("dash.dueToday")}
-                                                                </span>
-                                                            )}
                                                         </div>
-                                                        <p className="text-sm text-themed-secondary mt-1 truncate">
-                                                            {o.customerName} — {t(`garment.${o.garmentType}`) || o.garmentType} × {o.numberOfSets}
-                                                        </p>
-                                                        <div className="flex items-center gap-3 mt-1 text-xs text-themed-muted">
-                                                            <span>📅 {o.targetDeliveryDate}</span>
-                                                            {o.binLocation && <span>📍 {o.binLocation}</span>}
-                                                            {o.notes && <span className="truncate max-w-[200px]">📝 {o.notes}</span>}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Right: Actions */}
-                                                    <div className="flex items-center gap-2 flex-shrink-0">
-                                                        {STATUS_FLOW[o.status] && (
-                                                            <button
-                                                                onClick={() => handleAdvanceStatus(o.orderId, o.status)}
-                                                                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-white transition-all hover:shadow-lg"
-                                                                style={{ background: "linear-gradient(135deg, #10b981, #059669)" }}
-                                                            >
-                                                                ✅ {t("dash.markDone")}
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            onClick={() => handleDefer(o.orderId, o.notes)}
-                                                            className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-themed-secondary transition-all hover:text-themed-primary"
-                                                            style={{ background: "var(--hover-bg)", border: "1px solid var(--glass-border)" }}
-                                                        >
-                                                            ➡️ {t("dash.defer")}
-                                                        </button>
-                                                    </div>
+                                                    ))}
                                                 </div>
-                                            ))}
+                                            )}
                                         </div>
-                                    )}
+
+                                        {/* Upcoming Deliveries */}
+                                        <div className="glass-card p-5">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h3 className="dash-section-title">
+                                                    <Calendar className="h-4 w-4 text-amber-500" />
+                                                    Upcoming Deliveries
+                                                </h3>
+                                            </div>
+                                            {(() => {
+                                                const upcoming = orders
+                                                    .filter(o => o.status !== "Delivered" && o.targetDeliveryDate >= todayStr)
+                                                    .sort((a, b) => a.targetDeliveryDate.localeCompare(b.targetDeliveryDate))
+                                                    .slice(0, 5);
+                                                if (upcoming.length === 0) {
+                                                    return <p className="text-sm text-themed-muted text-center py-6">No upcoming deliveries</p>;
+                                                }
+                                                return (
+                                                    <div className="space-y-2">
+                                                        {upcoming.map((o) => {
+                                                            const daysUntil = Math.ceil(
+                                                                (new Date(o.targetDeliveryDate).getTime() - new Date(todayStr).getTime()) / (1000 * 60 * 60 * 24)
+                                                            );
+                                                            return (
+                                                                <div
+                                                                    key={o.orderId}
+                                                                    className="flex items-center gap-3 p-3 rounded-xl transition-colors"
+                                                                    style={{ background: "var(--hover-bg)" }}
+                                                                >
+                                                                    <div className={`flex h-9 w-9 items-center justify-center rounded-lg flex-shrink-0 ${daysUntil === 0 ? "bg-amber-500/15" : daysUntil <= 2 ? "bg-orange-500/10" : "bg-emerald-500/10"}`}>
+                                                                        <Calendar className={`h-4 w-4 ${daysUntil === 0 ? "text-amber-500" : daysUntil <= 2 ? "text-orange-500" : "text-emerald-500"}`} />
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className="text-sm font-semibold text-themed-primary">{o.customerName}</span>
+                                                                            <span className="text-xs text-themed-muted font-mono">{o.orderId}</span>
+                                                                        </div>
+                                                                        <p className="text-xs text-themed-secondary truncate">
+                                                                            {t(`garment.${o.garmentType}`) || o.garmentType} — Due {o.targetDeliveryDate}
+                                                                        </p>
+                                                                    </div>
+                                                                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold flex-shrink-0 ${daysUntil === 0 ? "bg-amber-500/15 text-amber-500" : daysUntil <= 2 ? "bg-orange-500/10 text-orange-500" : "bg-emerald-500/10 text-emerald-500"}`}>
+                                                                        {daysUntil === 0 ? "Today" : `${daysUntil}d`}
+                                                                    </span>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    </div>
+
+                                    {/* ── ROW 4: Today's Priority Tasks ── */}
+                                    <div>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="dash-section-title text-base">
+                                                <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500" />
+                                                {t("dash.todayTasks")}
+                                                <span className="text-xs font-normal text-themed-muted ml-1 px-2 py-0.5 rounded-full" style={{ background: "var(--hover-bg)" }}>
+                                                    {scored.length}
+                                                </span>
+                                            </h3>
+                                            <span className="text-xs font-medium text-themed-muted uppercase tracking-wider">
+                                                {t("dash.taskPriority")}
+                                            </span>
+                                        </div>
+
+                                        {scored.length === 0 ? (
+                                            <div className="glass-card p-10 text-center">
+                                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 mx-auto mb-3">
+                                                    <CheckCircle2 className="h-7 w-7 text-emerald-500" />
+                                                </div>
+                                                <p className="text-lg font-semibold text-themed-primary">{t("dash.noTasks")}</p>
+                                                <p className="text-sm text-themed-secondary mt-1">All caught up! Great work 🎉</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                {scored.map(({ order: o, daysLate, isDueToday, isOverdue, isRush }) => (
+                                                    <div
+                                                        key={o.orderId}
+                                                        className="glass-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 transition-all hover:shadow-lg"
+                                                        style={{
+                                                            borderLeft: isOverdue ? "3px solid #ef4444" : isDueToday ? "3px solid #f59e0b" : "3px solid var(--glass-border)",
+                                                        }}
+                                                    >
+                                                        {/* Left: Order info */}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span className="font-mono text-sm font-bold text-themed-primary">{o.orderId}</span>
+                                                                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor(o.status)}`}>
+                                                                    {statusLabel(o.status)}
+                                                                </span>
+                                                                {isRush && (
+                                                                    <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-red-500/15 text-red-400 flex items-center gap-1">
+                                                                        ⚡ Rush
+                                                                    </span>
+                                                                )}
+                                                                {isOverdue && (
+                                                                    <span className="rounded-full px-2 py-0.5 text-xs font-semibold bg-red-500/15 text-red-400">
+                                                                        🔴 {daysLate} {daysLate === 1 ? t("dash.dayLate") : t("dash.daysLate")}
+                                                                    </span>
+                                                                )}
+                                                                {isDueToday && !isOverdue && (
+                                                                    <span className="rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-500/15 text-amber-500">
+                                                                        🟡 {t("dash.dueToday")}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-sm text-themed-secondary mt-1 truncate">
+                                                                {o.customerName} — {t(`garment.${o.garmentType}`) || o.garmentType} × {o.numberOfSets}
+                                                            </p>
+                                                            <div className="flex items-center gap-3 mt-1.5 text-xs text-themed-muted">
+                                                                <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {o.targetDeliveryDate}</span>
+                                                                {o.binLocation && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {o.binLocation}</span>}
+                                                                {o.notes && <span className="truncate max-w-[200px] flex items-center gap-1"><FileText className="h-3 w-3" /> {o.notes}</span>}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Right: Actions */}
+                                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                                            {STATUS_FLOW[o.status] && (
+                                                                <button
+                                                                    onClick={() => handleAdvanceStatus(o.orderId, o.status)}
+                                                                    className="flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-semibold text-white transition-all hover:shadow-lg hover:scale-[1.02] active:scale-95"
+                                                                    style={{ background: "linear-gradient(135deg, #10b981, #059669)" }}
+                                                                >
+                                                                    <CheckCircle2 className="h-3.5 w-3.5" /> {t("dash.markDone")}
+                                                                </button>
+                                                            )}
+                                                            <button
+                                                                onClick={() => handleDefer(o.orderId, o.notes)}
+                                                                className="flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-semibold text-themed-secondary transition-all hover:text-themed-primary hover:scale-[1.02] active:scale-95"
+                                                                style={{ background: "var(--hover-bg)", border: "1px solid var(--glass-border)" }}
+                                                            >
+                                                                📦 {t("dash.defer")}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            );
+                                );
+                            }
                         })()}
 
                         {/* ━━━ ORDERS TAB ━━━ */}
-                        {tab === "orders" && (
+                        {currentTab === "orders" && (
                             <div className="space-y-4 animate-fade-in">
                                 <div className="flex items-center justify-between flex-wrap gap-3">
                                     <h3 className="font-semibold text-themed-primary">{t("dash.allOrders")} ({orders.length})</h3>
@@ -865,9 +1148,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                 <LayoutGrid className="h-3.5 w-3.5" /> {t("dash.gridView")}
                                             </button>
                                         </div>
-                                        <button onClick={() => setShowNewOrder(true)} className="btn-primary text-sm !py-2 !px-4">
-                                            <Plus className="h-4 w-4" /> {t("dash.newOrder")}
-                                        </button>
+
                                     </div>
                                 </div>
 
@@ -1096,28 +1377,11 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                     </>
                                 )}
 
-                                {/* New Order Modal */}
-                                <CreateOrderModal
-                                    isOpen={showNewOrder}
-                                    onClose={() => setShowNewOrder(false)}
-                                    onOrderCreated={() => { setShowNewOrder(false); loadData(); }}
-                                    allUsers={allUsers}
-                                    garmentPrices={settings?.garmentPrices ?? {}}
-                                />
-
-                                {/* Edit Order Modal */}
-                                <EditOrderModal
-                                    isOpen={!!editingOrder}
-                                    order={editingOrder}
-                                    onClose={() => setEditingOrder(null)}
-                                    onOrderUpdated={() => { setEditingOrder(null); loadData(); }}
-                                    garmentPrices={settings?.garmentPrices ?? {}}
-                                />
                             </div>
                         )}
 
                         {/* ━━━ CUSTOMERS TAB ━━━ */}
-                        {tab === "customers" && (
+                        {currentTab === "customers" && (
                             <div className="space-y-6 animate-fade-in">
                                 <div className="flex items-center justify-between gap-3 flex-wrap">
                                     <div className="flex items-center gap-3">
@@ -1215,7 +1479,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                     </thead>
                                                     <tbody className="divide-y divide-black/5 dark:divide-white/5">
                                                         {displayedCustomers.map((u) => (
-                                                            <tr key={u.uid} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
+                                                            <tr key={u.uid} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => setViewingCustomer(u)}>
                                                                 <td className="px-5 py-4">
                                                                     <div className="flex items-center gap-3">
                                                                         <div className="h-8 w-8 rounded-full bg-gold-400/10 text-gold-400 flex items-center justify-center font-bold text-xs shrink-0">
@@ -1245,7 +1509,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                                     </span>
                                                                 </td>
                                                                 <td className="px-5 py-4 text-right">
-                                                                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
+                                                                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100" onClick={(e) => e.stopPropagation()}>
                                                                         <button onClick={() => setEditingUser({ ...u })} className="p-2 rounded-lg text-themed-muted hover:text-gold-400 hover:bg-gold-400/10 transition-colors inline-flex items-center">
                                                                             <Edit3 className="h-4 w-4" />
                                                                         </button>
@@ -1302,13 +1566,13 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                     <>
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                             {displayedCustomers.map((u) => (
-                                                <div key={u.uid} className="glass-card p-5 flex flex-col">
+                                                <div key={u.uid} className="glass-card p-5 flex flex-col cursor-pointer hover:scale-[1.01] transition-transform" onClick={() => setViewingCustomer(u)}>
                                                     <div className="flex items-start justify-between">
                                                         <div className="min-w-0 pr-4">
                                                             <h4 className="font-semibold text-themed-primary truncate">{u.name || t("dash.unnamed")}</h4>
                                                             <p className="text-sm text-themed-secondary flex items-center gap-1 mt-0.5"><Phone className="h-3 w-3 shrink-0" /><span className="truncate">{u.phoneNumber}</span></p>
                                                         </div>
-                                                        <div className="flex items-center gap-1 shrink-0">
+                                                        <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                                                             <button onClick={() => setEditingUser({ ...u })} className="p-2 rounded-lg text-themed-muted hover:text-gold-400 transition-colors" style={{ background: "var(--hover-bg)" }}>
                                                                 <Edit3 className="h-4 w-4" />
                                                             </button>
@@ -1371,11 +1635,21 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                         onSave={handleSaveUser}
                                     />
                                 )}
+
+                                {/* Customer Detail Modal */}
+                                <CustomerDetailModal
+                                    isOpen={!!viewingCustomer}
+                                    customer={viewingCustomer}
+                                    orders={orders}
+                                    onClose={() => setViewingCustomer(null)}
+                                    onEditOrder={(o) => { setViewingCustomer(null); setEditingOrder(o); }}
+                                    onEditCustomer={(u) => { setViewingCustomer(null); setEditingUser({ ...u }); }}
+                                />
                             </div>
                         )}
 
                         {/* ━━━ MONITORING TAB ━━━ */}
-                        {tab === "monitoring" && (() => {
+                        {currentTab === "monitoring" && (() => {
                             const MONITOR_PAGE_SIZE = 8;
                             const allMonitorUsers = allUsers
                                 .filter(u => u.role === "customer")
@@ -1706,7 +1980,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                         })()}
 
                         {/* ━━━ SETTINGS TAB ━━━ */}
-                        {tab === "settings" && settings && (
+                        {currentTab === "settings" && settings && (
                             <div className="max-w-5xl w-full animate-fade-in grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                                 {/* Left Column */}
                                 <div className="space-y-6">
@@ -1795,7 +2069,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                         )}
 
                         {/* ━━━ LOGS TAB ━━━ */}
-                        {tab === "logs" && (
+                        {currentTab === "logs" && (
                             <div className="space-y-6 animate-fade-in glass-card p-6">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                                     <div className="flex items-center gap-3">

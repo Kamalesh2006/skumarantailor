@@ -6,7 +6,6 @@ import { useLanguage } from "@/lib/LanguageContext";
 import { GARMENT_TYPES, GARMENT_CONFIGS } from "@/lib/measurements";
 import {
     OrderData,
-    UserData,
     updateOrder,
     getUserByPhone,
     updateUser,

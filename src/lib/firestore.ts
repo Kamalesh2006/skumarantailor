@@ -113,9 +113,26 @@ export async function getOrders(): Promise<OrderData[]> {
 
 export async function getOrdersByPhone(phone: string): Promise<OrderData[]> {
     try {
-        const q = query(ordersCol, where("customerPhone", "==", phone));
+        // Collect variations of the phone number to make +91 optional
+        const phoneVariations = new Set<string>();
+        const cleanPhone = phone.trim();
+        phoneVariations.add(cleanPhone);
+        
+        // If the number is 10 digits without +91
+        if (/^\d{10}$/.test(cleanPhone)) {
+            phoneVariations.add(`+91${cleanPhone}`);
+        }
+        // If it starts with +91 and has 10 digits after
+        else if (cleanPhone.startsWith("+91") && cleanPhone.length === 13) {
+            phoneVariations.add(cleanPhone.substring(3));
+        }
+
+        const q = query(ordersCol, where("customerPhone", "in", Array.from(phoneVariations)));
         const snapshot = await getDocs(q);
-        return snapshot.docs.map((d) => d.data() as OrderData);
+        // Sort manually by reverse creation date if needed, or just return
+        const orders = snapshot.docs.map((d) => d.data() as OrderData);
+        // Sort descending by orderId to put newest first
+        return orders.sort((a, b) => b.orderId.localeCompare(a.orderId));
     } catch (error) {
         logger.error("Error fetching orders by phone", error);
         return [];
