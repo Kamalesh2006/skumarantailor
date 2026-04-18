@@ -163,11 +163,14 @@ export async function POST(req: Request) {
                     // 2. Lookup orders
                     const orders = await getOrdersByPhone(normalizedPhone);
 
-                    // 3. Build and send reply
-                    const replyText = buildOrderReply(normalizedPhone, orders, isNewUser);
-                    await sendWhatsAppMessage(senderPhone, replyText);
-
-                    console.log(`✅ Replied to ${normalizedPhone} with ${orders.length} order(s)`);
+                    // 3. Only auto-reply if they have orders in the database
+                    if (orders.length > 0) {
+                        const replyText = buildOrderReply(normalizedPhone, orders, isNewUser);
+                        await sendWhatsAppMessage(senderPhone, replyText);
+                        console.log(`✅ Replied to ${normalizedPhone} with ${orders.length} order(s)`);
+                    } else {
+                        console.log(`⏭️ Skipped auto-reply for ${normalizedPhone} (No orders found, leaving for manual reply)`);
+                    }
                 }
             }
         }
