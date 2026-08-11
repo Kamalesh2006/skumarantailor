@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { LogOut } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface AdminSidebarProps {
     currentTab: string;
@@ -12,6 +13,7 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ currentTab, onTabChange }: AdminSidebarProps) {
     const { logout } = useAuth();
+    const { lang, toggleLang } = useLanguage();
 
     const tabs = [
         { key: "overview", label: "Dashboard", icon: "⌂", activeColor: "bg-figma-gold text-figma-dark", inactiveColor: "text-figma-cream", iconColor: "text-figma-dark", inactiveIconColor: "text-figma-mutedGold" },
@@ -46,7 +48,7 @@ export default function AdminSidebar({ currentTab, onTabChange }: AdminSidebarPr
                             onClick={() => onTabChange(tab.key)}
                             className={`flex items-center gap-[12px] px-[12px] py-[11px] rounded-[11px] cursor-pointer ${isActive ? tab.activeColor : 'hover:bg-figma-darkHover'}`}
                         >
-                            <span className={`text-[16px] w-[18px] ${isActive ? tab.iconColor : tab.inactiveIconColor}`}>{tab.icon}</span>
+                            <span className={`flex items-center justify-center text-[16px] w-[18px] leading-none ${isActive ? tab.iconColor : tab.inactiveIconColor}`}>{tab.icon}</span>
                             <span className={`flex-1 text-[14px] ${isActive ? 'font-extrabold' : 'font-semibold'} ${isActive ? 'text-figma-dark' : tab.inactiveColor}`}>{tab.label}</span>
                             {tab.badge && <span className={`text-[11.5px] font-extrabold ${isActive ? 'text-figma-dark' : 'text-figma-grayBrown'}`}>{tab.badge}</span>}
                             {tab.redBadge && <span className="px-[7px] py-[2px] rounded-full bg-figma-red text-white text-[11px] font-extrabold">{tab.redBadge}</span>}
@@ -64,7 +66,7 @@ export default function AdminSidebar({ currentTab, onTabChange }: AdminSidebarPr
                         onClick={() => onTabChange(tab.key)}
                         className={`flex items-center gap-[12px] px-[12px] py-[11px] rounded-[11px] cursor-pointer hover:bg-figma-darkHover`}
                     >
-                        <span className="text-[16px] text-figma-mutedGold w-[18px]">{tab.icon}</span>
+                        <span className="flex items-center justify-center text-[16px] text-figma-mutedGold w-[18px] leading-none">{tab.icon}</span>
                         <span className="flex-1 text-[14px] font-semibold text-figma-cream">{tab.label}</span>
                     </div>
                 ))}
@@ -72,8 +74,18 @@ export default function AdminSidebar({ currentTab, onTabChange }: AdminSidebarPr
 
             <div className="mt-auto flex flex-col gap-2.5">
                 <div className="flex gap-1 bg-figma-darkHover rounded-[10px] p-[3px]">
-                    <span className="flex-1 h-[32px] rounded-[8px] bg-[#4E3A2A] text-figma-cream text-[12.5px] font-extrabold flex justify-center items-center cursor-pointer">EN</span>
-                    <span className="flex-1 h-[32px] rounded-[8px] text-figma-grayBrown text-[13px] font-bold flex justify-center items-center cursor-pointer">தமிழ்</span>
+                    <span 
+                        onClick={() => lang !== 'en' && toggleLang()}
+                        className={`flex-1 h-[32px] rounded-[8px] text-[12.5px] flex justify-center items-center cursor-pointer ${lang === 'en' ? 'bg-[#4E3A2A] text-figma-cream font-extrabold' : 'text-figma-grayBrown font-bold'}`}
+                    >
+                        EN
+                    </span>
+                    <span 
+                        onClick={() => lang !== 'ta' && toggleLang()}
+                        className={`flex-1 h-[32px] rounded-[8px] text-[13px] flex justify-center items-center cursor-pointer ${lang === 'ta' ? 'bg-[#4E3A2A] text-figma-cream font-extrabold' : 'text-figma-grayBrown font-bold'}`}
+                    >
+                        தமிழ்
+                    </span>
                 </div>
                 
                 <div onClick={logout} className="flex items-center gap-[11px] px-[10px] py-[9px] rounded-[11px] bg-figma-darkHover cursor-pointer hover:opacity-90 transition-opacity">

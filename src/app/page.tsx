@@ -10,48 +10,9 @@ export default function LandingPage() {
     const { t } = useLanguage();
 
     return (
-        <div className="min-h-screen bg-figma-bg flex flex-col font-sans relative text-figma-dark selection:bg-figma-gold/30">
-            {/* Header */}
-            <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-4 md:p-6 md:px-10">
-                <div className="flex items-center gap-3">
-                    <div className="w-[32px] h-[32px] relative">
-                        <Image src="/sk-mark-dark.png" alt="S Kumaran Tailors" fill className="object-contain" priority />
-                    </div>
-                    <span className="font-bricolage font-extrabold tracking-tight text-[18px] hidden sm:block mt-0.5">
-                        S Kumaran Tailors
-                    </span>
-                </div>
-
-                <div className="flex items-center gap-3 md:gap-6">
-                    <div className="hidden md:flex items-center gap-6 text-[14px] font-semibold text-figma-dark/80 mr-4">
-                        <a href="#services" className="hover:text-figma-dark transition-colors">Services</a>
-                        <a href="#how-it-works" className="hover:text-figma-dark transition-colors">How it works</a>
-                        <a href="#visit" className="hover:text-figma-dark transition-colors">Visit us</a>
-                    </div>
-                    
-                    <button 
-                        onClick={() => router.push("/tracking")}
-                        className="hidden md:flex h-[38px] px-5 rounded-full bg-figma-cream border border-figma-border items-center justify-center text-[13px] font-bold hover:bg-white transition-colors"
-                    >
-                        Track order
-                    </button>
-
-                    <div className="flex h-[36px] bg-figma-cream border border-figma-border rounded-full p-1 overflow-hidden">
-                        <button className="px-3 h-full rounded-full bg-white shadow-sm text-[12px] font-bold flex items-center justify-center">EN</button>
-                        <button className="px-3 h-full rounded-full text-[13px] font-bold text-figma-dark/60 font-noto flex items-center justify-center hover:text-figma-dark transition-colors">தமிழ்</button>
-                    </div>
-
-                    <button 
-                        onClick={() => router.push("/login")}
-                        className="hidden md:flex h-[38px] px-6 rounded-full bg-figma-dark text-figma-cream items-center justify-center text-[13px] font-bold hover:bg-black transition-colors"
-                    >
-                        Sign in
-                    </button>
-                </div>
-            </header>
-
+        <div className="h-screen overflow-hidden bg-figma-bg flex flex-col font-sans relative text-figma-dark selection:bg-figma-gold/30">
             {/* Main Hero Content */}
-            <main className="flex-1 flex flex-col items-center justify-center pt-24 px-6 md:px-10 relative z-10">
+            <main className="flex-1 flex flex-col items-center justify-center px-6 md:px-10 relative z-10 h-full overflow-hidden">
                 <div className="relative w-full max-w-[280px] md:max-w-[400px] aspect-[4/3] mb-8 md:mb-10">
                     <Image src="/sewing-machine-dark.png" alt="Vintage Sewing Machine" fill className="object-contain drop-shadow-2xl opacity-90" priority />
                 </div>

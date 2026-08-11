@@ -2,8 +2,10 @@
 
 import React from "react";
 import Image from "next/image";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export default function AdminMobileHeader() {
+    const { lang, toggleLang } = useLanguage();
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
 
     return (
@@ -19,8 +21,11 @@ export default function AdminMobileHeader() {
                     </div>
                 </div>
                 <div className="flex gap-2 items-center">
-                    <div className="px-[13px] py-[6px] border border-[#4E3A2A] rounded-full text-[11.5px] font-extrabold text-[#E7C87A]">
-                        EN
+                    <div 
+                        onClick={toggleLang}
+                        className="px-[13px] py-[6px] border border-[#4E3A2A] rounded-full text-[11.5px] font-extrabold text-[#E7C87A] cursor-pointer hover:bg-figma-darkHover transition-colors"
+                    >
+                        {lang === 'en' ? 'EN' : 'தமிழ்'}
                     </div>
                     <div className="w-[34px] h-[34px] rounded-full bg-figma-darkHover flex items-center justify-center text-[15px] text-[#E7C87A] cursor-pointer">
                         ☰
