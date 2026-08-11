@@ -740,7 +740,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                 </div>
 
                                                 <div className="bg-white border border-figma-border rounded-[18px] p-[18px_20px] shrink-0">
-                                                    <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-figma-dark mb-[6px]">Today's capacity</div>
+                                                    <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-figma-dark mb-[6px]">Today&apos;s capacity</div>
                                                     <div className="text-[12.5px] text-figma-muted">{todayLoad} of {capacity} items loaded</div>
                                                     <div className="h-[10px] rounded-[5px] bg-figma-grayLight overflow-hidden mt-[13px]">
                                                         <div className="h-full bg-figma-gold" style={{ width: `${Math.min(capacityPercent, 100)}%` }}></div>
@@ -1249,7 +1249,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                         </div>
                                         <div className="w-[280px]">
                                             <div className="flex justify-between text-[12px] font-bold text-figma-brown">
-                                                <span>Today's capacity</span>
+                                                <span>Today&apos;s capacity</span>
                                                 <span className="text-figma-goldDark">{todayLoad} / {capacity} items</span>
                                             </div>
                                             <div className="h-[9px] rounded-[5px] bg-figma-grayLight overflow-hidden mt-[7px]">
@@ -1270,7 +1270,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                         </div>
                                         <div className="bg-figma-darkHover rounded-[14px] p-[12px_14px] mt-[14px]">
                                             <div className="flex justify-between items-baseline">
-                                                <span className="text-[12.5px] font-semibold text-figma-mutedGold">Today's stitching capacity</span>
+                                                <span className="text-[12.5px] font-semibold text-figma-mutedGold">Today&apos;s stitching capacity</span>
                                                 <span className="text-[12.5px] font-extrabold text-[#E7C87A]">{todayLoad} / {capacity} items</span>
                                             </div>
                                             <div className="h-[8px] rounded-[4px] bg-[#4E3A2A] mt-[9px] overflow-hidden">
