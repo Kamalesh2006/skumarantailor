@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 import AdminSidebar from "@/components/AdminSidebar";
+import AdminDesktopHeader from "@/components/AdminDesktopHeader";
 import AdminMobileHeader from "@/components/AdminMobileHeader";
 import AdminBottomNav from "@/components/AdminBottomNav";
 import { useAuth } from "@/lib/AuthContext";
@@ -570,10 +571,13 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
     const statusLabel = (s: string) => t(`status.${s}`) || s;
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-figma-bg text-figma-dark font-sans">
-            {isDesktop && <AdminSidebar currentTab={currentTab} onTabChange={(tab) => setCurrentTab(tab as Tab)} />}
+        <div className="flex flex-col h-screen w-full overflow-hidden bg-figma-bg text-figma-dark font-sans">
+            {isDesktop && <AdminDesktopHeader onQuickAdd={() => setShowQuickAdd(true)} />}
             
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+            <div className="flex flex-1 min-h-0 w-full overflow-hidden">
+                {isDesktop && <AdminSidebar currentTab={currentTab} onTabChange={(tab) => setCurrentTab(tab as Tab)} />}
+                
+                <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
                 {!isDesktop && <AdminMobileHeader />}
 
                 <main id="app-content" className="flex-1 overflow-y-auto relative flex flex-col pb-[80px] md:pb-0">
@@ -1596,6 +1600,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                     </div>
                 </div>
             )}
+            </div>
         </div>
     );
 }
