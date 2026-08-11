@@ -6,16 +6,6 @@ import Image from "next/image";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { logger } from "@/lib/logger";
-import TailorIcon from "@/components/TailorIcon";
-import {
-    Phone,
-    Lock,
-    Loader2,
-    Sparkles,
-    AlertCircle,
-    Eye,
-    EyeOff,
-} from "lucide-react";
 
 export default function LoginPage() {
     const { user, role, loading: authLoading, login } = useAuth();
@@ -37,7 +27,6 @@ export default function LoginPage() {
         }
     }, [user, role, authLoading, router]);
 
-    // ─── Handle Login ───
     const handleLogin = async (e: FormEvent) => {
         e.preventDefault();
         setError("");
@@ -47,9 +36,8 @@ export default function LoginPage() {
             setError(t("login.error.invalidPhone"));
             return;
         }
-
         if (!password) {
-            setError("கடவுச்சொல்லை உள்ளிடவும் / Please enter your password");
+            setError("Please enter your password");
             return;
         }
 
@@ -61,15 +49,13 @@ export default function LoginPage() {
             logger.error("Login error:", err);
             const fbErr = err as { code?: string; message?: string };
             if (fbErr.code === "auth/invalid-credential" || fbErr.code === "auth/wrong-password") {
-                setError("தவறான கடவுச்சொல் / Invalid password. Please try again.");
+                setError("Invalid password. Please try again.");
             } else if (fbErr.code === "auth/user-not-found") {
-                setError("பயனர் கணக்கு இல்லை / No account found for this number.");
+                setError("No account found for this number.");
             } else if (fbErr.code === "auth/too-many-requests") {
-                setError("பல முறை முயற்சி செய்யப்பட்டது / Too many attempts. Please try again later.");
-            } else if (fbErr.code === "auth/invalid-email") {
-                setError(t("login.error.invalidPhone"));
+                setError("Too many attempts. Please try again later.");
             } else {
-                setError("உள்நுழைவு தோல்வி / Login failed. Please try again.");
+                setError("Login failed. Please try again.");
             }
         } finally {
             setLoading(false);
@@ -78,196 +64,101 @@ export default function LoginPage() {
 
     if (authLoading) {
         return (
-            <div className="flex min-h-screen items-center justify-center" style={{ background: "var(--bg-primary)" }}>
-                <Loader2 className="h-8 w-8 text-gold-400 animate-spin" />
+            <div className="flex min-h-screen items-center justify-center bg-figma-bg">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-figma-gold" />
             </div>
         );
     }
 
     return (
-        <div className="relative flex min-h-screen overflow-hidden">
-            {/* ─── Left Side: Hero Image Panel (Desktop) ─── */}
-            <div className="hidden lg:block lg:w-[50%] relative">
-                {/* Full-bleed image */}
-                <Image
-                    src="/tailor-hero.png"
-                    alt="Master tailor at work"
-                    fill
-                    className="object-cover"
-                    priority
-                />
-                {/* Dark overlay for contrast */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/70" />
-                {/* Gold accent line on the right edge */}
-                <div className="absolute right-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-transparent via-gold-400/40 to-transparent" />
-
-                {/* Overlay brand content — centered logo */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-                    <TailorIcon invertForDark size={80} />
-                    <h1 className="font-serif text-3xl xl:text-4xl font-bold text-white tracking-tight mt-4">
-                        S. Kumaran Tailors
-                    </h1>
-                    <p className="text-xs text-gold-400/90 uppercase tracking-[0.3em] mt-2">
-                        Since 1986
-                    </p>
+        <div className="min-h-screen bg-figma-bg flex items-center justify-center p-4">
+            <div className="w-full max-w-[412px] bg-figma-dark rounded-[34px] overflow-hidden shadow-[0_18px_50px_rgba(42,29,20,0.22)] border border-figma-border flex flex-col animate-slide-up">
+                {/* Header Top */}
+                <div className="pt-[34px] px-[26px] pb-[26px] flex flex-col items-center gap-[10px]">
+                    <div className="w-[92px] h-[92px] relative">
+                        <Image src="/sk-mark.png" alt="S Kumaran" fill className="object-contain" priority />
+                    </div>
+                    <div className="text-center">
+                        <div className="font-bricolage font-extrabold tracking-tight text-[27px] text-figma-cream leading-[1.15]">S Kumaran Tailors</div>
+                        <div className="text-[13px] tracking-[2.5px] text-[#B9A48A] mt-[7px] font-semibold">SINCE 1994 &middot; CUDDALORE</div>
+                    </div>
                 </div>
-            </div>
 
-            {/* ─── Mobile Background Image (shown only on mobile/tablet) ─── */}
-            <div className="lg:hidden absolute inset-0 z-0">
-                <Image
-                    src="/tailor-hero.png"
-                    alt="Master tailor at work"
-                    fill
-                    className="object-cover"
-                    priority
-                />
-                {/* Dark overlay to make form readable */}
-                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-            </div>
-
-            {/* ─── Right Side: Login Form ─── */}
-            <div
-                className="relative z-10 flex-1 flex items-center justify-center px-6 py-12 lg:bg-[var(--bg-primary)]"
-            >
-                <div className="w-full max-w-md animate-slide-up">
-                    {/* Mobile Brand — only visible on mobile */}
-                    <div className="mb-8 flex flex-col items-center text-center lg:hidden">
-                        <div className="relative mb-4">
-                            <TailorIcon
-                                invertForDark
-                                size={56}
-                            />
-                        </div>
-                        <h1 className="font-serif text-2xl font-bold tracking-tight text-white">
-                            S. Kumaran Tailors
-                        </h1>
-                        <p className="text-[10px] text-gold-400/80 uppercase tracking-[0.25em] mt-1">
-                            Established 1986
-                        </p>
+                {/* Form Container */}
+                <div className="flex-1 bg-figma-bg rounded-t-[30px] p-[28px_24px] flex flex-col gap-[16px]">
+                    <div>
+                        <div className="font-bricolage font-extrabold tracking-tight text-[22px] text-figma-dark">Sign in</div>
+                        <div className="text-[13px] text-figma-grayBrown mt-1">Use your shop phone number</div>
                     </div>
 
-                    {/* Welcome heading */}
-                    <div className="mb-8">
-                        <h2 className="text-2xl font-bold tracking-tight text-themed-primary lg:text-themed-primary text-white">{t("login.welcome")}</h2>
-                        <p className="mt-1.5 text-sm text-white/70 lg:text-themed-secondary">{t("login.subtitle")}</p>
-                    </div>
-
-                    {/* Form */}
-                    <form onSubmit={handleLogin} className="space-y-5 animate-fade-in">
-                        {/* Phone Number */}
+                    <form onSubmit={handleLogin} className="flex flex-col gap-[16px]">
                         <div>
-                            <label htmlFor="phone" className="mb-2 block text-xs font-semibold text-white/80 lg:text-themed-secondary uppercase tracking-wider">
-                                {t("login.phoneLabel")}
-                            </label>
-                            <div className="relative">
-                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-themed-muted" />
+                            <div className="text-[12px] font-extrabold tracking-[1.2px] text-[#9A8874] mb-[8px]">PHONE NUMBER</div>
+                            <div className="bg-white border-2 border-figma-gold rounded-[14px] p-[15px_16px] flex items-center gap-[12px]">
+                                <span className="text-[17px] text-[#8A5A1E]">✆</span>
+                                <span className="text-[16px] font-bold text-figma-grayBrown pr-[11px] border-r border-figma-border">+91</span>
                                 <input
-                                    id="phone"
                                     type="tel"
-                                    placeholder={t("login.phonePlaceholder")}
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
-                                    className="form-input pl-10"
+                                    placeholder="98431 20055"
+                                    className="flex-1 text-[18px] font-bold text-figma-dark tracking-[0.6px] bg-transparent outline-none placeholder:text-figma-muted"
                                     maxLength={10}
-                                    autoComplete="tel"
-                                    inputMode="numeric"
-                                    autoFocus
                                 />
                             </div>
                         </div>
 
-                        {/* Password */}
                         <div>
-                            <div className="flex items-center justify-between mb-2">
-                                <label htmlFor="password" className="block text-xs font-semibold text-white/80 lg:text-themed-secondary uppercase tracking-wider">
-                                    கடவுச்சொல் / PASSWORD
-                                </label>
-                                <button type="button" onClick={() => {
-                                    if (phone.length >= 10) {
-                                        const text = encodeURIComponent(`Hi, I need to reset my password for my account (Phone: ${countryCode}${phone}).`);
-                                        window.open(`https://wa.me/919442898544?text=${text}`, "_blank");
-                                    } else {
-                                        setError("Please enter your registered phone number first to request a password reset.");
-                                    }
-                                }} className="text-xs text-white/50 hover:text-gold-400 lg:text-themed-muted lg:hover:text-gold-400 transition-colors">
-                                    FORGOT?
-                                </button>
+                            <div className="text-[12px] font-extrabold tracking-[1.2px] text-[#9A8874] mb-[8px] flex justify-between">
+                                <span>PASSWORD</span>
                             </div>
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-themed-muted" />
+                            <div className="bg-white border border-figma-border rounded-[14px] p-[15px_16px] flex items-center gap-[12px]">
+                                <span className="text-[16px] text-figma-muted">🔒</span>
                                 <input
-                                    id="password"
                                     type={showPassword ? "text" : "password"}
-                                    placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="form-input pl-10 pr-10"
-                                    autoComplete="current-password"
+                                    placeholder="••••••••"
+                                    className="flex-1 text-[18px] text-figma-dark tracking-[4px] bg-transparent outline-none placeholder:text-figma-muted placeholder:tracking-normal"
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-themed-muted hover:text-themed-primary transition-colors"
-                                    tabIndex={-1}
-                                >
-                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-[16px] text-[#8A5A1E]">
+                                    👁
                                 </button>
                             </div>
                         </div>
 
-                        {/* Keep signed in */}
-                        <label className="flex items-center gap-2 text-sm text-white/70 lg:text-themed-secondary cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={keepSignedIn}
-                                onChange={(e) => setKeepSignedIn(e.target.checked)}
-                                className="rounded border-gold-400/30 accent-gold-400"
-                            />
-                            Keep me signed in for this session
-                        </label>
+                        <div className="flex items-center gap-[11px] mt-[2px]">
+                            <button
+                                type="button"
+                                onClick={() => setKeepSignedIn(!keepSignedIn)}
+                                className={`w-[24px] h-[24px] rounded-[7px] flex items-center justify-center text-[13px] transition-colors ${keepSignedIn ? 'bg-figma-dark text-figma-gold' : 'bg-white border border-figma-border text-transparent'}`}
+                            >
+                                ✓
+                            </button>
+                            <span className="flex-1 text-[14px] font-semibold text-[#5E4A38]">Keep me signed in</span>
+                            <button type="button" className="text-[13.5px] font-bold text-[#8A5A1E]">Forgot?</button>
+                        </div>
 
                         {error && (
-                            <div className="flex items-start gap-2 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400 animate-fade-in">
-                                <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                                {error}
-                            </div>
+                            <div className="text-red-500 text-sm mt-1">{error}</div>
                         )}
 
-                        {/* Sign In Button */}
                         <button
                             type="submit"
-                            disabled={loading || phone.replace(/\s/g, "").length < 10 || !password}
-                            className="btn-primary w-full !py-3.5 !text-base"
+                            disabled={loading}
+                            className="h-[56px] rounded-[16px] bg-figma-gold flex items-center justify-center text-[16.5px] font-extrabold text-figma-dark mt-[6px] shadow-[0_8px_20px_rgba(200,145,47,0.32)] active:scale-95 transition-transform disabled:opacity-70 disabled:active:scale-100"
                         >
-                            {loading ? (
-                                <><Loader2 className="h-4 w-4 animate-spin" />உள்நுழைகிறது... / Signing in...</>
-                            ) : (
-                                <>உள்நுழை / SIGN IN <Sparkles className="h-4 w-4" /></>
-                            )}
+                            {loading ? "Signing in..." : "Sign in"}
                         </button>
                     </form>
 
-                    {/* Track Order Button */}
-                    <div className="mt-6">
-                        <button
-                            onClick={() => router.push("/tracking")}
-                            className="w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-200 hover:scale-[1.02]"
-                            style={{ border: "1px dashed rgba(212, 175, 55, 0.5)", color: "#D4AF37", background: "rgba(212, 175, 55, 0.05)" }}
-                        >
-                            <Sparkles className="h-4 w-4" />
-                            ஆர்டர் பின்தொடர் / TRACK ORDER
-                        </button>
+                    <div className="flex gap-[6px] bg-[#F1EBE3] rounded-[13px] p-[4px] mt-[4px]">
+                        <button className="flex-1 h-[40px] rounded-[10px] bg-white border border-figma-border text-figma-dark text-[14px] font-bold flex items-center justify-center">English</button>
+                        <button className="flex-1 h-[40px] rounded-[10px] text-[#5E4A38] text-[15px] font-bold flex items-center justify-center font-noto">தமிழ்</button>
                     </div>
 
-                    {/* Footer */}
-                    <div className="mt-8 text-center space-y-1">
-                        <p className="text-[11px] text-white/40 lg:text-themed-muted">
-                            Authorized Access Only. All transactions and measurements are recorded for quality assurance.
-                        </p>
-                        <p className="text-[11px] text-white/40 lg:text-themed-muted">
-                            © 2024 S. Kumaran Tailors. Measured Precision.
-                        </p>
+                    <div className="mt-auto text-center text-[12.5px] text-figma-muted pt-4">
+                        Staff account? Ask the owner to add your number.
                     </div>
                 </div>
             </div>
