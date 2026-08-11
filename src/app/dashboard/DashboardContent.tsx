@@ -2,6 +2,10 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useIsDesktop } from "@/lib/useIsDesktop";
+import AdminSidebar from "@/components/AdminSidebar";
+import AdminMobileHeader from "@/components/AdminMobileHeader";
+import AdminBottomNav from "@/components/AdminBottomNav";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import {
@@ -67,7 +71,7 @@ import {
 } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
-type Tab = "overview" | "orders" | "customers" | "monitoring" | "settings" | "logs";
+type Tab = "overview" | "orders" | "customers" | "monitoring" | "settings" | "logs" | "queries" | "revenue" | "backup";
 type ViewMode = "list" | "grid";
 
 import MeasurementForm from "./components/MeasurementForm";
@@ -81,7 +85,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
     const { user, role, loading: authLoading } = useAuth();
     const router = useRouter();
     const { t } = useLanguage();
-
+    const isDesktop = useIsDesktop();
 
     const [currentTab, setCurrentTab] = useState<Tab>(activeTab);
     const [orders, setOrders] = useState<OrderData[]>([]);
@@ -566,62 +570,13 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
     const statusLabel = (s: string) => t(`status.${s}`) || s;
 
     return (
-        <div className="min-h-screen pb-12">
-            {/* Header */}
-            <div className="relative overflow-hidden" style={{ borderBottom: "1px solid var(--border-color)" }}>
-                <div className="absolute inset-0 bg-gradient-to-r from-gold-500/10 via-transparent to-gold-400/5" />
-                <div className="relative mx-auto max-w-7xl px-4 py-6 lg:px-8">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <TailorIcon size={40} />
-                            <div>
-                                <h1 className="text-xl font-serif font-bold tracking-tight text-themed-primary">{t("dash.title")}</h1>
-                                <p className="text-sm text-themed-secondary">{t("dash.subtitle")}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            {/* Live Date & Time */}
-                            <div className="hidden md:flex flex-col items-end">
-                                <span className="text-sm font-semibold text-themed-primary">
-                                    {currentTime.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
-                                </span>
-                                <span className="text-xs text-themed-muted">
-                                    {currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
-                                </span>
-                            </div>
-                            <button
-                                onClick={() => setShowQuickAdd(true)}
-                                className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white whitespace-nowrap shrink-0 transition-all duration-200 hover:shadow-lg hover:shadow-gold-400/20 hover:scale-[1.03] active:scale-95"
-                                style={{ background: "linear-gradient(135deg, #D4AF37, #8B5A2B, #6f4722)" }}
-                            >
-                                <Plus className="h-4 w-4" />
-                                <span className="hidden sm:inline">{t("quickAdd.title")}</span>
-                                <span className="sm:hidden">Add</span>
-                            </button>
-                        </div>
-                    </div>
+        <div className="flex h-screen w-full overflow-hidden bg-figma-bg text-figma-dark font-sans">
+            {isDesktop && <AdminSidebar currentTab={currentTab} onTabChange={(tab) => setCurrentTab(tab as Tab)} />}
+            
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+                {!isDesktop && <AdminMobileHeader />}
 
-                    {/* Tabs */}
-                    <div className="mt-4 flex gap-1 overflow-x-auto">
-                        {tabs.map((tb) => (
-                            <button
-                                key={tb.key}
-                                onClick={() => {
-                                    setCurrentTab(tb.key as Tab);
-                                    const url = tb.key === "overview" ? "/dashboard" : `/${tb.key}`;
-                                    window.history.replaceState(null, "", url);
-                                }}
-                                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-all ${currentTab === tb.key ? "bg-gold-400/10 text-gold-400" : "text-themed-secondary"
-                                    }`}
-                                style={currentTab !== tb.key ? { background: "transparent" } : {}}
-                            >
-                                <tb.icon className="h-4 w-4" />
-                                {tb.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
+                <main id="app-content" className="flex-1 overflow-y-auto relative flex flex-col pb-[80px] md:pb-0">
 
             <QuickAddModal
                 isOpen={showQuickAdd}
@@ -647,485 +602,239 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                 garmentPrices={settings?.garmentPrices ?? {}}
             />
 
-            <div className="mx-auto max-w-7xl px-4 lg:px-8 mt-6">
+            <div className="flex-1 w-full max-w-7xl mx-auto flex flex-col min-h-0">
                 {dataLoading ? (
                     <div className="flex items-center justify-center py-20">
                         <Loader2 className="h-8 w-8 text-gold-400 animate-spin" />
                     </div>
                 ) : (
                     <>
-                        {/* ━━━ OVERVIEW TAB — Today's Tasks ━━━ */}
+                                                {/* ━━━ OVERVIEW TAB — Today's Tasks ━━━ */}
                         {currentTab === "overview" && (() => {
-                            const todayStr = new Date().toISOString().split("T")[0];
-
-                            // STATUS_FLOW for advancing status
-                            const STATUS_FLOW: Record<string, string> = {
-                                Pending: "Cutting",
-                                Cutting: "Stitching",
-                                Stitching: "Alteration",
-                                Alteration: "Ready",
-                                Ready: "Delivered",
-                            };
-
-                            // Filter active orders only (not Ready/Delivered — those are done)
-                            const activeTasks = orders.filter(
-                                (o) => o.status !== "Delivered" && o.status !== "Ready"
-                            );
-
-                            // Compute priority score for sorting
-                            const scored = activeTasks.map((o) => {
-                                const dueDate = o.targetDeliveryDate;
-                                const daysUntilDue = Math.ceil(
-                                    (new Date(dueDate).getTime() - new Date(todayStr).getTime()) / (1000 * 60 * 60 * 24)
-                                );
-                                const isOverdue = daysUntilDue < 0;
-                                const isDueToday = daysUntilDue === 0;
-                                const isUpcoming = daysUntilDue > 0 && daysUntilDue <= 2;
-                                const isRush = o.isApprovedRushed || o.rushFee > 0;
-                                const daysLate = isOverdue ? Math.abs(daysUntilDue) : 0;
-
-                                // Priority: lower = higher priority
-                                let priority = 100;
-                                if (isOverdue && isRush) priority = 1;
-                                else if (isOverdue) priority = 2;
-                                else if (isDueToday && isRush) priority = 3;
-                                else if (isDueToday) priority = 4;
-                                else if (isUpcoming && isRush) priority = 5;
-                                else if (isUpcoming) priority = 6;
-                                else priority = 10 + daysUntilDue;
-
-                                return { order: o, priority, daysLate, isDueToday, isOverdue, isUpcoming, isRush, daysUntilDue };
+                            const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
+                            
+                            const readyOrders = orders.filter(o => o.status === "Ready");
+                            const overdueOrders = orders.filter(o => {
+                                if(o.status === "Delivered") return false;
+                                const daysUntilDue = Math.ceil((new Date(o.targetDeliveryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                                return daysUntilDue < 0;
                             });
+                            const stitchingOrders = orders.filter(o => o.status === "Stitching");
+                            const cuttingOrders = orders.filter(o => o.status === "Cutting");
+                            const alterationOrders = orders.filter(o => o.status === "Alteration");
+                            const inShopOrders = orders.filter(o => o.status !== "Delivered" && o.status !== "Ready");
 
-                            // Sort by priority, then by days until due
-                            scored.sort((a, b) => a.priority - b.priority || a.daysUntilDue - b.daysUntilDue);
+                            // Deliver today orders (Ready + Overdue)
+                            const deliverToday = [...readyOrders].sort((a,b) => new Date(a.targetDeliveryDate).getTime() - new Date(b.targetDeliveryDate).getTime()).slice(0, 5);
 
-                            const handleAdvanceStatus = async (orderId: string, currentStatus: string) => {
-                                const next = STATUS_FLOW[currentStatus];
-                                if (next) {
-                                    await updateOrder(orderId, { status: next as OrderStatus });
-                                    loadData();
+                            const capacityPercent = capacity > 0 ? Math.round((todayLoad / capacity) * 100) : 0;
 
-                                    // Only prompt notification on explicit important transitions:
-                                    // Stitching -> Ready
-                                    // Ready -> Delivered
-                                    const isBecomingReady = currentStatus === "Stitching" && next === "Ready";
-                                    const isBecomingDelivered = currentStatus === "Ready" && next === "Delivered";
-
-                                    if (isBecomingReady || isBecomingDelivered) {
-                                        const order = orders.find((o) => o.orderId === orderId);
-                                        if (order) {
-                                            setStatusNotify({
-                                                show: true,
-                                                customerName: order.customerName,
-                                                customerPhone: order.customerPhone,
-                                                status: next,
-                                                garmentType: order.garmentType,
-                                                orderId: order.orderId,
-                                            });
-                                        }
-                                    }
-                                }
-                            };
-
-                            const handleDefer = async (orderId: string, existingNotes: string) => {
-                                const deferNote = `[Deferred ${todayStr}]`;
-                                const newNotes = existingNotes ? `${existingNotes} ${deferNote}` : deferNote;
-                                await updateOrder(orderId, { notes: newNotes });
-                                loadData();
-                            };
-
-                            {
-                                // ── Weekly Analytics Data ──
-                                const weeklyData = (() => {
-                                    const days: { label: string; date: string; orders: number }[] = [];
-                                    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-                                    for (let i = 6; i >= 0; i--) {
-                                        const d = new Date();
-                                        d.setDate(d.getDate() - i);
-                                        const dateStr = d.toISOString().split("T")[0];
-                                        const count = orders.filter(o => o.submissionDate === dateStr).length;
-                                        days.push({ label: dayNames[d.getDay()], date: dateStr, orders: count });
-                                    }
-                                    return days;
-                                })();
-
-                                // ── Recent Orders (last 5) ──
-                                const recentOrders = [...orders]
-                                    .sort((a, b) => b.submissionDate.localeCompare(a.submissionDate) || b.orderId.localeCompare(a.orderId))
-                                    .slice(0, 5);
-
-                                // ── Capacity color thresholds ──
-                                const capacityPercent = capacity > 0 ? Math.round((todayLoad / capacity) * 100) : 0;
-                                const capacityColor = capacityPercent >= 85 ? "#ef4444" : capacityPercent >= 60 ? "#f59e0b" : "#10b981";
-
-                                // ── Pie chart data with legend ──
-                                const statusColors: Record<string, string> = {
-                                    "Pending": "#f59e0b", "Cutting": "#3b82f6", "Stitching": "#9333ea",
-                                    "Alteration": "#f97316", "Ready": "#10b981", "Delivered": "#6b7280"
-                                };
-                                const pieData = ORDER_STATUSES
-                                    .map(s => ({ name: statusLabel(s), value: orders.filter(o => o.status === s).length, status: s, color: statusColors[s] || "#8B5A2B" }))
-                                    .filter(d => d.value > 0);
-
-                                // ── Delivered count for stat card subtitle ──
-                                const deliveredThisMonth = (() => {
-                                    const now = new Date();
-                                    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
-                                    return orders.filter(o => o.status === "Delivered" && o.submissionDate >= monthStart).length;
-                                })();
-
-                                return (
-                                <div className="space-y-6 animate-fade-in">
-
-                                    {/* ── ROW 1: Premium Stat Cards ── */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        {/* Accent Card — Active Orders */}
-                                        <div
-                                            className="stat-card-accent p-5 cursor-pointer animate-count-up delay-0"
-                                            onClick={() => router.push(stats[0].nav)}
+                            return (
+                                <div className="flex flex-col h-full bg-figma-bg md:bg-white animate-fade-in">
+                                    {/* Desktop Header */}
+                                    <div className="bg-white border-b border-figma-border py-[18px] px-[30px] hidden md:flex items-center gap-[20px] shrink-0">
+                                        <div className="flex-1">
+                                            <div className="font-bricolage font-extrabold tracking-tight text-[25px] text-figma-dark leading-[1.1]">{todayStr}</div>
+                                            <div className="text-[13px] text-figma-muted mt-1">{readyOrders.length} to deliver &middot; {overdueOrders.length} overdue &middot; {stitchingOrders.length} stitching</div>
+                                        </div>
+                                        <div className="w-[320px] bg-figma-grayLight border border-figma-border rounded-[11px] px-[14px] py-[11px] flex items-center gap-[10px]">
+                                            <Search className="w-4 h-4 text-figma-muted" />
+                                            <input 
+                                                type="text" 
+                                                placeholder="Search customer, phone or order no." 
+                                                className="bg-transparent border-none outline-none text-[13.5px] w-full text-figma-dark placeholder-figma-muted"
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                            />
+                                        </div>
+                                        <button 
+                                            onClick={() => setShowNewOrder(true)} 
+                                            className="flex items-center gap-[10px] h-[44px] px-[18px] rounded-[12px] bg-figma-gold cursor-pointer hover:opacity-90 transition-opacity"
                                         >
-                                            <div className="stat-arrow">
-                                                <ArrowUpRight className="h-4 w-4 text-white/70" />
-                                            </div>
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15 mb-3">
-                                                <PackageSearch className="h-5 w-5 text-emerald-300" />
-                                            </div>
-                                            <p className="text-3xl font-bold tracking-tight">{activeOrders}</p>
-                                            <p className="text-sm text-white/70 mt-1">{stats[0].label}</p>
-                                            {deliveredThisMonth > 0 && (
-                                                <p className="text-xs text-emerald-300/80 mt-2 flex items-center gap-1">
-                                                    <TrendingUp className="h-3 w-3" />
-                                                    {deliveredThisMonth} delivered this month
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        {/* Standard Cards */}
-                                        {stats.slice(1).map((s, idx) => (
-                                            <div
-                                                key={s.label}
-                                                className={`stat-card p-5 cursor-pointer animate-count-up delay-${idx + 1}`}
-                                                onClick={() => router.push(s.nav)}
-                                            >
-                                                <div className="stat-arrow">
-                                                    <ArrowUpRight className="h-3.5 w-3.5 text-themed-muted" />
-                                                </div>
-                                                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${s.bg} mb-3`}>
-                                                    <s.icon className={`h-5 w-5 ${s.color}`} />
-                                                </div>
-                                                <p className="text-3xl font-bold text-themed-primary tracking-tight">{s.value}</p>
-                                                <p className="text-sm text-themed-secondary mt-1">{s.label}</p>
-                                            </div>
-                                        ))}
+                                            <span className="text-[20px] text-figma-dark font-light">+</span>
+                                            <span className="text-[14.5px] font-extrabold text-figma-dark">New order</span>
+                                        </button>
                                     </div>
 
-                                    {/* ── ROW 2: Analytics / Capacity / Pie Chart ── */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-                                        {/* Weekly Analytics Bar Chart */}
-                                        <div className="glass-card p-5">
-                                            <h3 className="dash-section-title mb-4">
-                                                <TrendingUp className="h-4 w-4 text-emerald-500" />
-                                                Weekly Orders
-                                            </h3>
-                                            <div className="h-[200px]">
-                                                <ResponsiveContainer width="100%" height="100%">
-                                                    <BarChart data={weeklyData} barCategoryGap="25%">
-                                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--glass-border)" vertical={false} />
-                                                        <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: "var(--text-muted)", fontSize: 12 }} />
-                                                        <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: "var(--text-muted)", fontSize: 12 }} width={28} />
-                                                        <RechartsTooltip
-                                                            contentStyle={{ background: "var(--bg-secondary)", border: "1px solid var(--glass-border)", borderRadius: "10px", fontSize: "12px", color: "var(--text-primary)", boxShadow: "0 4px 12px var(--shadow-color)" }}
-                                                            itemStyle={{ color: "var(--text-primary)" }}
-                                                            cursor={{ fill: "var(--hover-bg)" }}
-                                                        />
-                                                        <Bar dataKey="orders" radius={[6, 6, 0, 0]} fill="#10b981" />
-                                                    </BarChart>
-                                                </ResponsiveContainer>
+                                    {/* Desktop Content */}
+                                    <div className="hidden md:flex flex-1 p-[24px_30px] flex-col gap-[20px] overflow-y-auto bg-figma-bg">
+                                        <div className="grid grid-cols-4 gap-[16px] shrink-0">
+                                            <div onClick={() => { setStatusFilter("Ready"); setCurrentTab("orders"); }} className="bg-white border border-figma-border rounded-[16px] p-[18px_20px] cursor-pointer hover:shadow-md transition-shadow">
+                                                <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-figma-text">TO DELIVER</div>
+                                                <div className="font-bricolage font-extrabold tracking-[-1px] text-[36px] text-figma-dark leading-[1.05] mt-2">{readyOrders.length}</div>
+                                                <div className="text-[12.5px] font-bold text-figma-red mt-1">{overdueOrders.length} overdue</div>
+                                            </div>
+                                            <div onClick={() => { setCurrentTab("orders"); }} className="bg-white border border-figma-border rounded-[16px] p-[18px_20px] cursor-pointer hover:shadow-md transition-shadow">
+                                                <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-figma-text">IN THE SHOP</div>
+                                                <div className="font-bricolage font-extrabold tracking-[-1px] text-[36px] text-figma-dark leading-[1.05] mt-2">{inShopOrders.length}</div>
+                                                <div className="text-[12.5px] text-figma-muted mt-1">{cuttingOrders.length} cutting &middot; {stitchingOrders.length} stitching</div>
+                                            </div>
+                                            <div onClick={() => setCurrentTab("queries")} className="bg-white border border-figma-border rounded-[16px] p-[18px_20px] cursor-pointer hover:shadow-md transition-shadow">
+                                                <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-figma-text">QUERIES</div>
+                                                <div className="font-bricolage font-extrabold tracking-[-1px] text-[36px] text-figma-dark leading-[1.05] mt-2">128</div>
+                                                <div className="text-[12.5px] font-bold text-figma-goldDark mt-1">4 waiting now</div>
+                                            </div>
+                                            <div onClick={() => setCurrentTab("revenue")} className="bg-figma-dark rounded-[16px] p-[18px_20px] cursor-pointer hover:shadow-lg hover:shadow-black/20 transition-all">
+                                                <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-figma-mutedGold">AUGUST REVENUE</div>
+                                                <div className="font-extrabold tracking-[-1px] text-[31px] text-figma-cream leading-[1.05] mt-[9px]">₹1,42,300</div>
+                                                <div className="text-[12.5px] text-[#E0CFAE] mt-[5px]">₹31,300 pending</div>
                                             </div>
                                         </div>
 
-                                        {/* Today's Capacity — Enhanced */}
-                                        {settings && (
-                                            <div className="glass-card p-5 flex flex-col">
-                                                <h3 className="dash-section-title mb-4">
-                                                    <Activity className="h-4 w-4 text-gold-400" />
-                                                    {t("dash.todayCapacity")}
-                                                </h3>
-                                                <div className="flex-1 flex flex-col items-center justify-center">
-                                                    {/* Circular progress ring */}
-                                                    <div className="relative w-32 h-32 mb-3">
-                                                        <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
-                                                            <circle cx="64" cy="64" r="54" fill="none" stroke="var(--bg-tertiary)" strokeWidth="10" />
-                                                            <circle
-                                                                cx="64" cy="64" r="54" fill="none"
-                                                                stroke={capacityColor}
-                                                                strokeWidth="10"
-                                                                strokeLinecap="round"
-                                                                strokeDasharray={`${(Math.min(capacityPercent, 100) / 100) * 339.292} 339.292`}
-                                                                style={{ transition: "stroke-dasharray 0.8s ease" }}
-                                                            />
-                                                        </svg>
-                                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                            <span className="text-2xl font-bold text-themed-primary">{capacityPercent}%</span>
-                                                            <span className="text-xs text-themed-muted">used</span>
-                                                        </div>
-                                                    </div>
-                                                    <p className="text-sm text-themed-secondary text-center">
-                                                        <span className="font-semibold text-themed-primary">{todayLoad}</span> {t("dash.ordersOf")} {capacity} {t("dash.ordersText")}
-                                                    </p>
+                                        <div className="flex-1 grid grid-cols-[1.45fr_1fr] gap-[20px] min-h-0">
+                                            {/* Deliver Today Table */}
+                                            <div className="bg-white border border-figma-border rounded-[18px] flex flex-col overflow-hidden">
+                                                <div className="p-[18px_22px_14px] flex items-baseline gap-[12px] border-b border-figma-grayLight shrink-0">
+                                                    <span className="flex-1 font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-figma-dark">Deliver today</span>
+                                                    <span onClick={() => setCurrentTab("orders")} className="text-[13px] font-bold text-figma-goldDark cursor-pointer hover:underline">See all orders</span>
                                                 </div>
-                                            </div>
-                                        )}
-
-                                        {/* Pie Chart — Enhanced with Legend */}
-                                        <div className="glass-card p-5 flex flex-col">
-                                            <h3 className="dash-section-title mb-3">
-                                                <Scissors className="h-4 w-4 text-purple-500" />
-                                                Orders by Status
-                                            </h3>
-                                            {orders.length === 0 ? (
-                                                <p className="text-xs text-center text-themed-muted my-auto">No orders to display</p>
-                                            ) : (
-                                                <div className="flex-1 flex flex-col">
-                                                    <div className="relative h-[140px]">
-                                                        <ResponsiveContainer width="100%" height="100%">
-                                                            <PieChart>
-                                                                <Pie
-                                                                    data={pieData}
-                                                                    cx="50%"
-                                                                    cy="50%"
-                                                                    innerRadius={40}
-                                                                    outerRadius={62}
-                                                                    paddingAngle={3}
-                                                                    dataKey="value"
-                                                                    stroke="none"
-                                                                >
-                                                                    {pieData.map((d, i) => (
-                                                                        <Cell key={`cell-${i}`} fill={d.color} />
-                                                                    ))}
-                                                                </Pie>
-                                                                <RechartsTooltip contentStyle={{ background: "var(--bg-secondary)", border: "1px solid var(--glass-border)", borderRadius: "10px", fontSize: "12px", color: "var(--text-primary)" }} itemStyle={{ color: "var(--text-primary)" }} />
-                                                            </PieChart>
-                                                        </ResponsiveContainer>
-                                                        {/* Center label */}
-                                                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                                            <span className="text-xl font-bold text-themed-primary">{orders.length}</span>
-                                                            <span className="text-[10px] text-themed-muted">total</span>
-                                                        </div>
-                                                    </div>
-                                                    {/* Legend */}
-                                                    <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 mt-3">
-                                                        {pieData.map(d => (
-                                                            <div key={d.status} className="flex items-center gap-1.5">
-                                                                <div className="legend-dot" style={{ background: d.color }} />
-                                                                <span className="text-xs text-themed-secondary truncate">{d.name}</span>
-                                                                <span className="text-xs font-semibold text-themed-primary ml-auto">{d.value}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
+                                                <div className="grid grid-cols-[1fr_130px_96px_110px] gap-[14px] p-[11px_22px] bg-figma-bg border-b border-figma-grayLight text-[11.5px] font-extrabold tracking-[0.8px] text-figma-text shrink-0">
+                                                    <span>CUSTOMER</span><span>GARMENT</span><span>AMOUNT</span><span></span>
                                                 </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* ── ROW 3: Recent Orders + Upcoming Deliveries ── */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                        {/* Recent Orders Feed */}
-                                        <div className="glass-card p-5">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <h3 className="dash-section-title">
-                                                    <Clock className="h-4 w-4 text-blue-500" />
-                                                    Recent Orders
-                                                </h3>
-                                                <button
-                                                    onClick={() => router.push("/orders")}
-                                                    className="text-xs font-medium text-gold-400 hover:text-gold-300 transition-colors flex items-center gap-1"
-                                                >
-                                                    View all <ArrowUpRight className="h-3 w-3" />
-                                                </button>
-                                            </div>
-                                            {recentOrders.length === 0 ? (
-                                                <p className="text-sm text-themed-muted text-center py-6">No orders yet</p>
-                                            ) : (
-                                                <div className="space-y-2">
-                                                    {recentOrders.map((o) => (
-                                                        <div
-                                                            key={o.orderId}
-                                                            className="flex items-center gap-3 p-3 rounded-xl transition-colors cursor-pointer"
-                                                            style={{ background: "var(--hover-bg)" }}
-                                                            onClick={() => setEditingOrder(o)}
-                                                        >
-                                                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold-400/10 flex-shrink-0">
-                                                                <PackageSearch className="h-4 w-4 text-gold-400" />
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="text-sm font-semibold text-themed-primary">{o.customerName}</span>
-                                                                    <span className="text-xs text-themed-muted font-mono">{o.orderId}</span>
+                                                <div className="overflow-y-auto flex-1">
+                                                    {deliverToday.map(order => (
+                                                        <div key={order.orderId} className="grid grid-cols-[1fr_130px_96px_110px] gap-[14px] p-[14px_22px] items-center border-b border-figma-grayLight hover:bg-gray-50/50">
+                                                            <div className="flex items-center gap-[11px]">
+                                                                <div className="w-[8px] h-[34px] rounded-[4px] bg-figma-green"></div>
+                                                                <div>
+                                                                    <div className="text-[14.5px] font-bold text-figma-dark">{order.customerName}</div>
+                                                                    <div className="text-[12px] text-figma-muted mt-[2px]">{order.orderId} &middot; {order.binLocation || "No Bin"}</div>
                                                                 </div>
-                                                                <p className="text-xs text-themed-secondary truncate">
-                                                                    {t(`garment.${o.garmentType}`) || o.garmentType} × {o.numberOfSets} — {o.submissionDate}
-                                                                </p>
                                                             </div>
-                                                            <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0 ${statusColor(o.status)}`}>
-                                                                {statusLabel(o.status)}
-                                                            </span>
+                                                            <span className="text-[13.5px] text-figma-brown">{t(`garment.${order.garmentType}`) || order.garmentType}</span>
+                                                            <span className="text-[14px] font-extrabold text-figma-dark">₹{order.totalAmount}</span>
+                                                            <button 
+                                                                onClick={() => handleStatusChange(order.orderId, "Delivered")}
+                                                                className="h-[36px] rounded-[10px] bg-figma-dark text-figma-cream text-[13px] font-bold flex items-center justify-center cursor-pointer hover:bg-figma-darkHover transition-colors"
+                                                            >
+                                                                Deliver
+                                                            </button>
                                                         </div>
                                                     ))}
+                                                    {deliverToday.length === 0 && (
+                                                        <div className="p-8 text-center text-figma-muted">No orders ready for delivery today.</div>
+                                                    )}
                                                 </div>
-                                            )}
-                                        </div>
-
-                                        {/* Upcoming Deliveries */}
-                                        <div className="glass-card p-5">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <h3 className="dash-section-title">
-                                                    <Calendar className="h-4 w-4 text-amber-500" />
-                                                    Upcoming Deliveries
-                                                </h3>
                                             </div>
-                                            {(() => {
-                                                const upcoming = orders
-                                                    .filter(o => o.status !== "Delivered" && o.targetDeliveryDate >= todayStr)
-                                                    .sort((a, b) => a.targetDeliveryDate.localeCompare(b.targetDeliveryDate))
-                                                    .slice(0, 5);
-                                                if (upcoming.length === 0) {
-                                                    return <p className="text-sm text-themed-muted text-center py-6">No upcoming deliveries</p>;
-                                                }
-                                                return (
-                                                    <div className="space-y-2">
-                                                        {upcoming.map((o) => {
-                                                            const daysUntil = Math.ceil(
-                                                                (new Date(o.targetDeliveryDate).getTime() - new Date(todayStr).getTime()) / (1000 * 60 * 60 * 24)
-                                                            );
-                                                            return (
-                                                                <div
-                                                                    key={o.orderId}
-                                                                    className="flex items-center gap-3 p-3 rounded-xl transition-colors"
-                                                                    style={{ background: "var(--hover-bg)" }}
-                                                                >
-                                                                    <div className={`flex h-9 w-9 items-center justify-center rounded-lg flex-shrink-0 ${daysUntil === 0 ? "bg-amber-500/15" : daysUntil <= 2 ? "bg-orange-500/10" : "bg-emerald-500/10"}`}>
-                                                                        <Calendar className={`h-4 w-4 ${daysUntil === 0 ? "text-amber-500" : daysUntil <= 2 ? "text-orange-500" : "text-emerald-500"}`} />
-                                                                    </div>
-                                                                    <div className="flex-1 min-w-0">
-                                                                        <div className="flex items-center gap-2">
-                                                                            <span className="text-sm font-semibold text-themed-primary">{o.customerName}</span>
-                                                                            <span className="text-xs text-themed-muted font-mono">{o.orderId}</span>
-                                                                        </div>
-                                                                        <p className="text-xs text-themed-secondary truncate">
-                                                                            {t(`garment.${o.garmentType}`) || o.garmentType} — Due {o.targetDeliveryDate}
-                                                                        </p>
-                                                                    </div>
-                                                                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold flex-shrink-0 ${daysUntil === 0 ? "bg-amber-500/15 text-amber-500" : daysUntil <= 2 ? "bg-orange-500/10 text-orange-500" : "bg-emerald-500/10 text-emerald-500"}`}>
-                                                                        {daysUntil === 0 ? "Today" : `${daysUntil}d`}
-                                                                    </span>
-                                                                </div>
-                                                            );
-                                                        })}
+
+                                            {/* Right Column */}
+                                            <div className="flex flex-col gap-[20px] overflow-y-auto">
+                                                <div className="bg-white border border-figma-border rounded-[18px] p-[18px_20px] shrink-0">
+                                                    <div className="flex items-baseline gap-[10px] mb-[14px]">
+                                                        <span className="flex-1 font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-figma-dark">Queries waiting</span>
+                                                        <span className="px-[9px] py-[4px] rounded-full bg-[#FBE9E4] text-figma-red text-[11.5px] font-extrabold">4</span>
                                                     </div>
-                                                );
-                                            })()}
+                                                    <div className="flex flex-col gap-[11px]">
+                                                        <div className="flex gap-[11px] items-start">
+                                                            <div className="w-[34px] h-[34px] rounded-[10px] bg-figma-cream flex items-center justify-center font-bricolage font-extrabold text-[12.5px] text-figma-goldDark">RM</div>
+                                                            <div className="flex-1">
+                                                                <div className="text-[13.5px] font-bold text-figma-dark">Ramesh M.</div>
+                                                                <div className="text-[12.5px] text-figma-muted mt-[2px] leading-[1.4]">Sir, shirt ready aacha?</div>
+                                                            </div>
+                                                        </div>
+                                                        {/* Static demo content for queries for now */}
+                                                    </div>
+                                                    <button onClick={() => setCurrentTab("queries")} className="w-full h-[40px] rounded-[11px] bg-figma-grayLight border border-figma-border flex items-center justify-center text-[13px] font-bold text-figma-goldDark mt-[15px] hover:bg-figma-cream transition-colors">
+                                                        Open all queries
+                                                    </button>
+                                                </div>
+
+                                                <div className="bg-white border border-figma-border rounded-[18px] p-[18px_20px] shrink-0">
+                                                    <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-figma-dark mb-[6px]">Today's capacity</div>
+                                                    <div className="text-[12.5px] text-figma-muted">{todayLoad} of {capacity} items loaded</div>
+                                                    <div className="h-[10px] rounded-[5px] bg-figma-grayLight overflow-hidden mt-[13px]">
+                                                        <div className="h-full bg-figma-gold" style={{ width: `${Math.min(capacityPercent, 100)}%` }}></div>
+                                                    </div>
+                                                    <div className="flex flex-col gap-[9px] mt-[16px]">
+                                                        <div className="flex items-center gap-[10px]">
+                                                            <span className="w-[9px] h-[9px] rounded-[3px] bg-figma-goldDark"></span>
+                                                            <span className="flex-1 text-[13px] text-figma-brown">Cutting</span>
+                                                            <span className="text-[13.5px] font-extrabold text-figma-dark">{cuttingOrders.length}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-[10px]">
+                                                            <span className="w-[9px] h-[9px] rounded-[3px] bg-figma-gold"></span>
+                                                            <span className="flex-1 text-[13px] text-figma-brown">Stitching</span>
+                                                            <span className="text-[13.5px] font-extrabold text-figma-dark">{stitchingOrders.length}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-[10px]">
+                                                            <span className="w-[9px] h-[9px] rounded-[3px] bg-figma-red"></span>
+                                                            <span className="flex-1 text-[13px] text-figma-brown">Alteration</span>
+                                                            <span className="text-[13.5px] font-extrabold text-figma-dark">{alterationOrders.length}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-[10px]">
+                                                            <span className="w-[9px] h-[9px] rounded-[3px] bg-figma-green"></span>
+                                                            <span className="flex-1 text-[13px] text-figma-brown">Ready</span>
+                                                            <span className="text-[13.5px] font-extrabold text-figma-dark">{readyOrders.length}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    {/* ── ROW 4: Today's Priority Tasks ── */}
-                                    <div>
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h3 className="dash-section-title text-base">
-                                                <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500" />
-                                                {t("dash.todayTasks")}
-                                                <span className="text-xs font-normal text-themed-muted ml-1 px-2 py-0.5 rounded-full" style={{ background: "var(--hover-bg)" }}>
-                                                    {scored.length}
-                                                </span>
-                                            </h3>
-                                            <span className="text-xs font-medium text-themed-muted uppercase tracking-wider">
-                                                {t("dash.taskPriority")}
-                                            </span>
+                                    {/* Mobile Content */}
+                                    <div className="md:hidden flex-1 flex flex-col gap-[18px] p-[18px_20px]">
+                                        <div className="bg-white border border-figma-border rounded-[20px] p-[18px_18px_14px] shadow-[0_2px_8px_rgba(42,29,20,.05)]">
+                                            <div className="flex justify-between items-baseline">
+                                                <span className="text-[12px] font-bold tracking-[1.4px] text-figma-text">TODAY</span>
+                                                <span className="text-[12px] font-semibold text-figma-red">{overdueOrders.length} overdue</span>
+                                            </div>
+                                            <div className="flex gap-[10px] mt-[14px]">
+                                                <div onClick={() => setCurrentTab("orders")} className="flex-1 bg-figma-cream rounded-[14px] p-[12px_12px_10px]">
+                                                    <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[30px] text-figma-dark leading-[1]">{readyOrders.length}</div>
+                                                    <div className="text-[12px] text-figma-muted mt-[4px]">To deliver</div>
+                                                </div>
+                                                <div onClick={() => setCurrentTab("orders")} className="flex-1 bg-[#EAF0E4] rounded-[14px] p-[12px_12px_10px]">
+                                                    <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[30px] text-figma-dark leading-[1]">{stitchingOrders.length}</div>
+                                                    <div className="text-[12px] text-figma-muted mt-[4px]">Stitching</div>
+                                                </div>
+                                                <div onClick={() => setCurrentTab("queries")} className="flex-1 bg-figma-grayLight rounded-[14px] p-[12px_12px_10px]">
+                                                    <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[30px] text-figma-dark leading-[1]">4</div>
+                                                    <div className="text-[12px] text-figma-muted mt-[4px]">New queries</div>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        {scored.length === 0 ? (
-                                            <div className="glass-card p-10 text-center">
-                                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 mx-auto mb-3">
-                                                    <CheckCircle2 className="h-7 w-7 text-emerald-500" />
-                                                </div>
-                                                <p className="text-lg font-semibold text-themed-primary">{t("dash.noTasks")}</p>
-                                                <p className="text-sm text-themed-secondary mt-1">All caught up! Great work 🎉</p>
+                                        <div className="flex flex-col gap-[10px]">
+                                            <div className="flex justify-between items-baseline">
+                                                <span className="font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-figma-dark">Due today</span>
+                                                <span onClick={() => setCurrentTab("orders")} className="text-[13px] font-semibold text-figma-goldDark cursor-pointer">See all</span>
                                             </div>
-                                        ) : (
-                                            <div className="space-y-3">
-                                                {scored.map(({ order: o, daysLate, isDueToday, isOverdue, isRush }) => (
-                                                    <div
-                                                        key={o.orderId}
-                                                        className="glass-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 transition-all hover:shadow-lg"
-                                                        style={{
-                                                            borderLeft: isOverdue ? "3px solid #ef4444" : isDueToday ? "3px solid #f59e0b" : "3px solid var(--glass-border)",
-                                                        }}
-                                                    >
-                                                        {/* Left: Order info */}
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center gap-2 flex-wrap">
-                                                                <span className="font-mono text-sm font-bold text-themed-primary">{o.orderId}</span>
-                                                                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor(o.status)}`}>
-                                                                    {statusLabel(o.status)}
-                                                                </span>
-                                                                {isRush && (
-                                                                    <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-red-500/15 text-red-400 flex items-center gap-1">
-                                                                        ⚡ Rush
-                                                                    </span>
-                                                                )}
-                                                                {isOverdue && (
-                                                                    <span className="rounded-full px-2 py-0.5 text-xs font-semibold bg-red-500/15 text-red-400">
-                                                                        🔴 {daysLate} {daysLate === 1 ? t("dash.dayLate") : t("dash.daysLate")}
-                                                                    </span>
-                                                                )}
-                                                                {isDueToday && !isOverdue && (
-                                                                    <span className="rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-500/15 text-amber-500">
-                                                                        🟡 {t("dash.dueToday")}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <p className="text-sm text-themed-secondary mt-1 truncate">
-                                                                {o.customerName} — {t(`garment.${o.garmentType}`) || o.garmentType} × {o.numberOfSets}
-                                                            </p>
-                                                            <div className="flex items-center gap-3 mt-1.5 text-xs text-themed-muted">
-                                                                <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {o.targetDeliveryDate}</span>
-                                                                {o.binLocation && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {o.binLocation}</span>}
-                                                                {o.notes && <span className="truncate max-w-[200px] flex items-center gap-1"><FileText className="h-3 w-3" /> {o.notes}</span>}
-                                                            </div>
+                                            <div className="flex flex-col gap-[10px]">
+                                                {deliverToday.map((order, i) => (
+                                                    <div key={order.orderId} onClick={() => { /* view order */ }} className="bg-white border border-figma-border rounded-[16px] p-[14px] flex gap-[12px] items-center">
+                                                        <div className={`w-[44px] h-[44px] rounded-[12px] ${i%2===0 ? 'bg-[#FBE9E4] text-figma-red' : 'bg-figma-cream text-figma-goldDark'} flex items-center justify-center font-bricolage font-extrabold tracking-[-0.4px] text-[16px]`}>
+                                                            {order.customerName.substring(0,2).toUpperCase()}
                                                         </div>
-
-                                                        {/* Right: Actions */}
-                                                        <div className="flex items-center gap-2 flex-shrink-0">
-                                                            {STATUS_FLOW[o.status] && (
-                                                                <button
-                                                                    onClick={() => handleAdvanceStatus(o.orderId, o.status)}
-                                                                    className="flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-semibold text-white transition-all hover:shadow-lg hover:scale-[1.02] active:scale-95"
-                                                                    style={{ background: "linear-gradient(135deg, #10b981, #059669)" }}
-                                                                >
-                                                                    <CheckCircle2 className="h-3.5 w-3.5" /> {t("dash.markDone")}
-                                                                </button>
-                                                            )}
-                                                            <button
-                                                                onClick={() => handleDefer(o.orderId, o.notes)}
-                                                                className="flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-semibold text-themed-secondary transition-all hover:text-themed-primary hover:scale-[1.02] active:scale-95"
-                                                                style={{ background: "var(--hover-bg)", border: "1px solid var(--glass-border)" }}
-                                                            >
-                                                                📦 {t("dash.defer")}
-                                                            </button>
+                                                        <div className="flex-1">
+                                                            <div className="text-[15px] font-bold text-figma-dark">{order.customerName}</div>
+                                                            <div className="text-[12.5px] text-figma-muted mt-[2px]">{t(`garment.${order.garmentType}`) || order.garmentType} &middot; {order.orderId}</div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="text-[11px] font-bold text-figma-green">READY</div>
+                                                            <div className="text-[12px] text-figma-muted mt-[3px]">₹{order.totalAmount}</div>
                                                         </div>
                                                     </div>
                                                 ))}
+                                                {deliverToday.length === 0 && (
+                                                    <div className="p-4 text-center text-figma-muted text-sm border border-dashed border-figma-border rounded-xl">No orders ready</div>
+                                                )}
                                             </div>
-                                        )}
+                                        </div>
+
+                                        <div onClick={() => setCurrentTab("queries")} className="bg-figma-dark rounded-[18px] p-[15px_16px] flex gap-[12px] items-center mt-[10px] cursor-pointer active:scale-[0.98] transition-transform">
+                                            <div className="w-[38px] h-[38px] rounded-[12px] bg-figma-green flex items-center justify-center text-[17px] text-white">✆</div>
+                                            <div className="flex-1">
+                                                <div className="text-[14px] font-bold text-figma-cream">4 WhatsApp queries</div>
+                                                <div className="text-[12px] text-figma-mutedGold mt-[2px]">Latest: “Sir, dress ready aacha?”</div>
+                                            </div>
+                                            <span className="text-[18px] text-[#E7C87A]">›</span>
+                                        </div>
                                     </div>
                                 </div>
-                                );
-                            }
+                            );
                         })()}
-
-                        {/* ━━━ ORDERS TAB ━━━ */}
+{/* ━━━ ORDERS TAB ━━━ */}
                         {currentTab === "orders" && (
                             <div className="space-y-4 animate-fade-in">
                                 <div className="flex items-center justify-between flex-wrap gap-3">
@@ -1380,606 +1089,313 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                             </div>
                         )}
 
-                        {/* ━━━ CUSTOMERS TAB ━━━ */}
-                        {currentTab === "customers" && (
-                            <div className="space-y-6 animate-fade-in">
-                                <div className="flex items-center justify-between gap-3 flex-wrap">
-                                    <div className="flex items-center gap-3">
-                                        <Users className="h-6 w-6 text-gold-400" />
-                                        <h2 className="text-2xl font-bold text-themed-primary">{t("dash.customers")} ({customerTotal})</h2>
-                                    </div>
-                                    <div className="flex items-center flex-wrap gap-3 w-full sm:w-auto mt-2 sm:mt-0">
-                                        <div className="flex rounded-lg overflow-hidden shrink-0" style={{ border: "1px solid var(--glass-border)" }}>
-                                            <button
-                                                onClick={() => setCustomerViewMode("list")}
-                                                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${customerViewMode === "list" ? "brand-gradient text-white" : "text-themed-secondary hover:text-themed-primary"}`}
-                                                style={customerViewMode !== "list" ? { background: "var(--bg-secondary)" } : {}}
-                                            >
-                                                <LayoutList className="h-3.5 w-3.5" /> {t("dash.listView")}
-                                            </button>
-                                            <button
-                                                onClick={() => setCustomerViewMode("grid")}
-                                                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${customerViewMode === "grid" ? "brand-gradient text-white" : "text-themed-secondary hover:text-themed-primary"}`}
-                                                style={customerViewMode !== "grid" ? { background: "var(--bg-secondary)" } : {}}
-                                            >
-                                                <LayoutGrid className="h-3.5 w-3.5" /> {t("dash.gridView")}
-                                            </button>
-                                        </div>
-                                        <div className="relative flex-1 min-w-[200px] w-full sm:w-64">
-                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-themed-muted" />
-                                            <input
-                                                type="text"
-                                                placeholder="Search customers..."
-                                                className="form-input pl-9 text-sm w-full"
-                                                value={customerSearch}
-                                                onChange={(e) => setCustomerSearch(e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="relative shrink-0">
-                                            <select
-                                                value={customerSortBy}
-                                                onChange={(e) => setCustomerSortBy(e.target.value as "newest" | "oldest" | "nameaz")}
-                                                className="appearance-none rounded-lg pl-3 pr-8 py-2 text-xs font-medium cursor-pointer"
-                                                style={{ background: "var(--input-bg)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
-                                            >
-                                                <option value="newest">Newest First</option>
-                                                <option value="oldest">Oldest First</option>
-                                                <option value="nameaz">Name (A-Z)</option>
-                                            </select>
-                                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-themed-muted pointer-events-none" />
-                                        </div>
-                                        <button
-                                            onClick={() => {
-                                                setEditingUser({
-                                                    uid: "new_" + Date.now().toString(),
-                                                    name: "",
-                                                    phoneNumber: "",
-                                                    role: "customer",
-                                                    measurements: {}
-                                                });
-                                            }}
-                                            className="btn-primary py-2 px-3 text-sm flex items-center justify-center gap-2 whitespace-nowrap"
-                                        >
-                                            <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add Customer</span>
-                                        </button>
-                                    </div>
-                                </div>
+                                                {/* ━━━ CUSTOMERS TAB ━━━ */}
+                        {currentTab === "customers" && (() => {
+                            const today = new Date();
+                            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
+                            const newCustomersThisMonth = allUsers.filter(u => u.createdAt && new Date(u.createdAt) >= new Date(firstDayOfMonth)).length;
 
-                                {/* Loading State */}
-                                {searching && (
-                                    <div className="flex justify-center py-8">
-                                        <Loader2 className="h-6 w-6 text-gold-400 animate-spin" />
-                                    </div>
-                                )}
-
-                                {/* Empty State */}
-                                {!searching && displayedCustomers.length === 0 && (
-                                    <div className="glass-card p-8 text-center">
-                                        <Search className="h-10 w-10 mx-auto mb-3 text-themed-muted" />
-                                        <p className="text-sm font-medium text-themed-primary">{t("dash.noResults")}</p>
-                                        <p className="text-xs text-themed-secondary mt-1">{t("dash.noResultsHint")}</p>
-                                        {customerSearch && <button onClick={() => setCustomerSearch("")} className="mt-3 text-xs text-gold-400 hover:text-gold-300">{t("dash.clearFilters")}</button>}
-                                    </div>
-                                )}
-
-                                {/* LIST VIEW */}
-                                {!searching && customerViewMode === "list" && displayedCustomers.length > 0 && (
-                                    <>
-                                        <div className="glass-card overflow-hidden">
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full text-left text-sm whitespace-nowrap">
-                                                    <thead className="bg-black/5 dark:bg-white/5 border-b border-black/5 dark:border-white/5 uppercase text-xs font-semibold text-themed-secondary tracking-wider">
-                                                        <tr>
-                                                            <th className="px-5 py-3">{t("dash.name")}</th>
-                                                            <th className="px-5 py-3">Phone</th>
-                                                            <th className="px-5 py-3">Profiles</th>
-                                                            <th className="px-5 py-3 text-center">Orders</th>
-                                                            <th className="px-5 py-3 text-right">Actions</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-black/5 dark:divide-white/5">
-                                                        {displayedCustomers.map((u) => (
-                                                            <tr key={u.uid} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => setViewingCustomer(u)}>
-                                                                <td className="px-5 py-4">
-                                                                    <div className="flex items-center gap-3">
-                                                                        <div className="h-8 w-8 rounded-full bg-gold-400/10 text-gold-400 flex items-center justify-center font-bold text-xs shrink-0">
-                                                                            {u.name ? u.name.charAt(0).toUpperCase() : "?"}
-                                                                        </div>
-                                                                        <div>
-                                                                            <p className="font-semibold text-themed-primary">{u.name || <span className="text-themed-muted italic">{t("dash.unnamed")}</span>}</p>
-                                                                            {u.gender && <p className="text-[10px] text-themed-secondary uppercase tracking-wider mt-0.5">{u.gender}</p>}
-                                                                        </div>
-                                                                    </div>
-                                                                </td>
-                                                                <td className="px-5 py-4 text-themed-secondary">
-                                                                    <div className="flex items-center gap-1.5 font-medium"><Phone className="h-3.5 w-3.5 text-themed-muted" />{u.phoneNumber}</div>
-                                                                </td>
-                                                                <td className="px-5 py-4">
-                                                                    <div className="flex flex-wrap gap-1.5 max-w-[200px]">
-                                                                        {Object.keys(u.measurements || {}).length > 0 ? Object.keys(u.measurements || {}).map(gType => (
-                                                                            <span key={gType} className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gold-400/10 text-gold-400 border border-gold-400/20">
-                                                                                {gType}
-                                                                            </span>
-                                                                        )) : <span className="text-xs text-themed-muted italic">None</span>}
-                                                                    </div>
-                                                                </td>
-                                                                <td className="px-5 py-4 text-center">
-                                                                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-black/5 dark:bg-white/5 text-themed-primary">
-                                                                        {orders.filter(o => o.customerPhone === u.phoneNumber).length}
-                                                                    </span>
-                                                                </td>
-                                                                <td className="px-5 py-4 text-right">
-                                                                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100" onClick={(e) => e.stopPropagation()}>
-                                                                        <button onClick={() => setEditingUser({ ...u })} className="p-2 rounded-lg text-themed-muted hover:text-gold-400 hover:bg-gold-400/10 transition-colors inline-flex items-center">
-                                                                            <Edit3 className="h-4 w-4" />
-                                                                        </button>
-                                                                        <button onClick={() => handleDeleteCustomer(u.uid, u.phoneNumber)} className="p-2 rounded-lg text-themed-muted hover:text-red-500 hover:bg-red-500/10 transition-colors inline-flex items-center">
-                                                                            <Trash2 className="h-4 w-4" />
-                                                                        </button>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-
-                                        {/* Pagination Controls */}
-                                        {customerTotalPages > 1 && (
-                                            <div className="flex items-center justify-center gap-2 pt-2">
-                                                <button
-                                                    onClick={() => fetchCustomerListPage(customerCurrentPage - 1)}
-                                                    disabled={customerCurrentPage <= 1}
-                                                    className="flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                                                    style={{ background: "var(--bg-secondary)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
-                                                >
-                                                    <ChevronLeft className="h-3.5 w-3.5" /> {t("dash.prev")}
-                                                </button>
-                                                <div className="flex items-center gap-1">
-                                                    {Array.from({ length: customerTotalPages }, (_, i) => i + 1).map((p) => (
-                                                        <button
-                                                            key={p}
-                                                            onClick={() => fetchCustomerListPage(p)}
-                                                            className={`h-8 w-8 rounded-lg text-xs font-medium transition-colors ${p === customerCurrentPage ? "brand-gradient text-white" : "text-themed-secondary hover:text-themed-primary"}`}
-                                                            style={p !== customerCurrentPage ? { background: "var(--bg-secondary)" } : {}}
-                                                        >
-                                                            {p}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                                <button
-                                                    onClick={() => fetchCustomerListPage(customerCurrentPage + 1)}
-                                                    disabled={customerCurrentPage >= customerTotalPages}
-                                                    className="flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                                                    style={{ background: "var(--bg-secondary)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
-                                                >
-                                                    {t("dash.next")} <ChevronRight className="h-3.5 w-3.5" />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </>
-                                )}
-
-                                {/* GRID VIEW */}
-                                {!searching && customerViewMode === "grid" && displayedCustomers.length > 0 && (
-                                    <>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            {displayedCustomers.map((u) => (
-                                                <div key={u.uid} className="glass-card p-5 flex flex-col cursor-pointer hover:scale-[1.01] transition-transform" onClick={() => setViewingCustomer(u)}>
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="min-w-0 pr-4">
-                                                            <h4 className="font-semibold text-themed-primary truncate">{u.name || t("dash.unnamed")}</h4>
-                                                            <p className="text-sm text-themed-secondary flex items-center gap-1 mt-0.5"><Phone className="h-3 w-3 shrink-0" /><span className="truncate">{u.phoneNumber}</span></p>
-                                                        </div>
-                                                        <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-                                                            <button onClick={() => setEditingUser({ ...u })} className="p-2 rounded-lg text-themed-muted hover:text-gold-400 transition-colors" style={{ background: "var(--hover-bg)" }}>
-                                                                <Edit3 className="h-4 w-4" />
-                                                            </button>
-                                                            <button onClick={() => handleDeleteCustomer(u.uid, u.phoneNumber)} className="p-2 rounded-lg text-themed-muted hover:text-red-500 transition-colors" style={{ background: "var(--hover-bg)" }}>
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </button>
-                                                        </div>
+                            return (
+                                <div className="flex flex-col h-full bg-figma-bg md:bg-white animate-fade-in">
+                                    {/* Desktop View */}
+                                    <div className="hidden md:flex flex-1 overflow-hidden">
+                                        <div className="w-[420px] bg-white border-r border-figma-border flex flex-col overflow-hidden">
+                                            <div className="p-[20px_22px_16px] border-b border-figma-border">
+                                                <div className="flex items-center gap-[12px]">
+                                                    <div className="flex-1">
+                                                        <div className="font-bricolage font-extrabold tracking-[-0.5px] text-[23px] text-figma-dark">Customers</div>
+                                                        <div className="text-[12.5px] text-figma-muted mt-[4px]">{allUsers.length} saved &middot; {newCustomersThisMonth} this month</div>
                                                     </div>
+                                                    <button onClick={() => setEditingUser({ uid: "new_" + Date.now(), name: "", phoneNumber: "", role: "customer", measurements: {} })} className="h-[40px] px-[15px] rounded-[11px] bg-figma-gold flex items-center gap-[7px] text-[13.5px] font-extrabold text-figma-dark cursor-pointer hover:opacity-90">
+                                                        <span className="text-[17px] font-light">+</span>Add
+                                                    </button>
+                                                </div>
+                                                <div className="bg-figma-grayLight border border-figma-border rounded-[11px] p-[11px_14px] mt-[14px] flex items-center gap-[10px]">
+                                                    <Search className="w-4 h-4 text-[#A6947F]" />
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder="Search name or phone number" 
+                                                        value={customerSearch}
+                                                        onChange={(e) => setCustomerSearch(e.target.value)}
+                                                        className="bg-transparent border-none outline-none text-[13.5px] text-figma-dark placeholder-[#A6947F] w-full"
+                                                    />
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-[1fr_74px_82px] gap-[10px] p-[11px_22px] bg-figma-bg border-b border-figma-border text-[11.5px] font-extrabold tracking-[0.8px] text-figma-text shrink-0">
+                                                <span>NAME</span>
+                                                <span className="text-right">ORDERS</span>
+                                                <span className="text-right">PHONE</span>
+                                            </div>
 
-                                                    {/* Garment Profiles */}
-                                                    {Object.keys(u.measurements || {}).length > 0 && (
-                                                        <div className="mt-4 flex flex-wrap gap-2">
-                                                            {Object.keys(u.measurements).map((garmentType) => (
-                                                                <span key={garmentType} className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs border" style={{ background: "var(--hover-bg)", borderColor: "var(--glass-border)" }}>
-                                                                    <Ruler className="h-3 w-3 text-gold-400" />
-                                                                    <span className="font-medium text-themed-primary">{t(`garment.${garmentType}`) || garmentType}</span>
-                                                                    <span className="text-themed-muted ml-0.5">({Object.keys((u.measurements as Record<string, Record<string, number>>)[garmentType] || {}).length})</span>
-                                                                </span>
-                                                            ))}
+                                            <div className="overflow-y-auto flex-1">
+                                                {displayedCustomers.map(user => {
+                                                    const initials = user.name ? user.name.substring(0,2).toUpperCase() : "CU";
+                                                    const userOrdersCount = orders.filter(o => o.customerPhone === user.phoneNumber).length;
+                                                    
+                                                    return (
+                                                        <div key={user.uid} onClick={() => setViewingCustomer(user)} className="grid grid-cols-[1fr_74px_82px] gap-[10px] p-[14px_22px] items-center border-b border-figma-grayLight cursor-pointer hover:bg-figma-cream">
+                                                            <div className="flex items-center gap-[11px]">
+                                                                <div className="w-[36px] h-[36px] rounded-[10px] bg-figma-grayLight flex items-center justify-center font-bricolage font-extrabold text-[12.5px] text-figma-goldDark">
+                                                                    {initials}
+                                                                </div>
+                                                                <div className="overflow-hidden">
+                                                                    <div className="text-[14.5px] font-bold text-figma-dark truncate">{user.name}</div>
+                                                                </div>
+                                                            </div>
+                                                            <span className="text-[13.5px] font-bold text-figma-brown text-right">{userOrdersCount}</span>
+                                                            <span className="text-[12px] text-figma-muted text-right truncate">{user.phoneNumber}</span>
                                                         </div>
-                                                    )}
+                                                    );
+                                                })}
+                                                {customerGridHasMore && (
+                                                    <div className="p-4 text-center">
+                                                        <button onClick={loadMoreCustomerGrid} disabled={customerGridLoading} className="text-figma-goldDark font-bold text-sm">
+                                                            {customerGridLoading ? "Loading..." : "Load more"}
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
 
-                                                    <div className="mt-auto pt-5">
-                                                        <p className="text-xs text-themed-muted">
-                                                            {orders.filter((o) => o.customerPhone === u.phoneNumber).length} {t("dash.orderCount")}
-                                                        </p>
+                                        <div className="flex-1 flex items-center justify-center bg-figma-bg">
+                                            <div className="text-center text-figma-muted font-semibold">Select a customer from the list to view profile.</div>
+                                        </div>
+                                    </div>
+
+                                    {/* Mobile View */}
+                                    <div className="md:hidden flex flex-col h-full bg-figma-bg pb-20">
+                                        <div className="bg-figma-dark p-[env(safe-area-inset-top,20px)_18px_16px] text-figma-cream">
+                                            <div className="flex items-center gap-[14px] pt-[8px]">
+                                                <div className="flex-1">
+                                                    <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[20px] text-figma-cream">Customers</div>
+                                                    <div className="text-[12px] text-figma-mutedGold mt-[2px]">{allUsers.length} saved</div>
+                                                </div>
+                                                <button onClick={() => setEditingUser({ uid: "new_" + Date.now(), name: "", phoneNumber: "", role: "customer", measurements: {} })} className="px-[13px] py-[6px] border border-[#4E3A2A] rounded-full text-[11.5px] font-extrabold text-figma-gold cursor-pointer">
+                                                    ADD
+                                                </button>
+                                            </div>
+                                            <div className="bg-figma-darkHover rounded-[14px] p-[12px_14px] mt-[14px] flex items-center gap-[10px]">
+                                                <Search className="w-[15px] h-[15px] text-figma-mutedGold" />
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Search name or phone number" 
+                                                    value={customerSearch}
+                                                    onChange={(e) => setCustomerSearch(e.target.value)}
+                                                    className="flex-1 text-[14.5px] text-figma-cream bg-transparent border-none outline-none placeholder-figma-mutedGold font-sans"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex-1 p-[14px_18px_20px] flex flex-col gap-[10px] overflow-y-auto">
+                                            <div className="text-[11.5px] font-extrabold tracking-[1.2px] text-figma-text pl-[2px] pt-[8px]">ALL CUSTOMERS</div>
+                                            {displayedCustomers.map((user, i) => {
+                                                const initials = user.name ? user.name.substring(0,2).toUpperCase() : "CU";
+                                                const userOrdersCount = orders.filter(o => o.customerPhone === user.phoneNumber).length;
+                                                return (
+                                                    <div key={user.uid} onClick={() => setViewingCustomer(user)} className="bg-white border border-figma-border rounded-[16px] p-[14px] flex gap-[12px] items-center cursor-pointer">
+                                                        <div className={`w-[44px] h-[44px] rounded-[12px] ${i%2===0 ? 'bg-figma-cream' : 'bg-figma-grayLight'} flex items-center justify-center font-bricolage font-extrabold text-[15px] text-figma-goldDark`}>
+                                                            {initials}
+                                                        </div>
+                                                        <div className="flex-1 overflow-hidden">
+                                                            <div className="text-[15.5px] font-bold text-figma-dark truncate">{user.name}</div>
+                                                            <div className="text-[12.5px] text-figma-muted mt-[2px] truncate">{user.phoneNumber} &middot; {userOrdersCount} orders</div>
+                                                        </div>
+                                                        <span className="text-[18px] text-[#A6947F]">›</span>
+                                                    </div>
+                                                );
+                                            })}
+                                            {customerGridHasMore && (
+                                                <div className="p-4 text-center">
+                                                    <button onClick={loadMoreCustomerGrid} disabled={customerGridLoading} className="text-figma-goldDark font-bold text-sm">
+                                                        {customerGridLoading ? "Loading..." : "Load more"}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Include Customer Profile Modal in Customer Tab logic */}
+                                    {viewingCustomer && (
+                                        <CustomerDetailModal
+    isOpen={!!viewingCustomer}
+    customer={viewingCustomer}
+    orders={orders.filter(o => o.customerPhone === viewingCustomer.phoneNumber)}
+    onClose={() => setViewingCustomer(null)}
+    onEditOrder={(order) => { setEditingOrder(order); setViewingCustomer(null); }}
+    onEditCustomer={(c) => { setEditingUser(c); setViewingCustomer(null); }}
+/>
+                                    )}
+
+                                </div>
+                            );
+                        })()}
+{/* ━━━ MONITORING TAB ━━━ */}
+                        {currentTab === "monitoring" && (() => {
+                            const cuttingOrders = orders.filter(o => o.status === "Cutting");
+                            const stitchingOrders = orders.filter(o => o.status === "Stitching");
+                            const alterationOrders = orders.filter(o => o.status === "Alteration");
+                            const readyOrders = orders.filter(o => o.status === "Ready");
+
+                            const capacityPercent = capacity > 0 ? Math.round((todayLoad / capacity) * 100) : 0;
+
+                            return (
+                                <div className="flex flex-col h-full bg-figma-bg md:bg-white animate-fade-in">
+                                    {/* Desktop Header */}
+                                    <div className="hidden md:flex bg-white border-b border-figma-border py-[18px] px-[30px] items-center gap-[20px] shrink-0">
+                                        <div className="flex-1">
+                                            <div className="font-bricolage font-extrabold tracking-[-0.5px] text-[25px] text-figma-dark leading-[1.1]">Monitoring</div>
+                                            <div className="text-[13px] text-figma-muted mt-1">{orders.filter(o => o.status !== "Delivered").length} orders in the shop &middot; tap a card to move it one stage forward</div>
+                                        </div>
+                                        <div className="w-[280px]">
+                                            <div className="flex justify-between text-[12px] font-bold text-figma-brown">
+                                                <span>Today's capacity</span>
+                                                <span className="text-figma-goldDark">{todayLoad} / {capacity} items</span>
+                                            </div>
+                                            <div className="h-[9px] rounded-[5px] bg-figma-grayLight overflow-hidden mt-[7px]">
+                                                <div className="h-full bg-figma-gold" style={{ width: `${Math.min(capacityPercent, 100)}%` }}></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Mobile Header */}
+                                    <div className="md:hidden bg-figma-dark p-[env(safe-area-inset-top,20px)_18px_16px] text-[#F3E9DA]">
+                                        <div className="flex items-center gap-[14px] pt-[8px]">
+                                            <span className="text-[22px] text-[#E7C87A] cursor-pointer" onClick={() => setCurrentTab("overview")}>‹</span>
+                                            <div className="flex-1">
+                                                <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[20px] text-figma-cream">Monitoring</div>
+                                                <div className="text-[12px] text-figma-mutedGold mt-[2px]">{orders.filter(o => o.status !== "Delivered").length} orders in the shop</div>
+                                            </div>
+                                            <span className="text-[18px] text-[#E7C87A]">⌕</span>
+                                        </div>
+                                        <div className="bg-figma-darkHover rounded-[14px] p-[12px_14px] mt-[14px]">
+                                            <div className="flex justify-between items-baseline">
+                                                <span className="text-[12.5px] font-semibold text-figma-mutedGold">Today's stitching capacity</span>
+                                                <span className="text-[12.5px] font-extrabold text-[#E7C87A]">{todayLoad} / {capacity} items</span>
+                                            </div>
+                                            <div className="h-[8px] rounded-[4px] bg-[#4E3A2A] mt-[9px] overflow-hidden">
+                                                <div className="h-full bg-figma-gold" style={{ width: `${Math.min(capacityPercent, 100)}%` }}></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Kanban Board Container (Desktop) */}
+                                    <div className="hidden md:grid flex-1 p-[22px_26px] grid-cols-4 gap-[16px] overflow-hidden bg-figma-bg">
+                                        
+                                        {/* Column: Cutting */}
+                                        <div className="bg-[#F5EFE5] border border-figma-border rounded-[16px] p-[14px] flex flex-col gap-[11px] overflow-y-auto">
+                                            <div className="flex items-baseline gap-[8px] px-1 shrink-0">
+                                                <span className="w-[9px] h-[9px] rounded-[3px] bg-figma-goldDark"></span>
+                                                <span className="flex-1 text-[13.5px] font-extrabold text-figma-dark">Cutting</span>
+                                                <span className="font-bricolage font-extrabold text-[16px] text-figma-goldDark">{cuttingOrders.length}</span>
+                                            </div>
+                                            {cuttingOrders.map(o => (
+                                                <div key={o.orderId} onClick={() => handleStatusChange(o.orderId, "Stitching")} className="bg-white border border-figma-border rounded-[13px] p-[13px] cursor-pointer hover:shadow-sm transition-shadow">
+                                                    <div className="text-[14px] font-bold text-figma-dark">{o.customerName}</div>
+                                                    <div className="text-[12px] text-figma-muted mt-[3px]">{t(`garment.${o.garmentType}`) || o.garmentType} &middot; {o.orderId}</div>
+                                                    <div className="text-[11.5px] font-bold text-figma-muted mt-[9px]">
+                                                        due {new Date(o.targetDeliveryDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
 
-                                        {/* Load More Button */}
-                                        <div className="flex justify-center pt-2">
-                                            {customerGridHasMore ? (
-                                                <button
-                                                    onClick={loadMoreCustomerGrid}
-                                                    disabled={customerGridLoading}
-                                                    className="flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-colors"
-                                                    style={{ background: "var(--bg-secondary)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
-                                                >
-                                                    {customerGridLoading ? (
-                                                        <><Loader2 className="h-4 w-4 animate-spin" /> {t("dash.loadingMore")}</>
-                                                    ) : (
-                                                        <>{t("dash.loadMore")} ({displayedCustomers.length}/{customerTotal})</>
-                                                    )}
-                                                </button>
-                                            ) : (
-                                                <p className="text-xs text-themed-muted">{t("dash.allLoaded")}</p>
-                                            )}
-                                        </div>
-                                    </>
-                                )}
-
-                                {/* Edit User Modal */}
-                                {editingUser && (
-                                    <MeasurementForm
-                                        key={editingUser.uid}
-                                        user={editingUser}
-                                        onClose={() => setEditingUser(null)}
-                                        onSave={handleSaveUser}
-                                    />
-                                )}
-
-                                {/* Customer Detail Modal */}
-                                <CustomerDetailModal
-                                    isOpen={!!viewingCustomer}
-                                    customer={viewingCustomer}
-                                    orders={orders}
-                                    onClose={() => setViewingCustomer(null)}
-                                    onEditOrder={(o) => { setViewingCustomer(null); setEditingOrder(o); }}
-                                    onEditCustomer={(u) => { setViewingCustomer(null); setEditingUser({ ...u }); }}
-                                />
-                            </div>
-                        )}
-
-                        {/* ━━━ MONITORING TAB ━━━ */}
-                        {currentTab === "monitoring" && (() => {
-                            const MONITOR_PAGE_SIZE = 8;
-                            const allMonitorUsers = allUsers
-                                .filter(u => u.role === "customer")
-                                .map(u => {
-                                    const userOrders = orders.filter(o => o.customerPhone === u.phoneNumber);
-                                    const activeOrdersCount = userOrders.filter(o => o.status !== "Delivered").length;
-                                    return {
-                                        ...u,
-                                        totalOrders: userOrders.length,
-                                        activeOrdersCount
-                                    };
-                                })
-                                .filter(u => u.totalOrders > 0 && u.activeOrdersCount > 0)
-                                .sort((a, b) => (b.queryCount || 0) - (a.queryCount || 0));
-
-                            const filteredMonitorUsers = monitorSearch
-                                ? allMonitorUsers.filter(u =>
-                                    u.name.toLowerCase().includes(monitorSearch.toLowerCase()) ||
-                                    u.phoneNumber.includes(monitorSearch)
-                                )
-                                : allMonitorUsers;
-
-                            const monitorTotalPages = Math.max(1, Math.ceil(filteredMonitorUsers.length / MONITOR_PAGE_SIZE));
-                            const safePage = Math.min(monitorPage, monitorTotalPages);
-                            const monitorPaged = filteredMonitorUsers.slice((safePage - 1) * MONITOR_PAGE_SIZE, safePage * MONITOR_PAGE_SIZE);
-
-                            const siteUrl = "https://skumarantailors.vercel.app";
-
-                            const getMessageText = (name: string, phone: string) => {
-                                const trackingLink = `${siteUrl}/tracking?phone=${encodeURIComponent(phone)}`;
-                                return `வணக்கம் ${name}! 🙏\nHi ${name}, this is S Kumaran Tailors.\n\nஉங்கள் ஆர்டர் நிலையை அறிய கீழே உள்ள இணைப்பை பாருங்கள் / Track your order status here:\n${trackingLink}\n\n📞 தொடர்புக்கு / Contact: +91 94428 98544\n\nநன்றி! Thank you! 🙏`;
-                            };
-
-                            const openWhatsApp = (phone: string, name: string) => {
-                                const clean = phone.replace(/[^0-9]/g, "");
-                                const msg = encodeURIComponent(getMessageText(name, phone));
-                                window.open(`https://wa.me/${clean}?text=${msg}`, "_blank");
-                            };
-
-                            const openSMS = (phone: string, name: string) => {
-                                const msg = encodeURIComponent(getMessageText(name, phone));
-                                window.open(`sms:${phone}?body=${msg}`, "_self");
-                            };
-
-                            return (
-                                <div className="space-y-6 animate-fade-in">
-                                    <div className="glass-card p-6">
-                                        {/* Header */}
-                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brown-500/10 text-brown-500">
-                                                    <Activity className="h-5 w-5" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-semibold text-themed-primary">Customer Query Monitoring</h3>
-                                                    <p className="text-sm text-themed-secondary">Track how often customers check their order status via WhatsApp or Public Tracker.</p>
-                                                </div>
+                                        {/* Column: Stitching */}
+                                        <div className="bg-[#F5EFE5] border border-figma-border rounded-[16px] p-[14px] flex flex-col gap-[11px] overflow-y-auto">
+                                            <div className="flex items-baseline gap-[8px] px-1 shrink-0">
+                                                <span className="w-[9px] h-[9px] rounded-[3px] bg-figma-gold"></span>
+                                                <span className="flex-1 text-[13.5px] font-extrabold text-figma-dark">Stitching</span>
+                                                <span className="font-bricolage font-extrabold text-[16px] text-figma-goldDark">{stitchingOrders.length}</span>
                                             </div>
-                                            <button
-                                                onClick={() => {
-                                                    setDataLoading(true);
-                                                    getUsers().then(u => {
-                                                        setAllUsers(u);
-                                                        setDataLoading(false);
-                                                    }).catch(err => {
-                                                        console.error("Failed to refresh users", err);
-                                                        setDataLoading(false);
-                                                    });
-                                                }}
-                                                disabled={dataLoading}
-                                                className="btn-secondary h-9 px-4 text-xs font-medium flex items-center gap-2"
-                                            >
-                                                <RefreshCw className={`h-3.5 w-3.5 ${dataLoading ? "animate-spin" : ""}`} />
-                                                {dataLoading ? "Refreshing..." : "Refresh"}
-                                            </button>
-                                        </div>
-
-                                        {/* Controls: Search + View Toggle */}
-                                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-5">
-                                            <div className="relative flex-1">
-                                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-themed-muted" />
-                                                <input
-                                                    type="text"
-                                                    value={monitorSearch}
-                                                    onChange={(e) => { setMonitorSearch(e.target.value); setMonitorPage(1); }}
-                                                    placeholder="Search by name or phone..."
-                                                    className="form-input text-sm pl-10 w-full"
-                                                />
-                                                {monitorSearch && (
-                                                    <button onClick={() => { setMonitorSearch(""); setMonitorPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-themed-muted hover:text-themed-primary">
-                                                        <XCircle className="h-4 w-4" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid var(--glass-border)" }}>
-                                                    <button
-                                                        onClick={() => setMonitorViewMode("list")}
-                                                        className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all ${monitorViewMode === "list" ? "bg-gold-400/10 text-gold-400" : "text-themed-secondary hover:text-themed-primary"
-                                                            }`}
-                                                    >
-                                                        <LayoutList className="h-3.5 w-3.5" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setMonitorViewMode("grid")}
-                                                        className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-all ${monitorViewMode === "grid" ? "bg-gold-400/10 text-gold-400" : "text-themed-secondary hover:text-themed-primary"
-                                                            }`}
-                                                    >
-                                                        <LayoutGrid className="h-3.5 w-3.5" />
-                                                    </button>
-                                                </div>
-                                                <span className="text-xs text-themed-muted">{filteredMonitorUsers.length} customers</span>
-                                            </div>
-                                        </div>
-
-                                        {/* List View */}
-                                        {monitorViewMode === "list" ? (
-                                            <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid var(--glass-border)" }}>
-                                                <table className="w-full text-left text-sm whitespace-nowrap">
-                                                    <thead className="text-xs uppercase" style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}>
-                                                        <tr>
-                                                            <th className="px-5 py-3 font-semibold">Customer</th>
-                                                            <th className="px-5 py-3 font-semibold">Phone #</th>
-                                                            <th className="px-5 py-3 font-semibold text-center">Total Queries</th>
-                                                            <th className="px-5 py-3 font-semibold text-center">Orders</th>
-                                                            <th className="px-5 py-3 font-semibold text-right">Last Queried At</th>
-                                                            <th className="px-5 py-3 font-semibold text-right">Action</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y" style={{ borderColor: "var(--glass-border)", background: "var(--bg-secondary)" }}>
-                                                        {monitorPaged.map(u => (
-                                                            <tr key={u.uid} className="transition-colors hover:bg-neutral-500/5">
-                                                                <td className="px-5 py-3.5 font-medium text-themed-primary">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-gold-400 to-brown-500 flex items-center justify-center text-xs text-white font-bold flex-shrink-0">
-                                                                            {u.name.charAt(0).toUpperCase()}
-                                                                        </div>
-                                                                        {u.name}
-                                                                    </div>
-                                                                </td>
-                                                                <td className="px-5 py-3.5 text-themed-secondary">{u.phoneNumber}</td>
-                                                                <td className="px-5 py-3.5 text-center">
-                                                                    <button 
-                                                                        onClick={() => setViewingQueriesFor(u)}
-                                                                        className="inline-flex items-center justify-center min-w-[32px] rounded-full px-2 py-1 text-xs font-bold bg-brown-500/10 text-brown-500 hover:bg-brown-500/20 transition-all cursor-pointer"
-                                                                        title="View Query History"
-                                                                    >
-                                                                        {u.queryCount || 0}
-                                                                    </button>
-                                                                </td>
-                                                                <td className="px-5 py-3.5 text-center">
-                                                                    <span className="inline-flex items-center justify-center min-w-[32px] rounded-full px-2 py-1 text-xs font-bold bg-gold-400/10 text-gold-400">
-                                                                        {u.totalOrders}
-                                                                    </span>
-                                                                </td>
-                                                                <td className="px-5 py-3.5 text-right text-themed-muted text-xs">
-                                                                    {u.lastQueryAt ? new Date(u.lastQueryAt).toLocaleString() : "Never"}
-                                                                </td>
-                                                                <td className="px-5 py-3.5 text-right">
-                                                                    <div className="flex items-center justify-end gap-1">
-                                                                        <button
-                                                                            onClick={() => window.open(`/tracking?phone=${encodeURIComponent(u.phoneNumber)}`, "_blank")}
-                                                                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gold-400 hover:bg-gold-400/10 transition-all"
-                                                                            title="View Orders"
-                                                                        >
-                                                                            <Eye className="h-3.5 w-3.5" />
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => openWhatsApp(u.phoneNumber, u.name)}
-                                                                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-emerald-500 hover:bg-emerald-500/10 transition-all"
-                                                                            title="WhatsApp"
-                                                                        >
-                                                                            <MessageCircle className="h-3.5 w-3.5" />
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => openSMS(u.phoneNumber, u.name)}
-                                                                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-orange-500 hover:bg-orange-500/10 transition-all"
-                                                                            title="SMS"
-                                                                        >
-                                                                            <Smartphone className="h-3.5 w-3.5" />
-                                                                        </button>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        ) : (
-                                            /* Grid View */
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                                                {monitorPaged.map(u => (
-                                                    <div key={u.uid} className="glass-card p-4 flex flex-col gap-3 hover:scale-[1.01] transition-transform">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-gold-400 to-brown-500 flex items-center justify-center text-sm text-white font-bold flex-shrink-0">
-                                                                {u.name.charAt(0).toUpperCase()}
-                                                            </div>
-                                                            <div className="min-w-0">
-                                                                <p className="font-semibold text-themed-primary text-sm truncate">{u.name}</p>
-                                                                <p className="text-xs text-themed-muted truncate">{u.phoneNumber}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex gap-2">
-                                                                <button
-                                                                    onClick={() => setViewingQueriesFor(u)}
-                                                                    className="inline-flex items-center justify-center rounded-full px-2.5 py-1 text-xs font-bold bg-brown-500/10 text-brown-500 hover:bg-brown-500/20 transition-all cursor-pointer"
-                                                                    title="View Query History"
-                                                                >
-                                                                    {u.queryCount || 0} queries
-                                                                </button>
-                                                                <span className="inline-flex items-center justify-center rounded-full px-2.5 py-1 text-xs font-bold bg-gold-400/10 text-gold-400">
-                                                                    {u.totalOrders} orders
-                                                                </span>
-                                                            </div>
-                                                            <p className="text-xs text-themed-muted">
-                                                                {u.lastQueryAt ? new Date(u.lastQueryAt).toLocaleDateString() : "Never"}
-                                                            </p>
-                                                        </div>
-                                                        <div className="flex gap-2">
-                                                            <button
-                                                                onClick={() => window.open(`/tracking?phone=${encodeURIComponent(u.phoneNumber)}`, "_blank")}
-                                                                className="flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-gold-400 hover:bg-gold-400/10 transition-all flex-1"
-                                                                style={{ border: "1px solid var(--glass-border)" }}
-                                                            >
-                                                                <Eye className="h-3.5 w-3.5" /> View
-                                                            </button>
-                                                            <button
-                                                                onClick={() => openWhatsApp(u.phoneNumber, u.name)}
-                                                                className="flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-emerald-500 hover:bg-emerald-500/10 transition-all"
-                                                                style={{ border: "1px solid var(--glass-border)" }}
-                                                                title="WhatsApp"
-                                                            >
-                                                                <MessageCircle className="h-3.5 w-3.5" />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => openSMS(u.phoneNumber, u.name)}
-                                                                className="flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-orange-500 hover:bg-orange-500/10 transition-all"
-                                                                style={{ border: "1px solid var(--glass-border)" }}
-                                                                title="SMS"
-                                                            >
-                                                                <Smartphone className="h-3.5 w-3.5" />
-                                                            </button>
-                                                        </div>
+                                            {stitchingOrders.map(o => (
+                                                <div key={o.orderId} onClick={() => handleStatusChange(o.orderId, "Alteration")} className="bg-white border border-figma-border rounded-[13px] p-[13px] cursor-pointer hover:shadow-sm transition-shadow">
+                                                    <div className="text-[14px] font-bold text-figma-dark">{o.customerName}</div>
+                                                    <div className="text-[12px] text-figma-muted mt-[3px]">{t(`garment.${o.garmentType}`) || o.garmentType} &middot; {o.orderId}</div>
+                                                    <div className="text-[11.5px] font-bold text-figma-muted mt-[9px]">
+                                                        due {new Date(o.targetDeliveryDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
                                                     </div>
-                                                ))}
-                                            </div>
-                                        )}
+                                                </div>
+                                            ))}
+                                        </div>
 
-                                        {/* Pagination */}
-                                        {monitorTotalPages > 1 && (
-                                            <div className="flex items-center justify-between mt-4 pt-4" style={{ borderTop: "1px solid var(--glass-border)" }}>
-                                                <p className="text-xs text-themed-muted">
-                                                    Showing {(safePage - 1) * MONITOR_PAGE_SIZE + 1}–{Math.min(safePage * MONITOR_PAGE_SIZE, filteredMonitorUsers.length)} of {filteredMonitorUsers.length}
-                                                </p>
-                                                <div className="flex items-center gap-1">
-                                                    <button
-                                                        onClick={() => setMonitorPage(p => Math.max(1, p - 1))}
-                                                        disabled={safePage <= 1}
-                                                        className="flex h-8 w-8 items-center justify-center rounded-lg text-themed-secondary hover:text-themed-primary disabled:opacity-30 transition-all"
-                                                        style={{ background: "var(--hover-bg)" }}
-                                                    >
-                                                        <ChevronLeft className="h-4 w-4" />
-                                                    </button>
-                                                    <span className="text-xs font-medium text-themed-secondary px-2">{safePage} / {monitorTotalPages}</span>
-                                                    <button
-                                                        onClick={() => setMonitorPage(p => Math.min(monitorTotalPages, p + 1))}
-                                                        disabled={safePage >= monitorTotalPages}
-                                                        className="flex h-8 w-8 items-center justify-center rounded-lg text-themed-secondary hover:text-themed-primary disabled:opacity-30 transition-all"
-                                                        style={{ background: "var(--hover-bg)" }}
-                                                    >
-                                                        <ChevronRight className="h-4 w-4" />
+                                        {/* Column: Alteration */}
+                                        <div className="bg-[#F5EFE5] border border-figma-border rounded-[16px] p-[14px] flex flex-col gap-[11px] overflow-y-auto">
+                                            <div className="flex items-baseline gap-[8px] px-1 shrink-0">
+                                                <span className="w-[9px] h-[9px] rounded-[3px] bg-figma-red"></span>
+                                                <span className="flex-1 text-[13.5px] font-extrabold text-figma-dark">Alteration</span>
+                                                <span className="font-bricolage font-extrabold text-[16px] text-figma-goldDark">{alterationOrders.length}</span>
+                                            </div>
+                                            {alterationOrders.map(o => (
+                                                <div key={o.orderId} className="bg-white border border-[#F0CFC6] rounded-[13px] p-[13px]">
+                                                    <div className="flex justify-between items-baseline">
+                                                        <span className="text-[14px] font-bold text-figma-dark">{o.customerName}</span>
+                                                    </div>
+                                                    <div className="text-[12px] text-figma-muted mt-[3px]">{t(`garment.${o.garmentType}`) || o.garmentType} &middot; {o.orderId}</div>
+                                                    <button onClick={() => handleStatusChange(o.orderId, "Ready")} className="w-full h-[34px] rounded-[9px] bg-figma-gold text-figma-dark text-[12.5px] font-extrabold flex items-center justify-center mt-[10px] cursor-pointer hover:opacity-90">
+                                                        Move to Ready
                                                     </button>
                                                 </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Column: Ready */}
+                                        <div className="bg-[#EAF0E4] border border-[#D3E0C8] rounded-[16px] p-[14px] flex flex-col gap-[11px] overflow-y-auto">
+                                            <div className="flex items-baseline gap-[8px] px-1 shrink-0">
+                                                <span className="w-[9px] h-[9px] rounded-[3px] bg-figma-green"></span>
+                                                <span className="flex-1 text-[13.5px] font-extrabold text-figma-dark">Ready</span>
+                                                <span className="font-bricolage font-extrabold text-[16px] text-[#4F6742]">{readyOrders.length}</span>
                                             </div>
-                                        )}
+                                            {readyOrders.map(o => (
+                                                <div key={o.orderId} className="bg-white border border-[#D3E0C8] rounded-[13px] p-[13px]">
+                                                    <div className="text-[14px] font-bold text-figma-dark">{o.customerName}</div>
+                                                    <div className="text-[12px] text-figma-muted mt-[3px]">{t(`garment.${o.garmentType}`) || o.garmentType} &middot; Bin {o.binLocation || '-'}</div>
+                                                    <button onClick={() => handleStatusChange(o.orderId, "Delivered")} className="w-full h-[34px] rounded-[9px] bg-[#25795A] text-white text-[12.5px] font-extrabold flex items-center justify-center gap-2 mt-[10px] cursor-pointer hover:opacity-90">
+                                                        <span>✆</span> Notify & Deliver
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                    </div>
+                                    
+                                    {/* Mobile Content (List) */}
+                                    <div className="md:hidden flex-1 p-[14px_18px_80px] flex flex-col gap-[11px] overflow-y-auto bg-figma-bg">
+                                        <div className="flex justify-between items-baseline">
+                                            <span className="font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-figma-dark">All Active Orders</span>
+                                            <span className="text-[12px] text-figma-muted">Tap card to edit</span>
+                                        </div>
+                                        {orders.filter(o => o.status !== "Delivered").map(o => (
+                                            <div key={o.orderId} className="bg-white border border-figma-border rounded-[18px] p-[15px_16px]">
+                                                <div className="flex justify-between items-baseline">
+                                                    <span className="text-[15.5px] font-bold text-figma-dark">{o.customerName}</span>
+                                                    <span className={`text-[11.5px] font-extrabold ${o.status==='Ready'?'text-figma-green':'text-figma-goldDark'}`}>
+                                                        {o.status.toUpperCase()}
+                                                    </span>
+                                                </div>
+                                                <div className="text-[12.5px] text-figma-muted mt-[3px]">
+                                                    {t(`garment.${o.garmentType}`) || o.garmentType} &middot; {o.orderId}
+                                                </div>
+                                                <div className="flex gap-[9px] mt-[13px]">
+                                                    <button 
+                                                        onClick={() => {
+                                                            const nextStatus = o.status === "Pending" ? "Cutting" : o.status === "Cutting" ? "Stitching" : o.status === "Stitching" ? "Alteration" : "Ready";
+                                                            if (o.status !== "Ready") handleStatusChange(o.orderId, nextStatus);
+                                                            else handleStatusChange(o.orderId, "Delivered");
+                                                        }} 
+                                                        className="flex-1 h-[44px] rounded-[12px] bg-figma-gold text-figma-dark text-[13.5px] font-extrabold flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
+                                                    >
+                                                        {o.status === "Ready" ? "Deliver" : "Move to Next ➔"}
+                                                    </button>
+                                                    <button onClick={() => setEditingOrder(o)} className="w-[44px] h-[44px] rounded-[12px] bg-figma-grayLight text-figma-brown text-[16px] flex items-center justify-center cursor-pointer active:scale-95">⋯</button>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
 
-                                    {/* Queries History Modal */}
-                                    {viewingQueriesFor && (
-                                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in" onClick={() => setViewingQueriesFor(null)}>
-                                            <div className="glass-card w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden animate-slide-up" style={{ background: "var(--bg-secondary)" }} onClick={e => e.stopPropagation()}>
-                                                <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: "var(--glass-border)" }}>
-                                                    <div>
-                                                        <h3 className="text-lg font-bold text-themed-primary flex items-center gap-2">
-                                                            <Activity className="h-5 w-5 text-brown-500" />
-                                                            Query History
-                                                        </h3>
-                                                        <p className="text-sm text-themed-secondary mt-0.5">{viewingQueriesFor.name} <span className="opacity-70">({viewingQueriesFor.phoneNumber})</span></p>
-                                                    </div>
-                                                    <button onClick={() => setViewingQueriesFor(null)} className="rounded-lg p-2 text-themed-muted hover:bg-neutral-500/10 transition-colors">
-                                                        <X className="h-5 w-5" />
-                                                    </button>
-                                                </div>
-                                                <div className="flex-1 overflow-y-auto p-5 scrollbar-thin">
-                                                    {!viewingQueriesFor.queryHistory || viewingQueriesFor.queryHistory.length === 0 ? (
-                                                        <div className="text-center py-8">
-                                                            <Activity className="h-10 w-10 text-themed-muted mx-auto mb-3 opacity-30" />
-                                                            <p className="text-themed-secondary text-sm">No detailed query history found for this user.</p>
-                                                            <p className="text-themed-muted text-xs mt-1">Older queries might only have a numeric count.</p>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="space-y-3">
-                                                            {[...viewingQueriesFor.queryHistory].sort((a,b) => b.timestamp - a.timestamp).map((q, i) => (
-                                                                <div key={i} className="rounded-xl p-4 transition-colors relative" style={{ background: "var(--bg-tertiary)", border: "1px solid var(--glass-border)" }}>
-                                                                    <div className="flex items-center justify-between mb-3">
-                                                                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide ${q.source === 'WhatsApp' ? 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30' : 'bg-blue-500/15 text-blue-500 border border-blue-500/30'}`}>
-                                                                            {q.source || 'Unknown'}
-                                                                        </span>
-                                                                        <span className="text-[11px] text-themed-muted font-medium flex items-center gap-1">
-                                                                            <Clock className="h-3 w-3" />
-                                                                            {new Date(q.timestamp).toLocaleString(undefined, {
-                                                                                month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
-                                                                            })}
-                                                                        </span>
-                                                                    </div>
-                                                                    <p className="text-sm text-themed-primary leading-relaxed p-3 rounded-lg font-medium" style={{ background: "var(--hover-bg)", border: "1px solid var(--glass-border)" }}>&quot;{q.text || "Checked order status"}&quot;</p>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
                             );
                         })()}
-
-                        {/* ━━━ SETTINGS TAB ━━━ */}
+{/* ━━━ SETTINGS TAB ━━━ */}
                         {currentTab === "settings" && settings && (
                             <div className="max-w-5xl w-full animate-fade-in grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                                 {/* Left Column */}
@@ -2097,6 +1513,9 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                         )}
                     </>
                 )}
+            </div>
+            </main>
+            {!isDesktop && <AdminBottomNav currentTab={currentTab} onTabChange={(tab) => setCurrentTab(tab as Tab)} />}
             </div>
             {/* ─── Status Change Notification Prompt ─── */}
             {statusNotify?.show && (

@@ -79,7 +79,7 @@ export default function Navbar() {
 
     return (
         <>
-            <nav className="fixed top-0 left-0 right-0 z-50 border-b nav-bg backdrop-blur-xl" style={{ borderColor: "var(--border-color)" }}>
+            <nav className={`fixed top-0 left-0 right-0 z-50 border-b nav-bg backdrop-blur-xl ${pathname.startsWith("/dashboard") ? "md:hidden" : ""}`} style={{ borderColor: "var(--border-color)" }}>
                 <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-8">
                     {/* Logo */}
                     <Link
@@ -224,7 +224,7 @@ export default function Navbar() {
                 </div>
             </div>
 
-            <div className="h-16" />
+            <div className={`h-16 ${pathname.startsWith("/dashboard") ? "md:hidden" : ""}`} />
 
             {/* Quick Add Modal */}
             <QuickAddModal
