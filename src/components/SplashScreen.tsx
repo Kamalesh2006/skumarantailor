@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useLanguage } from "@/lib/LanguageContext";
-import TailorIcon from "./TailorIcon";
 
 interface SplashScreenProps {
     onComplete: () => void;
@@ -10,7 +8,6 @@ interface SplashScreenProps {
 
 export default function SplashScreen({ onComplete }: SplashScreenProps) {
     const [phase, setPhase] = useState<"enter" | "hold" | "exit">("enter");
-    const { t } = useLanguage();
 
     useEffect(() => {
         const holdTimer = setTimeout(() => setPhase("hold"), 100);
@@ -26,38 +23,16 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
 
     return (
         <div
-            className={`fixed inset-0 z-[100] flex items-center justify-center ${phase === "exit" ? "pointer-events-none" : ""
-                }`}
+            className={`fixed inset-0 z-[100] flex items-center justify-center bg-[#2A1D14] ${phase === "exit" ? "pointer-events-none" : ""}`}
             style={{
-                background: "var(--bg-primary)",
                 opacity: phase === "exit" ? 0 : 1,
                 transition: phase === "exit" ? "opacity 600ms ease" : "none",
             }}
         >
-            {/* Animated ambient glow — gold */}
-            <div className="absolute inset-0 overflow-hidden">
-                <div
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-                    style={{
-                        width: "600px",
-                        height: "600px",
-                        background: "radial-gradient(circle, rgba(212, 175, 55, 0.12) 0%, transparent 70%)",
-                        animation: "splashGlowPulse 2s ease-in-out infinite",
-                    }}
-                />
-                <div
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-                    style={{
-                        width: "400px",
-                        height: "400px",
-                        background: "radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%)",
-                        animation: "splashGlowPulse 2s ease-in-out 0.5s infinite",
-                    }}
-                />
-            </div>
-
-            <div
-                className="relative flex flex-col items-center gap-6"
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(200,145,47,.18)_0,transparent_50%)]"></div>
+            
+            <div 
+                className="relative flex-1 flex flex-col items-center justify-center text-center"
                 style={{
                     animation: phase === "enter"
                         ? "none"
@@ -67,102 +42,40 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                     opacity: phase === "enter" ? 0 : undefined,
                 }}
             >
-                {/* Logo container with gold glow */}
-                <div className="relative flex items-center justify-center p-4">
-                    {/* Pulsing ambient glow behind icon */}
-                    <div
-                        className="absolute inset-0 rounded-full"
-                        style={{
-                            boxShadow: "0 0 60px rgba(212, 175, 55, 0.4), 0 0 100px rgba(212, 175, 55, 0.2)",
-                            animation: "splashRingPulse 2s ease-in-out infinite",
-                        }}
-                    />
-
-                    {/* Icon Floating */}
-                    <div
-                        className="relative z-10"
-                        style={{
-                            animation: "splashIconFloat 3s ease-in-out infinite",
-                        }}
-                    >
-                        <TailorIcon
-                            className="text-themed-primary drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]"
-                            size={120}
-                        />
-                    </div>
+                <img src="/sewing-machine.png" alt="Antique sewing machine" className="w-[268px] h-[268px] object-contain drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]" />
+                <div className="font-bricolage font-extrabold tracking-[-2.2px] text-[62px] text-[#F7EEDC] leading-[1.05] mt-[26px]">
+                    S Kumaran Tailors
                 </div>
-
-                {/* Brand Text */}
-                <div
-                    className="text-center"
-                    style={{
-                        animation: phase === "hold" ? "splashTextFadeIn 600ms 300ms ease-out both" : "none",
-                    }}
-                >
-                    <h1 className="text-3xl font-serif font-bold tracking-tight text-themed-primary">
-                        {t("app.name")}
-                    </h1>
-                    <p className="mt-1.5 text-sm text-themed-secondary">
-                        {t("app.tagline")}
-                    </p>
+                <div className="text-[13px] tracking-[4px] font-bold text-[#C8912F] mt-[18px]">
+                    SINCE 1986 &middot; CUDDALORE
                 </div>
-
-                {/* Animated loading bar */}
-                <div
-                    className="w-32 h-1 rounded-full overflow-hidden"
-                    style={{
-                        background: "var(--bg-tertiary)",
-                        animation: phase === "hold" ? "splashTextFadeIn 400ms 500ms ease-out both" : "none",
-                    }}
-                >
-                    <div
-                        className="h-full rounded-full brand-gradient"
-                        style={{
-                            animation: "splashLoadBar 1.8s ease-in-out infinite",
-                        }}
-                    />
+                
+                {/* Progress bar */}
+                <div className="w-[240px] h-[5px] rounded-[3px] bg-[#3B2A20] overflow-hidden mt-[52px]">
+                    <div className="h-[5px] rounded-[3px] bg-[#C8912F]" style={{ animation: 'splashProgressBar 2.4s ease-in-out infinite' }}></div>
+                </div>
+                <div className="text-[13.5px] text-[#8C7761] mt-[16px]">
+                    Loading orders, customers and queries…
                 </div>
             </div>
 
-            {/* Keyframe styles */}
+            <div className="absolute bottom-0 w-full pb-[34px] text-center text-[11.5px] tracking-[2px] font-bold text-[#4E3A2A]">
+                CUSTOMER & ORDER MANAGEMENT
+            </div>
+
             <style jsx>{`
                 @keyframes splashFadeScaleIn {
-                    from { opacity: 0; transform: scale(0.7); }
+                    from { opacity: 0; transform: scale(0.9); }
                     to   { opacity: 1; transform: scale(1); }
                 }
                 @keyframes splashZoomOut {
                     from { opacity: 1; transform: scale(1); }
-                    to   { opacity: 0; transform: scale(1.5); }
+                    to   { opacity: 0; transform: scale(1.1); }
                 }
-                @keyframes splashSpin {
-                    from { transform: rotate(0deg); }
-                    to   { transform: rotate(360deg); }
-                }
-                @keyframes splashIconFloat {
-                    0%, 100% { transform: translateY(0); }
-                    50%      { transform: translateY(-4px); }
-                }
-                @keyframes splashShimmer {
-                    0%   { transform: translateX(-100%); }
-                    50%  { transform: translateX(100%); }
-                    100% { transform: translateX(100%); }
-                }
-                @keyframes splashRingPulse {
-                    0%, 100% { opacity: 0.4; transform: scale(1); }
-                    50%      { opacity: 0.8; transform: scale(1.05); }
-                }
-                @keyframes splashGlowPulse {
-                    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
-                    50%      { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
-                }
-                @keyframes splashTextFadeIn {
-                    from { opacity: 0; transform: translateY(8px); }
-                    to   { opacity: 1; transform: translateY(0); }
-                }
-                @keyframes splashLoadBar {
-                    0%   { width: 0%; margin-left: 0%; }
-                    50%  { width: 70%; margin-left: 15%; }
-                    100% { width: 0%; margin-left: 100%; }
+                @keyframes splashProgressBar {
+                    0%   { width: 0%; }
+                    50%  { width: 80%; }
+                    100% { width: 100%; }
                 }
             `}</style>
         </div>

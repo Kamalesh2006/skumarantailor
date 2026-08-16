@@ -1,236 +1,87 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
-import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
-import TailorIcon from "@/components/TailorIcon";
-import QuickAddModal from "@/components/QuickAddModal";
-import {
-    Menu,
-    X,
-    LogOut,
-    User,
-    Sun,
-    Moon,
-    Languages,
-    Plus,
-} from "lucide-react";
 
+import TailorIcon from "@/components/TailorIcon";
 import { usePathname } from "next/navigation";
 
 export default function Navbar() {
-    const { user, role, loading, logout } = useAuth();
-    const { theme, toggleTheme } = useTheme();
-    const { lang, toggleLang, t } = useLanguage();
-    const [mobileOpen, setMobileOpen] = useState(false);
-    const [showQuickAdd, setShowQuickAdd] = useState(false);
+    const { user, loading } = useAuth();
+    const { lang, toggleLang } = useLanguage();
     const pathname = usePathname();
 
-    const isFullBleed = pathname === "/" || pathname === "/login";
+    if (pathname === "/login" || pathname.startsWith("/dashboard")) return null;
 
-    // Show minimal navbar (brand + language/theme) for unauthenticated users
-    if (loading || !user) {
-        return (
-            <>
-                <nav className="fixed top-0 left-0 right-0 z-50 border-b nav-bg backdrop-blur-xl" style={{ borderColor: "var(--border-color)" }}>
-                    <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-                        <Link href="/" className="flex items-center gap-2.5 group">
-                            <TailorIcon size={32} />
-                            <span className="text-lg font-serif font-bold tracking-tight text-themed-primary">
-                                {t("app.name")}
-                            </span>
-                        </Link>
-                        <div className="flex items-center gap-4">
-                            <Link
-                                href="/tracking"
-                                className="hidden sm:flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:bg-gold-400/10 hover:text-gold-400"
-                            >
-                                <span className="h-4 w-4">📦</span>
-                                {t("track.trackOrder")}
-                            </Link>
-                            <div className="flex items-center gap-2">
-                                <button onClick={toggleLang} className="flex items-center gap-1.5 h-9 rounded-lg px-2.5 text-themed-secondary transition-all duration-200 hover:bg-gold-400/10 hover:text-gold-400" title="Language">
-                                    <Languages className="h-4 w-4" />
-                                    <span className="text-xs">{lang === "en" ? "தமிழ்" : "English"}</span>
-                                </button>
-                                <button onClick={toggleTheme} className="flex items-center justify-center h-9 w-9 rounded-lg text-themed-secondary transition-all duration-200 hover:bg-gold-400/10 hover:text-gold-400" title="Theme">
-                                    {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </nav>
-                {!isFullBleed && <div className="h-14" />}
-            </>
-        );
-    }
-
-
-
-    const handleLogout = async () => {
-        setMobileOpen(false);
-        await logout();
-    };
-
-    const phoneDisplay = user.phoneNumber || "User";
-    const roleLabel = role === "admin" ? t("common.admin") : t("common.customer");
+    // Always return the Figma-based design for public routes (e.g. '/' and '/track')
+    // We already return null for /dashboard and /login.
 
     return (
-        <>
-            <nav className={`fixed top-0 left-0 right-0 z-50 border-b nav-bg backdrop-blur-xl ${pathname.startsWith("/dashboard") ? "md:hidden" : ""}`} style={{ borderColor: "var(--border-color)" }}>
-                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-8">
-                    {/* Logo */}
-                    <Link
-                        href={role === "admin" ? "/dashboard" : "/tracking"}
-                        className="flex items-center gap-2.5 group"
-                    >
-                        <TailorIcon size={32} />
-                        <span className="text-lg font-serif font-bold tracking-tight text-themed-primary">
-                            {t("app.name")}
-                        </span>
-                    </Link>
-
-
-
-                    {/* Desktop Right Side */}
-                    <div className="hidden md:flex items-center gap-2">
-                        {/* Quick Add (admin only) */}
-                        {role === "admin" && (
-                            <button
-                                onClick={() => setShowQuickAdd(true)}
-                                className="flex items-center gap-1.5 h-9 rounded-lg px-3 text-sm font-semibold transition-all duration-200 hover:shadow-lg"
-                                style={{
-                                    background: "#2D2D2D",
-                                    color: "#D4AF37",
-                                    border: "1px solid rgba(212, 175, 55, 0.3)",
-                                }}
+        <div className="w-full pt-4 px-4 md:px-8 absolute top-0 left-0 right-0 z-50">
+            <div className="max-w-7xl mx-auto bg-figma-bg rounded-t-[16px] flex items-center justify-between px-6 h-[72px]" style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
+                <Link href="/" className="flex items-center gap-3">
+                    <div className="w-[32px] h-[32px] relative flex items-center justify-center">
+                        <TailorIcon size={28} />
+                    </div>
+                    <span className="text-[18px] font-bricolage font-extrabold tracking-wide text-figma-dark">
+                        S Kumaran Tailors
+                    </span>
+                </Link>
+                
+                <div className="hidden md:flex items-center gap-7">
+                    <div className="flex items-center gap-6">
+                        <Link href="/#services" className="text-[13px] font-bold text-figma-grayBrown hover:text-figma-dark transition-colors">Services</Link>
+                        <Link href="/#how-it-works" className="text-[13px] font-bold text-figma-grayBrown hover:text-figma-dark transition-colors">How it works</Link>
+                        <Link href="/#visit-us" className="text-[13px] font-bold text-figma-grayBrown hover:text-figma-dark transition-colors">Visit us</Link>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                        <Link href="/track" className="text-[13px] font-bold text-figma-dark bg-[#F2EDE4] px-4 py-2.5 rounded-[10px] hover:bg-[#E8E2D7] transition-colors">
+                            Track order
+                        </Link>
+                        
+                        <div className="flex items-center bg-[#F2EDE4] p-1 rounded-[10px]">
+                            <button 
+                                onClick={() => lang !== 'en' && toggleLang()}
+                                className={`text-[12px] font-extrabold px-3 py-1.5 rounded-[8px] transition-all ${lang === 'en' ? 'bg-white text-figma-dark shadow-sm' : 'text-figma-grayBrown hover:text-figma-dark'}`}
                             >
-                                <Plus className="h-4 w-4" />
-                                {t("quickAdd.btnLabel")}
+                                EN
                             </button>
-                        )}
-                        {/* Language Toggle */}
-                        <button
-                            onClick={toggleLang}
-                            className="flex items-center gap-1.5 h-9 rounded-lg px-2.5 text-themed-secondary transition-all duration-200"
-                            style={{ background: "transparent" }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--hover-bg)")}
-                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                            aria-label="Toggle language"
-                            title={lang === "ta" ? "Switch to English" : "தமிழுக்கு மாற்று"}
-                        >
-                            <Languages className="h-4 w-4" />
-                            <span className="text-xs font-semibold">
-                                {lang === "ta" ? "EN" : "தமிழ்"}
-                            </span>
-                        </button>
-
-                        {/* Theme Toggle */}
-                        <button
-                            onClick={toggleTheme}
-                            className="flex items-center justify-center h-9 w-9 rounded-lg text-themed-secondary transition-all duration-200"
-                            style={{ background: "transparent" }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--hover-bg)")}
-                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                            aria-label="Toggle theme"
-                        >
-                            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                        </button>
-
-                        {/* User Info */}
-                        <div className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-themed-secondary" style={{ background: "var(--hover-bg)" }}>
-                            <User className="h-4 w-4" />
-                            <span className="max-w-[120px] truncate">{phoneDisplay}</span>
-                            <span className="rounded-full px-2 py-0.5 text-xs font-medium capitalize"
-                                style={{ background: "rgba(212, 175, 55, 0.15)", color: "#D4AF37" }}>
-                                {roleLabel}
-                            </span>
+                            <button 
+                                onClick={() => lang !== 'ta' && toggleLang()}
+                                className={`text-[12px] font-extrabold px-3 py-1.5 rounded-[8px] transition-all ${lang === 'ta' ? 'bg-white text-figma-dark shadow-sm' : 'text-figma-grayBrown hover:text-figma-dark'}`}
+                            >
+                                தமிழ்
+                            </button>
                         </div>
 
-                        {/* Logout */}
-                        <button
-                            onClick={handleLogout}
-                            className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-themed-secondary hover:bg-red-500/10 hover:text-red-400 transition-all duration-200"
-                        >
-                            <LogOut className="h-4 w-4" />
-                            {t("common.logout")}
-                        </button>
-                    </div>
-
-                    {/* Mobile Hamburger */}
-                    <div className="flex items-center gap-1 md:hidden">
-                        {/* Language Toggle */}
-                        <button
-                            onClick={toggleLang}
-                            className="flex items-center justify-center h-10 w-10 rounded-lg text-themed-secondary transition-colors"
-                            aria-label="Toggle language"
-                        >
-                            <span className="text-xs font-bold">{lang === "ta" ? "EN" : "தமி"}</span>
-                        </button>
-                        <button
-                            onClick={toggleTheme}
-                            className="flex items-center justify-center h-10 w-10 rounded-lg text-themed-secondary transition-colors"
-                            aria-label="Toggle theme"
-                        >
-                            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                        </button>
-                        <button
-                            onClick={() => setMobileOpen(!mobileOpen)}
-                            className="flex items-center justify-center h-10 w-10 rounded-lg text-themed-secondary transition-colors"
-                            aria-label="Toggle menu"
-                        >
-                            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                        </button>
+                        {!loading && user ? (
+                            <Link href="/dashboard" className="text-[13px] font-bold text-white bg-[#2A1D16] px-5 py-2.5 rounded-[10px] hover:bg-black transition-colors">
+                                Dashboard
+                            </Link>
+                        ) : (
+                            <Link href="/login" className="text-[13px] font-bold text-white bg-[#2A1D16] px-5 py-2.5 rounded-[10px] hover:bg-black transition-colors">
+                                Sign In
+                            </Link>
+                        )}
                     </div>
                 </div>
-            </nav>
 
-            {/* Mobile Drawer Overlay */}
-            {mobileOpen && (
-                <div
-                    className="fixed inset-0 z-40 bg-black/50 md:hidden"
-                    onClick={() => setMobileOpen(false)}
-                />
-            )}
-
-            {/* Mobile Slide-in Drawer */}
-            <div
-                className={`fixed top-0 right-0 z-50 h-full w-72 shadow-2xl transform transition-transform duration-300 ease-out md:hidden ${mobileOpen ? "translate-x-0" : "translate-x-full"
-                    }`}
-                style={{ background: "var(--bg-primary)", borderLeft: "1px solid var(--border-color)" }}
-            >
-                <div className="flex flex-col h-full pt-20 px-4 pb-6">
-                    <div className="flex-1" />
-
-                    <div className="pt-4 space-y-3" style={{ borderTop: "1px solid var(--border-color)" }}>
-                        <div className="flex items-center gap-2 px-2 text-sm text-themed-secondary">
-                            <User className="h-4 w-4 flex-shrink-0" />
-                            <span className="truncate">{phoneDisplay}</span>
-                            <span className="rounded-full px-2 py-0.5 text-xs font-medium capitalize ml-auto"
-                                style={{ background: "rgba(212, 175, 55, 0.15)", color: "#D4AF37" }}>
-                                {roleLabel}
-                            </span>
-                        </div>
-                        <button
-                            onClick={handleLogout}
-                            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all duration-200"
-                        >
-                            <LogOut className="h-5 w-5" />
-                            {t("common.logout")}
-                        </button>
-                    </div>
+                {/* Mobile Hamburger / Quick Actions */}
+                <div className="flex items-center gap-3 md:hidden">
+                    {!loading && user ? (
+                        <Link href="/dashboard" className="text-[12px] font-bold text-white bg-[#2A1D16] px-4 py-2 rounded-[8px]">
+                            Dashboard
+                        </Link>
+                    ) : (
+                        <Link href="/login" className="text-[12px] font-bold text-white bg-[#2A1D16] px-4 py-2 rounded-[8px]">
+                            Sign In
+                        </Link>
+                    )}
                 </div>
             </div>
-
-            <div className={`h-16 ${pathname.startsWith("/dashboard") ? "md:hidden" : ""}`} />
-
-            {/* Quick Add Modal */}
-            <QuickAddModal
-                isOpen={showQuickAdd}
-                onClose={() => setShowQuickAdd(false)}
-            />
-        </>
+        </div>
     );
 }

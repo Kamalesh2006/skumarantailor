@@ -71,94 +71,120 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen bg-figma-bg flex items-center justify-center p-4">
-            <div className="w-full max-w-[412px] bg-figma-dark rounded-[34px] overflow-hidden shadow-[0_18px_50px_rgba(42,29,20,0.22)] border border-figma-border flex flex-col animate-slide-up">
-                {/* Header Top */}
-                <div className="pt-[34px] px-[26px] pb-[26px] flex flex-col items-center gap-[10px]">
-                    <div className="w-[92px] h-[92px] relative">
+        <div className="min-h-screen bg-figma-bg flex">
+            {/* Desktop Left Side */}
+            <div className="hidden md:flex flex-1 bg-figma-dark flex-col items-center justify-center p-10 relative overflow-hidden">
+                <div className="absolute inset-0 opacity-5 flex items-center justify-center pointer-events-none">
+                    <Image src="/sewing-machine.png" alt="Vintage Sewing Machine" fill className="object-contain scale-[1.5]" style={{ filter: "brightness(0) saturate(100%) invert(72%) sepia(45%) saturate(600%) hue-rotate(10deg) brightness(95%) contrast(90%)" }} />
+                </div>
+                <div className="relative z-10 flex flex-col items-center text-center animate-slide-up">
+                    <div className="w-[140px] h-[140px] relative mb-8">
                         <Image src="/sk-mark.png" alt="S Kumaran" fill className="object-contain" priority />
                     </div>
-                    <div className="text-center">
-                        <div className="font-bricolage font-extrabold tracking-tight text-[27px] text-figma-cream leading-[1.15]">S Kumaran Tailors</div>
-                        <div className="text-[13px] tracking-[2.5px] text-[#B9A48A] mt-[7px] font-semibold">SINCE 1994 &middot; CUDDALORE</div>
-                    </div>
+                    <h1 className="font-bricolage font-extrabold tracking-tight text-[56px] text-figma-cream leading-[1.1] mb-4 drop-shadow-lg">
+                        S Kumaran<br/>Tailors
+                    </h1>
+                    <p className="text-[16px] tracking-[4px] text-figma-gold font-bold">
+                        SINCE 1986 &middot; CUDDALORE
+                    </p>
                 </div>
+            </div>
 
-                {/* Form Container */}
-                <div className="flex-1 bg-figma-bg rounded-t-[30px] p-[28px_24px] flex flex-col gap-[16px]">
-                    <div>
-                        <div className="font-bricolage font-extrabold tracking-tight text-[22px] text-figma-dark">Sign in</div>
-                        <div className="text-[13px] text-figma-grayBrown mt-1">Use your shop phone number</div>
+            {/* Right Side (Form) */}
+            <div className="flex-1 flex items-center justify-center p-4 md:p-12 relative z-10">
+                <div className="w-full max-w-[440px] bg-figma-dark md:bg-transparent rounded-[34px] md:rounded-none overflow-hidden md:overflow-visible shadow-[0_18px_50px_rgba(42,29,20,0.22)] md:shadow-none border border-figma-border md:border-none flex flex-col animate-slide-up">
+                    {/* Header Top - Mobile only */}
+                    <div className="pt-[34px] px-[26px] pb-[26px] flex flex-col items-center gap-[10px] md:hidden">
+                        <div className="w-[92px] h-[92px] relative">
+                            <Image src="/sk-mark.png" alt="S Kumaran" fill className="object-contain" priority />
+                        </div>
+                        <div className="text-center">
+                            <div className="font-bricolage font-extrabold tracking-tight text-[27px] text-figma-cream leading-[1.15]">S Kumaran Tailors</div>
+                            <div className="text-[13px] tracking-[2.5px] text-[#B9A48A] mt-[7px] font-semibold">SINCE 1986 &middot; CUDDALORE</div>
+                        </div>
                     </div>
 
-                    <form onSubmit={handleLogin} className="flex flex-col gap-[16px]">
-                        <div>
-                            <div className="text-[12px] font-extrabold tracking-[1.2px] text-[#9A8874] mb-[8px]">PHONE NUMBER</div>
-                            <div className="bg-white border-2 border-figma-gold rounded-[14px] p-[15px_16px] flex items-center gap-[12px]">
-                                <span className="text-[17px] text-[#8A5A1E]">✆</span>
-                                <span className="text-[16px] font-bold text-figma-grayBrown pr-[11px] border-r border-figma-border">+91</span>
-                                <input
-                                    type="tel"
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                    placeholder="98431 20055"
-                                    className="flex-1 text-[18px] font-bold text-figma-dark tracking-[0.6px] bg-transparent outline-none placeholder:text-figma-muted"
-                                    maxLength={10}
-                                />
-                            </div>
+                    {/* Form Container */}
+                    <div className="flex-1 bg-figma-bg md:bg-transparent rounded-t-[30px] md:rounded-none p-[28px_24px] md:p-0 flex flex-col gap-[16px]">
+                        <div className="mb-2">
+                            <div className="font-bricolage font-extrabold tracking-tight text-[32px] md:text-[40px] text-figma-dark mb-1">Welcome back</div>
+                            <div className="text-[15px] text-figma-grayBrown font-medium">Please enter your details to sign in.</div>
                         </div>
 
-                        <div>
-                            <div className="text-[12px] font-extrabold tracking-[1.2px] text-[#9A8874] mb-[8px] flex justify-between">
-                                <span>PASSWORD</span>
+                        <form onSubmit={handleLogin} className="flex flex-col gap-[20px]">
+                            <div>
+                                <div className="text-[12px] font-extrabold tracking-[1.2px] text-[#9A8874] mb-[8px]">PHONE NUMBER</div>
+                                <div className="bg-white border-2 border-figma-gold rounded-[16px] p-[16px_18px] flex items-center gap-[12px] shadow-sm transition-all focus-within:shadow-md focus-within:border-[#B89430]">
+                                    <span className="text-[18px] text-[#8A5A1E]">✆</span>
+                                    <span className="text-[16px] font-bold text-figma-grayBrown pr-[12px] border-r border-figma-border">+91</span>
+                                    <input
+                                        type="tel"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                        placeholder="98431 20055"
+                                        className="flex-1 text-[18px] font-bold text-figma-dark tracking-[0.6px] bg-transparent outline-none placeholder:text-figma-muted"
+                                        maxLength={10}
+                                    />
+                                </div>
                             </div>
-                            <div className="bg-white border border-figma-border rounded-[14px] p-[15px_16px] flex items-center gap-[12px]">
-                                <span className="text-[16px] text-figma-muted">🔒</span>
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="••••••••"
-                                    className="flex-1 text-[18px] text-figma-dark tracking-[4px] bg-transparent outline-none placeholder:text-figma-muted placeholder:tracking-normal"
-                                />
-                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-[16px] text-[#8A5A1E]">
-                                    👁
-                                </button>
-                            </div>
-                        </div>
 
-                        <div className="flex items-center gap-[11px] mt-[2px]">
+                            <div>
+                                <div className="text-[12px] font-extrabold tracking-[1.2px] text-[#9A8874] mb-[8px] flex justify-between">
+                                    <span>PASSWORD</span>
+                                </div>
+                                <div className="bg-white border border-figma-border rounded-[16px] p-[16px_18px] flex items-center gap-[12px] shadow-sm transition-all focus-within:border-[#9A8874]">
+                                    <span className="text-[18px] text-figma-muted">🔒</span>
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="••••••••"
+                                        className="flex-1 text-[18px] text-figma-dark tracking-[4px] bg-transparent outline-none placeholder:text-figma-muted placeholder:tracking-normal"
+                                    />
+                                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-[18px] text-[#8A5A1E] hover:text-[#5E4A38] transition-colors">
+                                        {showPassword ? "👁" : "👁‍🗨"}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between mt-[2px]">
+                                <label className="flex items-center gap-[12px] cursor-pointer group">
+                                    <button
+                                        type="button"
+                                        onClick={() => setKeepSignedIn(!keepSignedIn)}
+                                        className={`w-[24px] h-[24px] rounded-[8px] flex items-center justify-center text-[13px] transition-all group-hover:shadow-sm ${keepSignedIn ? 'bg-figma-dark text-figma-gold' : 'bg-white border-2 border-figma-border text-transparent'}`}
+                                    >
+                                        ✓
+                                    </button>
+                                    <span className="text-[14.5px] font-semibold text-[#5E4A38]">Keep me signed in</span>
+                                </label>
+                                <button type="button" className="text-[14.5px] font-bold text-[#8A5A1E] hover:text-[#5E4A38] transition-colors">Forgot password?</button>
+                            </div>
+
+                            {error && (
+                                <div className="text-red-500 text-[14px] font-medium bg-red-50 p-3 rounded-xl border border-red-100">{error}</div>
+                            )}
+
                             <button
-                                type="button"
-                                onClick={() => setKeepSignedIn(!keepSignedIn)}
-                                className={`w-[24px] h-[24px] rounded-[7px] flex items-center justify-center text-[13px] transition-colors ${keepSignedIn ? 'bg-figma-dark text-figma-gold' : 'bg-white border border-figma-border text-transparent'}`}
+                                type="submit"
+                                disabled={loading}
+                                className="h-[60px] rounded-[18px] bg-figma-dark text-figma-gold hover:bg-[#1A1A1A] flex items-center justify-center text-[17px] font-extrabold mt-[8px] shadow-[0_8px_20px_rgba(42,29,20,0.15)] hover:-translate-y-0.5 active:scale-[0.98] transition-all disabled:opacity-70 disabled:hover:translate-y-0 disabled:active:scale-100"
                             >
-                                ✓
+                                {loading ? "Signing in..." : "Sign in to Dashboard"}
                             </button>
-                            <span className="flex-1 text-[14px] font-semibold text-[#5E4A38]">Keep me signed in</span>
-                            <button type="button" className="text-[13.5px] font-bold text-[#8A5A1E]">Forgot?</button>
+                        </form>
+
+                        <div className="mt-8 pt-8 border-t border-figma-border">
+                            <div className="text-[13px] font-bold tracking-[1px] text-[#9A8874] mb-[12px] text-center">LANGUAGE</div>
+                            <div className="flex gap-[8px] bg-white p-[6px] rounded-[16px] shadow-sm border border-figma-border">
+                                <button className="flex-1 h-[44px] rounded-[12px] bg-figma-bg text-figma-dark text-[15px] font-extrabold flex items-center justify-center shadow-sm">English</button>
+                                <button className="flex-1 h-[44px] rounded-[12px] text-[#5E4A38] hover:bg-gray-50 text-[15.5px] font-bold flex items-center justify-center font-noto transition-colors">தமிழ்</button>
+                            </div>
                         </div>
 
-                        {error && (
-                            <div className="text-red-500 text-sm mt-1">{error}</div>
-                        )}
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="h-[56px] rounded-[16px] bg-figma-gold flex items-center justify-center text-[16.5px] font-extrabold text-figma-dark mt-[6px] shadow-[0_8px_20px_rgba(200,145,47,0.32)] active:scale-95 transition-transform disabled:opacity-70 disabled:active:scale-100"
-                        >
-                            {loading ? "Signing in..." : "Sign in"}
-                        </button>
-                    </form>
-
-                    <div className="flex gap-[6px] bg-[#F1EBE3] rounded-[13px] p-[4px] mt-[4px]">
-                        <button className="flex-1 h-[40px] rounded-[10px] bg-white border border-figma-border text-figma-dark text-[14px] font-bold flex items-center justify-center">English</button>
-                        <button className="flex-1 h-[40px] rounded-[10px] text-[#5E4A38] text-[15px] font-bold flex items-center justify-center font-noto">தமிழ்</button>
-                    </div>
-
-                    <div className="mt-auto text-center text-[12.5px] text-figma-muted pt-4">
-                        Staff account? Ask the owner to add your number.
+                        <div className="mt-auto md:mt-8 text-center text-[13.5px] text-figma-muted pt-4">
+                            Staff account? Ask the owner to add your number.
+                        </div>
                     </div>
                 </div>
             </div>

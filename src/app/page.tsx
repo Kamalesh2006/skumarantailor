@@ -10,11 +10,11 @@ export default function LandingPage() {
     const { t } = useLanguage();
 
     return (
-        <div className="h-screen overflow-hidden bg-figma-bg flex flex-col font-sans relative text-figma-dark selection:bg-figma-gold/30">
+        <div className="flex-1 bg-figma-bg flex flex-col font-sans relative text-figma-dark selection:bg-figma-gold/30">
             {/* Main Hero Content */}
-            <main className="flex-1 flex flex-col items-center justify-center px-6 md:px-10 relative z-10 h-full overflow-hidden">
+            <main className="flex-1 flex flex-col items-center justify-center px-6 md:px-10 relative z-10 min-h-full pt-32 md:pt-40 pb-10">
                 <div className="relative w-full max-w-[280px] md:max-w-[400px] aspect-[4/3] mb-8 md:mb-10">
-                    <Image src="/sewing-machine-dark.png" alt="Vintage Sewing Machine" fill className="object-contain drop-shadow-2xl opacity-90" priority />
+                    <Image src="/sewing-machine.png" alt="Vintage Sewing Machine" fill className="object-contain drop-shadow-2xl opacity-90" priority style={{ filter: "brightness(0) saturate(100%) invert(72%) sepia(45%) saturate(600%) hue-rotate(10deg) brightness(95%) contrast(90%)" }} />
                 </div>
 
                 <div className="text-center max-w-2xl mx-auto flex flex-col items-center">
@@ -42,7 +42,7 @@ export default function LandingPage() {
                         </button>
                         
                         <button 
-                            onClick={() => router.push("/tracking")}
+                            onClick={() => router.push("/track")}
                             className="w-full md:w-auto h-[56px] px-8 rounded-2xl bg-white border border-figma-border text-figma-dark text-[16px] font-extrabold flex items-center justify-center shadow-sm hover:bg-gray-50 transition-colors"
                         >
                             Track {typeof window !== 'undefined' && window.innerWidth < 768 ? 'my ' : ''}order

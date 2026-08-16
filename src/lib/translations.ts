@@ -276,4 +276,25 @@ export const translations: Record<string, Record<Language, string>> = {
     "dash.upcoming": { en: "Upcoming", ta: "வரவிருக்கும்" },
     "dash.overdue": { en: "Overdue", ta: "தாமதம்" },
     "dash.taskPriority": { en: "Priority Queue", ta: "முன்னுரிமை வரிசை" },
+
+    // ─── Track Page ───
+    "track.mainTitle": { en: "Where is\nmy order?", ta: "என் ஆர்டர்\nஎங்கே உள்ளது?" },
+    "track.mainSubtitle": { en: "Enter the phone number you gave at the shop. Every order under that number will show here, with the stage it has reached.", ta: "கடையில் நீங்கள் கொடுத்த தொலைபேசி எண்ணை உள்ளிடவும். அந்த எண்ணின் கீழ் உள்ள அனைத்து ஆர்டர்களும், அவற்றின் தற்போதைய நிலையுடன் இங்கு காண்பிக்கப்படும்." },
+    "track.phoneLabel": { en: "PHONE NUMBER", ta: "தொலைபேசி எண்" },
+    "track.checkStatus": { en: "Check status", ta: "நிலையை சரிபார்" },
+    "track.noSignInNeeded": { en: "No sign in and no order number needed.", ta: "உள்நுழைய வேண்டியதில்லை, ஆர்டர் எண் தேவையில்லை." },
+    "track.stagesTitle": { en: "What the stages mean", ta: "நிலைகளின் அர்த்தம்" },
+    "track.stagePendingTitle": { en: "Pending", ta: "நிலுவையில் உள்ளது" },
+    "track.stagePendingDesc": { en: "Your cloth is with us and the order is in the queue.", ta: "உங்கள் துணி எங்களிடம் உள்ளது, ஆர்டர் வரிசையில் உள்ளது." },
+    "track.stageStitchingTitle": { en: "Stitching", ta: "தையல்" },
+    "track.stageStitchingDesc": { en: "Being cut and stitched. For bulk orders you will see how many sets are done.", ta: "வெட்டி தைக்கப்படுகிறது. மொத்த ஆர்டர்களுக்கு எத்தனை செட் முடிந்துள்ளது என பார்க்கலாம்." },
+    "track.stageReadyTitle": { en: "Ready or Delivered", ta: "தயார் அல்லது வழங்கப்பட்டது" },
+    "track.stageReadyDesc": { en: "Finished and checked. Collect at the shop, or we send it out to you.", ta: "முடிக்கப்பட்டு சரிபார்க்கப்பட்டது. கடையில் பெற்றுக்கொள்ளலாம் அல்லது உங்களுக்கு அனுப்பி வைக்கப்படும்." },
+    "track.askUsTitle": { en: "Rather just ask us?", ta: "எங்களிடம் கேட்க விரும்புகிறீர்களா?" },
+    "track.askUsDesc": { en: "Message the shop on WhatsApp", ta: "வாட்ஸ்அப்பில் கடைக்கு செய்தி அனுப்பவும்" },
+    "track.invalidPhone": { en: "Please enter a valid phone number", ta: "சரியான தொலைபேசி எண்ணை உள்ளிடவும்" },
+    "track.fetchError": { en: "Failed to fetch orders. Please try again.", ta: "ஆர்டர்களை பெற முடியவில்லை. மீண்டும் முயற்சிக்கவும்." },
+    "track.yourOrders": { en: "Your Orders", ta: "உங்கள் ஆர்டர்கள்" },
+    "track.noOrdersFound": { en: "No orders found for this number.", ta: "இந்த எண்ணுக்கு ஆர்டர்கள் கிடைக்கவில்லை." },
+    "track.tryAnother": { en: "Try another number", ta: "வேறு எண்ணை முயற்சிக்கவும்" }
 };

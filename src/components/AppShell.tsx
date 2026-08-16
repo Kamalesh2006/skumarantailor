@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import SplashScreen from "./SplashScreen";
 
 /**
@@ -8,10 +9,15 @@ import SplashScreen from "./SplashScreen";
  * then reveals the page content with the splash fading away.
  */
 export default function AppShell({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname();
+    const isRoot = pathname === "/";
+    
+    // Always start true if root to prevent flash
     const [showSplash, setShowSplash] = useState(false);
-    const [contentReady, setContentReady] = useState(false); // start hidden to prevent flash
+    const [contentReady, setContentReady] = useState(isRoot);
 
     useEffect(() => {
+        if (isRoot) return; // Skip splash logic on landing page
         // Only show splash once per browser session
         const seen = sessionStorage.getItem("sk_splash_seen");
         if (!seen) {
@@ -21,7 +27,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             // Splash already seen: reveal content immediately
             setContentReady(true);
         }
-    }, []);
+    }, [isRoot]);
 
     const handleSplashComplete = useCallback(() => {
         setShowSplash(false);
@@ -43,7 +49,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return (
         <>
             {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
-            <div style={{ opacity: contentReady ? 1 : 0, transition: "opacity 400ms ease" }}>
+            <div className="h-screen w-screen overflow-y-auto overflow-x-hidden flex flex-col" style={{ opacity: contentReady ? 1 : 0, transition: "opacity 400ms ease" }}>
                 {children}
             </div>
         </>

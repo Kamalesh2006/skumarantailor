@@ -235,313 +235,224 @@ export default function CreateOrderModal({
     }
 
     return (
-        <div
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-            onClick={onClose}
-        >
-            <div
-                className="glass-card w-full max-w-3xl max-h-[92vh] overflow-y-auto animate-slide-up flex flex-col"
-                style={{ background: "var(--bg-secondary)" }}
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* ── Header ── */}
-                <div
-                    className="flex items-center justify-between px-6 py-4 border-b shrink-0"
-                    style={{ borderColor: "var(--glass-border)" }}
-                >
-                    <h3 className="text-lg font-semibold text-themed-primary">
-                        {t("dash.createOrder")}
-                    </h3>
-                    <button
-                        onClick={onClose}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-themed-muted hover:text-themed-primary transition-colors"
-                        style={{ background: "var(--hover-bg)" }}
-                    >
-                        <X className="h-4 w-4" />
-                    </button>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#140E09]/55" onClick={onClose}>
+            <div className="w-full max-w-[880px] bg-[#FBF7F0] rounded-[24px] overflow-hidden shadow-[0_30px_80px_rgba(20,14,9,0.42)] flex flex-col max-h-[95vh]" onClick={e => e.stopPropagation()}>
+                
+                {/* Header */}
+                <div className="bg-[#2A1D14] p-[17px_30px] flex items-center gap-[16px] shrink-0">
+                    <div className="w-[42px] h-[42px] rounded-[13px] bg-[#C8912F] flex items-center justify-center text-[19px] text-[#2A1D14]">✂</div>
+                    <div className="flex-1">
+                        <div className="font-bricolage font-extrabold tracking-[-0.5px] text-[23px] text-[#F7EEDC] leading-[1.1]">Create new order</div>
+                        <div className="text-[12.5px] text-[#B9A48A] mt-[4px]">Payment is collected now, at the counter</div>
+                    </div>
+                    <button onClick={onClose} className="w-[38px] h-[38px] rounded-[11px] bg-[#3B2A20] flex items-center justify-center text-[16px] text-[#B9A48A] hover:bg-[#4a3628] transition-colors">✕</button>
                 </div>
 
-                {/* ── Success ── */}
-                {success ? (
-                    <div className="flex flex-col items-center justify-center py-16 gap-3">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/15">
-                            <CheckCircle className="h-8 w-8 text-emerald-500" />
-                        </div>
-                        <p className="text-sm font-medium text-emerald-500">Order created!</p>
-                    </div>
-                ) : (
-                    <div className="p-6 space-y-6">
-
-                        {/* ── Section 1: Customer ── */}
-                        <section className="space-y-4">
-                            <p className="text-xs font-bold uppercase tracking-widest text-gold-400">Customer</p>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {/* Phone with autocomplete */}
-                                <div className="relative">
-                                    <label className="text-xs font-medium text-themed-secondary mb-1.5 block">
-                                        {t("dash.customerPhone")}
-                                    </label>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm font-medium text-themed-muted shrink-0">+91</span>
-                                        <div className="relative flex-1">
-                                            <input
-                                                ref={phoneRef}
-                                                type="tel"
-                                                value={phone}
-                                                onChange={handlePhoneChange}
-                                                onFocus={() => phone.length >= 3 && setShowDropdown(true)}
-                                                placeholder="9876543210"
-                                                className="form-input text-sm w-full"
-                                                maxLength={10}
-                                                autoComplete="off"
-                                            />
-                                            {/* Dropdown */}
-                                            {showDropdown && filteredCustomers.length > 0 && (
-                                                <div
-                                                    ref={dropdownRef}
-                                                    className="absolute top-full left-0 right-0 mt-1 z-50 rounded-xl overflow-hidden shadow-xl"
-                                                    style={{
-                                                        background: "var(--bg-primary)",
-                                                        border: "1px solid var(--glass-border)",
-                                                    }}
-                                                >
-                                                    {filteredCustomers.map((u) => (
-                                                        <button
-                                                            key={u.uid}
-                                                            type="button"
-                                                            onClick={() => handleSelectCustomer(u)}
-                                                            className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gold-400/10 transition-colors"
-                                                        >
-                                                            <div className="h-7 w-7 rounded-full bg-gold-400/10 text-gold-400 flex items-center justify-center font-bold text-xs shrink-0">
-                                                                {u.name ? u.name.charAt(0).toUpperCase() : <User className="h-3 w-3" />}
-                                                            </div>
-                                                            <div className="min-w-0">
-                                                                <p className="text-sm font-medium text-themed-primary truncate">
-                                                                    {u.name || <span className="text-themed-muted italic">Unnamed</span>}
-                                                                </p>
-                                                                <p className="text-xs text-themed-muted">{u.phoneNumber}</p>
-                                                            </div>
-                                                            {Object.keys(u.measurements || {}).length > 0 && (
-                                                                <span className="ml-auto text-[10px] font-semibold text-gold-400 bg-gold-400/10 px-1.5 py-0.5 rounded-md shrink-0">
-                                                                    Has measurements
-                                                                </span>
-                                                            )}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
+                {/* Body */}
+                <div className="p-[16px_30px_14px] flex flex-col gap-[14px] overflow-y-auto">
+                    {/* CUSTOMER */}
+                    <div>
+                        <div className="text-[11.5px] font-extrabold tracking-[1.4px] text-[#8A5A1E] mb-[10px]">CUSTOMER</div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                            <div className="relative">
+                                <div className="text-[12.5px] font-bold text-[#7A6A5C] mb-[7px]">Phone number</div>
+                                <div className="bg-white border-2 border-[#C8912F] rounded-[12px] p-[12px_15px] flex items-center gap-[11px]">
+                                    <span className="text-[14px] font-bold text-[#7A6A5C] pr-[11px] border-r border-[#EADFCF]">+91</span>
+                                    <input 
+                                        ref={phoneRef}
+                                        type="tel" 
+                                        value={phone}
+                                        onChange={handlePhoneChange}
+                                        placeholder="00000 00000"
+                                        maxLength={10}
+                                        className="flex-1 text-[16px] font-bold text-[#2A1D14] tracking-[0.4px] bg-transparent outline-none"
+                                    />
                                     {selectedCustomer && (
-                                        <p className="mt-1.5 text-xs text-emerald-400 flex items-center gap-1">
-                                            <CheckCircle className="h-3 w-3" /> Existing customer selected
-                                        </p>
+                                        <span className="text-[11px] font-extrabold text-[#6E8B5E]">✓ FOUND</span>
                                     )}
                                 </div>
-
-                                {/* Name */}
-                                <div>
-                                    <label className="text-xs font-medium text-themed-secondary mb-1.5 block">
-                                        {t("dash.customerName")}
-                                    </label>
-                                    <input
-                                        type="text"
+                                
+                                {/* Dropdown for search */}
+                                {showDropdown && filteredCustomers.length > 0 && (
+                                    <div ref={dropdownRef} className="absolute top-[100%] left-0 right-0 mt-2 bg-white border border-[#EADFCF] rounded-[12px] shadow-lg z-10 overflow-hidden">
+                                        {filteredCustomers.map(u => (
+                                            <div 
+                                                key={u.uid} 
+                                                onClick={() => handleSelectCustomer(u)}
+                                                className="p-3 border-b border-[#F1EBE3] hover:bg-[#FBF7F0] cursor-pointer flex items-center justify-between"
+                                            >
+                                                <div className="font-bold text-[#2A1D14]">{u.name || "Unknown"}</div>
+                                                <div className="text-sm text-[#7A6A5C]">{u.phoneNumber}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <div>
+                                <div className="text-[12.5px] font-bold text-[#7A6A5C] mb-[7px]">Name</div>
+                                <div className="bg-white border border-[#EADFCF] rounded-[12px] p-[12px_15px] flex items-center gap-[11px]">
+                                    <input 
+                                        type="text" 
                                         value={customerName}
                                         onChange={(e) => setCustomerName(e.target.value)}
-                                        placeholder={t("dash.namePlaceholder")}
-                                        className="form-input text-sm w-full"
+                                        placeholder="Customer name"
+                                        className="flex-1 text-[16px] font-bold text-[#2A1D14] bg-transparent outline-none"
                                     />
+                                    {!selectedCustomer && phone.length === 10 && customerName.length > 0 && (
+                                        <span className="text-[12px] font-extrabold text-[#8A5A1E]">Add customer</span>
+                                    )}
                                 </div>
                             </div>
-                        </section>
+                        </div>
+                        {selectedCustomer && (
+                            <div className="flex items-center gap-[11px] bg-[#EAF0E4] border border-[#D3E0C8] rounded-[11px] p-[10px_14px] mt-[11px]">
+                                <span className="text-[13px] text-[#4F6742]">✓</span>
+                                <span className="flex-1 text-[13px] text-[#41603A]">
+                                    {selectedCustomer.queryCount || 0} past orders · saved sizes for {Object.keys(selectedCustomer.measurements || {}).join(", ") || "nothing yet"}
+                                </span>
+                            </div>
+                        )}
+                    </div>
 
-                        {/* ── Section 2: Garment & Measurements ── */}
-                        <section className="space-y-4">
-                            <p className="text-xs font-bold uppercase tracking-widest text-gold-400">Garment & Measurements</p>
-
-                            {/* Garment type + Sets row */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-xs font-medium text-themed-secondary mb-1.5 block">
-                                        {t("dash.garmentType")}
-                                    </label>
-                                    <select
+                    {/* GARMENT & MEASUREMENTS */}
+                    <div>
+                        <div className="text-[11.5px] font-extrabold tracking-[1.4px] text-[#8A5A1E] mb-[10px]">GARMENT & MEASUREMENTS</div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] items-start">
+                            <div>
+                                <div className="text-[12.5px] font-bold text-[#7A6A5C] mb-[7px]">Garment type</div>
+                                <div className="bg-white border border-[#EADFCF] rounded-[12px] p-[12px_15px] flex items-center gap-[11px] relative">
+                                    <select 
                                         value={garmentType}
                                         onChange={(e) => setGarmentType(e.target.value)}
-                                        className="w-full appearance-none rounded-lg px-3 py-2 text-sm font-medium cursor-pointer"
-                                        style={{
-                                            background: "var(--input-bg)",
-                                            border: "1px solid var(--glass-border)",
-                                            color: garmentType ? "var(--text-primary)" : "var(--text-muted)",
-                                        }}
+                                        className="flex-1 text-[15.5px] font-bold text-[#2A1D14] bg-transparent outline-none appearance-none"
                                     >
-                                        <option value="">Select garment...</option>
-                                        {GARMENT_TYPES.map((g) => (
-                                            <option key={g} value={g}>
-                                                {t(`garment.${g}`) || g}
-                                            </option>
+                                        <option value="" disabled>Select garment</option>
+                                        {GARMENT_TYPES.map(g => (
+                                            <option key={g} value={g}>{t(`garment.${g}`) || g}</option>
                                         ))}
                                     </select>
+                                    <span className="text-[13px] text-[#A6947F] pointer-events-none absolute right-4">▾</span>
                                 </div>
-                                <div>
-                                    <label className="text-xs font-medium text-themed-secondary mb-1.5 block">
-                                        Number of Sets
-                                    </label>
-                                    <div
-                                        className="flex items-center rounded-lg overflow-hidden"
-                                        style={{ border: "1px solid var(--glass-border)" }}
-                                    >
-                                        <button
-                                            type="button"
-                                            onClick={() => setNumberOfSets((n) => Math.max(1, n - 1))}
-                                            className="flex h-9 w-10 items-center justify-center text-themed-secondary hover:text-themed-primary transition-colors"
-                                            style={{ background: "var(--hover-bg)" }}
-                                        >
-                                            <span className="text-lg font-bold leading-none">−</span>
-                                        </button>
-                                        <span
-                                            className="flex-1 flex items-center justify-center h-9 text-sm font-bold"
-                                            style={{ background: "var(--input-bg)", color: "var(--text-primary)" }}
-                                        >
-                                            {numberOfSets}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            onClick={() => setNumberOfSets((n) => Math.min(99, n + 1))}
-                                            className="flex h-9 w-10 items-center justify-center text-themed-secondary hover:text-themed-primary transition-colors"
-                                            style={{ background: "var(--hover-bg)" }}
-                                        >
-                                            <span className="text-lg font-bold leading-none">+</span>
-                                        </button>
+                            </div>
+                            <div>
+                                <div className="text-[12.5px] font-bold text-[#7A6A5C] mb-[7px]">Number of sets</div>
+                                <div className="bg-white border border-[#EADFCF] rounded-[12px] p-[7px_9px] flex items-center justify-between">
+                                    <button 
+                                        onClick={() => setNumberOfSets(Math.max(1, numberOfSets - 1))}
+                                        className="w-[38px] h-[38px] rounded-[10px] bg-[#F1EBE3] flex items-center justify-center text-[18px] text-[#5E4A38] hover:bg-[#EADFCF]"
+                                    >–</button>
+                                    <span className="font-bricolage font-extrabold text-[22px] text-[#2A1D14]">{numberOfSets}</span>
+                                    <button 
+                                        onClick={() => setNumberOfSets(numberOfSets + 1)}
+                                        className="w-[38px] h-[38px] rounded-[10px] bg-[#2A1D14] flex items-center justify-center text-[18px] text-[#E7C87A] hover:bg-[#3B2A20]"
+                                    >+</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {garmentType && garmentConfig && (
+                            <div className="bg-white border border-[#EADFCF] rounded-[14px] p-[13px] mt-[11px]">
+                                <div className="flex items-center gap-[10px] mb-[10px]">
+                                    <span className="flex-1 text-[14px] font-extrabold text-[#2A1D14]">{t(`garment.${garmentType}`) || garmentType} measurements</span>
+                                    {selectedCustomer && selectedCustomer.measurements?.[garmentType] && (
+                                        <span className="text-[12px] font-extrabold text-[#6E8B5E]">Filled from last order</span>
+                                    )}
+                                </div>
+                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-[9px]">
+                                    {garmentConfig.map((field) => (
+                                        <div key={field.id} className="bg-[#FBF7F0] border border-[#EADFCF] rounded-[10px] p-[9px_11px]">
+                                            <div className="text-[11px] text-[#7A6A5C]">{t(field.labelKey) || field.id}</div>
+                                            <input 
+                                                type="number" 
+                                                value={measurements[field.id] || ""}
+                                                onChange={(e) => handleMeasurementChange(field.id, e.target.value)}
+                                                className="w-full text-[16.5px] font-extrabold text-[#2A1D14] mt-[1px] bg-transparent outline-none"
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                    ))}
+                                    <div className="border-[1.5px] border-dashed border-[#C8912F] rounded-[10px] p-[9px_11px] flex flex-col justify-center items-center cursor-pointer hover:bg-orange-50/50">
+                                        <div className="text-[15px] text-[#8A5A1E] leading-[1]">＋</div>
+                                        <div className="text-[11px] font-extrabold text-[#8A5A1E]">Add field</div>
                                     </div>
                                 </div>
                             </div>
+                        )}
+                    </div>
 
-                            {/* Measurement fields + Visualizer */}
-                            {garmentType && garmentConfig && (
-                                <div className="flex flex-col lg:flex-row gap-5 rounded-xl p-4" style={{ background: "var(--bg-primary)", border: "1px solid var(--glass-border)" }}>
-                                    {/* Fields */}
-                                    <div className="flex-1 space-y-3">
-                                        <p className="text-xs font-semibold text-themed-secondary">
-                                            Measurements{" "}
-                                            {selectedCustomer && Object.keys(selectedCustomer.measurements?.[garmentType] ?? {}).length > 0 && (
-                                                <span className="text-gold-400">(pre-filled from customer record)</span>
-                                            )}
-                                        </p>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {garmentConfig.map((field) => (
-                                                <div key={field.id}>
-                                                    <label className="text-[10px] font-medium text-themed-muted uppercase tracking-wider block mb-0.5">
-                                                        {t(field.labelKey) || field.id}
-                                                    </label>
-                                                    <input
-                                                        type="number"
-                                                        step="0.25"
-                                                        min="0"
-                                                        value={measurements[field.id] || ""}
-                                                        onChange={(e) => handleMeasurementChange(field.id, e.target.value)}
-                                                        placeholder={field.placeholder}
-                                                        className="form-input text-sm w-full"
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Visualizer */}
-                                    <div className="w-full lg:w-44 shrink-0">
-                                        <MeasurementVisualizer
-                                            garmentType={garmentType as import("@/lib/measurements").GarmentType}
-                                            measurements={visualizerMeasurements}
+                    {/* DELIVERY & NOTES */}
+                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_250px] gap-[16px] items-start">
+                        <div>
+                            <div className="text-[11.5px] font-extrabold tracking-[1.4px] text-[#8A5A1E] mb-[10px]">DELIVERY & NOTES</div>
+                            <div className="flex flex-wrap sm:flex-nowrap gap-[12px]">
+                                <div className="flex-1 bg-white border border-[#EADFCF] rounded-[12px] p-[11px_14px]">
+                                    <div className="text-[11.5px] text-[#7A6A5C]">Delivery date</div>
+                                    <div className="flex items-baseline gap-[8px] mt-[3px]">
+                                        <input 
+                                            type="date" 
+                                            value={deliveryDate}
+                                            onChange={(e) => setDeliveryDate(e.target.value)}
+                                            className="text-[15.5px] font-extrabold text-[#2A1D14] bg-transparent outline-none w-full"
                                         />
                                     </div>
                                 </div>
-                            )}
-                        </section>
-
-                        {/* ── Section 3: Delivery & Notes ── */}
-                        <section className="space-y-4">
-                            <p className="text-xs font-bold uppercase tracking-widest text-gold-400">Delivery & Notes</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-xs font-medium text-themed-secondary mb-1.5 block">
-                                        Delivery Date
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={deliveryDate}
-                                        min={new Date().toISOString().split("T")[0]}
-                                        onChange={(e) => setDeliveryDate(e.target.value)}
-                                        className="form-input text-sm w-full"
+                                <div className="w-[100px] bg-white border border-[#EADFCF] rounded-[12px] p-[11px_14px]">
+                                    <div className="text-[11.5px] text-[#7A6A5C]">Bin</div>
+                                    <input 
+                                        type="text" 
+                                        placeholder="—"
+                                        className="text-[15.5px] font-extrabold text-[#2A1D14] bg-transparent outline-none w-full mt-[3px]"
                                     />
                                 </div>
-                                <div>
-                                    <label className="text-xs font-medium text-themed-secondary mb-1.5 block">
-                                        {t("dash.notes")}
-                                    </label>
-                                    <input
-                                        type="text"
+                            </div>
+                            <div className="mt-[12px]">
+                                <div className="bg-white border border-[#EADFCF] rounded-[12px] p-[12px_14px] flex items-start gap-[10px]">
+                                    <span className="text-[16px] text-[#A6947F] mt-[2px]">✎</span>
+                                    <textarea 
                                         value={notes}
                                         onChange={(e) => setNotes(e.target.value)}
-                                        placeholder={t("dash.detailsPlaceholder")}
-                                        className="form-input text-sm w-full"
+                                        placeholder="Add notes for the tailors"
+                                        className="flex-1 text-[13.5px] font-bold text-[#2A1D14] bg-transparent outline-none resize-none h-[40px]"
                                     />
                                 </div>
                             </div>
-                        </section>
+                        </div>
 
-                        {/* ── Section 4: Price ── */}
-                        <section className="space-y-4">
-                            <p className="text-xs font-bold uppercase tracking-widest text-gold-400">Pricing</p>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-xs font-medium text-themed-secondary mb-1.5 block">
-                                        {t("dash.basePrice")} (₹)
-                                    </label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        value={basePrice}
-                                        onChange={(e) => setBasePrice(e.target.value === "" ? "" : Number(e.target.value))}
-                                        placeholder="Auto from settings"
-                                        className="form-input text-sm w-full"
-                                    />
+                        {/* SUM */}
+                        <div className="bg-[#2A1D14] rounded-[18px] p-[18px_20px] flex flex-col h-full justify-between">
+                            <div>
+                                <div className="flex justify-between items-baseline mb-[6px]">
+                                    <span className="text-[13.5px] font-bold text-[#B9A48A]">
+                                        {garmentType ? `${t(`garment.${garmentType}`) || garmentType} × ${numberOfSets}` : 'No garment'}
+                                    </span>
+                                    <div className="flex items-center gap-[4px] bg-[#3B2A20] rounded-[6px] px-[6px] py-[2px]">
+                                        <span className="text-[11.5px] text-[#8C7761]">₹</span>
+                                        <input 
+                                            type="number"
+                                            value={basePrice}
+                                            onChange={(e) => setBasePrice(Number(e.target.value))}
+                                            className="w-[40px] text-[13.5px] font-bold text-[#E3D6C4] bg-transparent outline-none text-right"
+                                        />
+                                    </div>
                                 </div>
-                                <div
-                                    className="flex flex-col justify-center rounded-xl px-4 py-3"
-                                    style={{ background: "var(--bg-primary)", border: "1px solid var(--glass-border)" }}
-                                >
-                                    <p className="text-[10px] font-medium text-themed-muted uppercase tracking-wider">Total Amount</p>
-                                    <p className="text-xl font-bold text-gold-400 mt-0.5">
-                                        ₹{((typeof basePrice === "number" ? basePrice : garmentPrices[garmentType] ?? 0) * numberOfSets).toLocaleString("en-IN")}
-                                    </p>
-                                    <p className="text-[10px] text-themed-muted mt-0.5">
-                                        ₹{typeof basePrice === "number" ? basePrice : garmentPrices[garmentType] ?? 0} × {numberOfSets} set{numberOfSets > 1 ? "s" : ""}
-                                    </p>
+                                <div className="h-[1px] bg-[#3B2A20] my-[14px]"></div>
+                                <div className="flex justify-between items-end">
+                                    <span className="text-[12px] text-[#8C7761] mb-[3px]">Total to collect</span>
+                                    <span className="font-bricolage font-extrabold text-[28px] text-[#F7EEDC] tracking-[-0.5px]">
+                                        ₹{((typeof basePrice === 'number' ? basePrice : 0) * numberOfSets).toLocaleString('en-IN')}
+                                    </span>
                                 </div>
                             </div>
-                        </section>
-
-                        {/* ── Submit ── */}
-                        <button
-                            onClick={handleSubmit}
-                            disabled={!isValid || submitting}
-                            className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
-                            style={{
-                                background: isValid && !submitting ? "#2D2D2D" : "var(--bg-tertiary)",
-                                color: isValid && !submitting ? "#D4AF37" : undefined,
-                                border: isValid && !submitting ? "1px solid rgba(212,175,55,0.3)" : undefined,
-                            }}
-                        >
-                            {submitting ? (
-                                <><Loader2 className="h-4 w-4 animate-spin" /> Creating order…</>
-                            ) : (
-                                <><Plus className="h-4 w-4" /> {t("dash.createOrderBtn")}</>
-                            )}
-                        </button>
+                            <button 
+                                onClick={handleSubmit}
+                                disabled={!isValid || submitting}
+                                className="w-full h-[52px] rounded-[14px] bg-[#C8912F] flex items-center justify-center gap-[10px] text-[15.5px] font-extrabold text-[#2A1D14] mt-6 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#b8852a] transition-colors"
+                            >
+                                {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : success ? <CheckCircle className="w-5 h-5 text-green-800" /> : "+ Create order"}
+                            </button>
+                        </div>
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );
