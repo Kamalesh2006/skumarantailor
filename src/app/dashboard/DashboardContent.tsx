@@ -9,6 +9,8 @@ import CustomersTab from "@/components/CustomersTab";
 import AdminDesktopHeader from "@/components/AdminDesktopHeader";
 import AdminMobileHeader from "@/components/AdminMobileHeader";
 import AdminBottomNav from "@/components/AdminBottomNav";
+import MobileMenuModal from "@/components/MobileMenuModal";
+
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import {
@@ -123,6 +125,8 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
     const [fetchingLogs, setFetchingLogs] = useState(false);
     const [logsContent, setLogsContent] = useState("");
     const [showQuickAdd, setShowQuickAdd] = useState(false);
+    const [showMobileMenu, setShowMobileMenu] = useState(false);
+
 
     // Status change notification prompt
     const [statusNotify, setStatusNotify] = useState<{
@@ -413,7 +417,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                 {isDesktop && <AdminSidebar currentTab={currentTab} onTabChange={(tab) => setCurrentTab(tab as Tab)} />}
                 
                 <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-                {!isDesktop && <AdminMobileHeader />}
+                {!isDesktop && <AdminMobileHeader onOpenMenu={() => setShowMobileMenu(true)} />}
 
                 <main id="app-content" className="flex-1 overflow-y-auto relative flex flex-col pb-[80px] md:pb-0">
 
@@ -615,29 +619,29 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                     <div className="md:hidden flex-1 flex flex-col gap-[18px] p-[18px_20px]">
                                         <div className="bg-white border border-figma-border rounded-[20px] p-[18px_18px_14px] shadow-[0_2px_8px_rgba(42,29,20,.05)]">
                                             <div className="flex justify-between items-baseline">
-                                                <span className="text-[12px] font-bold tracking-[1.4px] text-figma-text">TODAY</span>
-                                                <span className="text-[12px] font-semibold text-figma-red">{overdueOrders.length} overdue</span>
+                                                <span className="text-[12px] font-bold tracking-[1.4px] text-figma-text">{t("overview.today")}</span>
+                                                <span className="text-[12px] font-semibold text-figma-red">{overdueOrders.length} {t("overview.overdue")}</span>
                                             </div>
                                             <div className="flex gap-[10px] mt-[14px]">
                                                 <div onClick={() => setCurrentTab("orders")} className="flex-1 bg-figma-cream rounded-[14px] p-[12px_12px_10px]">
                                                     <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[30px] text-figma-dark leading-[1]">{readyOrders.length}</div>
-                                                    <div className="text-[12px] text-figma-muted mt-[4px]">To deliver</div>
+                                                    <div className="text-[12px] text-figma-muted mt-[4px]">{t("overview.toDeliver")}</div>
                                                 </div>
                                                 <div onClick={() => setCurrentTab("orders")} className="flex-1 bg-[#EAF0E4] rounded-[14px] p-[12px_12px_10px]">
                                                     <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[30px] text-figma-dark leading-[1]">{stitchingOrders.length}</div>
-                                                    <div className="text-[12px] text-figma-muted mt-[4px]">Stitching</div>
+                                                    <div className="text-[12px] text-figma-muted mt-[4px]">{t("overview.stitching")}</div>
                                                 </div>
                                                 <div onClick={() => setCurrentTab("queries")} className="flex-1 bg-figma-grayLight rounded-[14px] p-[12px_12px_10px]">
                                                     <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[30px] text-figma-dark leading-[1]">4</div>
-                                                    <div className="text-[12px] text-figma-muted mt-[4px]">New queries</div>
+                                                    <div className="text-[12px] text-figma-muted mt-[4px]">{t("overview.newQueries")}</div>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="flex flex-col gap-[10px]">
                                             <div className="flex justify-between items-baseline">
-                                                <span className="font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-figma-dark">Due today</span>
-                                                <span onClick={() => setCurrentTab("orders")} className="text-[13px] font-semibold text-figma-goldDark cursor-pointer">See all</span>
+                                                <span className="font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-figma-dark">{t("overview.dueToday")}</span>
+                                                <span onClick={() => setCurrentTab("orders")} className="text-[13px] font-semibold text-figma-goldDark cursor-pointer">{t("overview.seeAll")}</span>
                                             </div>
                                             <div className="flex flex-col gap-[10px]">
                                                 {deliverToday.map((order, i) => (
@@ -656,7 +660,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                     </div>
                                                 ))}
                                                 {deliverToday.length === 0 && (
-                                                    <div className="p-4 text-center text-figma-muted text-sm border border-dashed border-figma-border rounded-xl">No orders ready</div>
+                                                    <div className="p-4 text-center text-figma-muted text-sm border border-dashed border-figma-border rounded-xl">{t("overview.noOrdersReady")}</div>
                                                 )}
                                             </div>
                                         </div>
@@ -664,8 +668,8 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                         <div onClick={() => setCurrentTab("queries")} className="bg-figma-dark rounded-[18px] p-[15px_16px] flex gap-[12px] items-center mt-[10px] cursor-pointer active:scale-[0.98] transition-transform">
                                             <div className="w-[38px] h-[38px] rounded-[12px] bg-figma-green flex items-center justify-center text-[17px] text-white">✆</div>
                                             <div className="flex-1">
-                                                <div className="text-[14px] font-bold text-figma-cream">4 WhatsApp queries</div>
-                                                <div className="text-[12px] text-figma-mutedGold mt-[2px]">Latest: “Sir, dress ready aacha?”</div>
+                                                <div className="text-[14px] font-bold text-figma-cream">4 {t("overview.whatsappQueries")}</div>
+                                                <div className="text-[12px] text-figma-mutedGold mt-[2px]">{t("overview.latest")}: “Sir, dress ready aacha?”</div>
                                             </div>
                                             <span className="text-[18px] text-[#E7C87A]">›</span>
                                         </div>
@@ -734,7 +738,15 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                 )}
             </div>
             </main>
-            {!isDesktop && <AdminBottomNav currentTab={currentTab} onTabChange={(tab) => setCurrentTab(tab as Tab)} />}
+                        {!isDesktop && (
+                <MobileMenuModal 
+                    isOpen={showMobileMenu} 
+                    onClose={() => setShowMobileMenu(false)} 
+                    currentTab={currentTab} 
+                    onTabChange={(tab) => setCurrentTab(tab as Tab)} 
+                />
+            )}
+            {!isDesktop && <AdminBottomNav currentTab={currentTab} onTabChange={(tab) => setCurrentTab(tab as Tab)} onOpenNewOrder={() => setShowNewOrder(true)} />}
             </div>
             {/* ─── Status Change Notification Prompt ─── */}
             {statusNotify?.show && (

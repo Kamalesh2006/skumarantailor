@@ -296,5 +296,54 @@ export const translations: Record<string, Record<Language, string>> = {
     "track.fetchError": { en: "Failed to fetch orders. Please try again.", ta: "ஆர்டர்களை பெற முடியவில்லை. மீண்டும் முயற்சிக்கவும்." },
     "track.yourOrders": { en: "Your Orders", ta: "உங்கள் ஆர்டர்கள்" },
     "track.noOrdersFound": { en: "No orders found for this number.", ta: "இந்த எண்ணுக்கு ஆர்டர்கள் கிடைக்கவில்லை." },
-    "track.tryAnother": { en: "Try another number", ta: "வேறு எண்ணை முயற்சிக்கவும்" }
+    "track.tryAnother": { en: "Try another number", ta: "வேறு எண்ணை முயற்சிக்கவும்" },
+
+    // ─── Dashboard Overview ───
+    "overview.today": { en: "TODAY", ta: "இன்று" },
+    "overview.overdue": { en: "overdue", ta: "தாமதம்" },
+    "overview.toDeliver": { en: "To deliver", ta: "வழங்கப்பட வேண்டியவை" },
+    "overview.stitching": { en: "Stitching", ta: "தையல்" },
+    "overview.newQueries": { en: "New queries", ta: "புதிய கேள்விகள்" },
+    "overview.dueToday": { en: "Due today", ta: "இன்று தேவை" },
+    "overview.seeAll": { en: "See all", ta: "அனைத்தும் காண்க" },
+    "overview.noOrdersReady": { en: "No orders ready", ta: "தயாரான ஆர்டர்கள் இல்லை" },
+    "overview.noOrdersReadyDesc": { en: "No orders ready for delivery today", ta: "இன்று வழங்கத் தயாரான ஆர்டர்கள் ஏதுமில்லை" },
+    "overview.whatsappQueries": { en: "WhatsApp queries", ta: "வாட்ஸ்அப் கேள்விகள்" },
+    "overview.latest": { en: "Latest", ta: "சமீபத்திய" },
+    
+    // ─── Mobile Menu Modal ───
+    "menu.shop": { en: "SHOP", ta: "கடை" },
+    "menu.revenue": { en: "Revenue", ta: "வருவாய்" },
+    "menu.pricesCapacity": { en: "Prices & capacity", ta: "விலைகள் & திறன்" },
+    "menu.monitoringBoard": { en: "Monitoring board", ta: "கண்காணிப்பு குழு" },
+    "menu.queryLogs": { en: "Query logs", ta: "கேள்வி பதிவுகள்" },
+    "menu.backupData": { en: "Backup data", ta: "காப்பு தரவு" },
+    "menu.app": { en: "APP", ta: "செயலி" },
+    "menu.language": { en: "Language", ta: "மொழி" },
+    "menu.appearance": { en: "Appearance", ta: "தோற்றம்" },
+    "menu.light": { en: "Light", ta: "ஒளி" },
+    "menu.dark": { en: "Dark", ta: "இருள்" },
+    "menu.logoutConfirm": { en: "Log out of this computer?", ta: "இந்த கணினியிலிருந்து வெளியேறவா?" },
+    "menu.logoutDesc": { en: "S Kumaran Tailor", ta: "எஸ் குமரன் டெய்லர்" },
+    "menu.logoutSaved": { en: "All orders saved and backed up", ta: "அனைத்து ஆர்டர்களும் சேமிக்கப்பட்டன" },
+    "menu.logoutWarn": { en: "You will need your phone number and password to sign in again.", ta: "மீண்டும் உள்நுழைய உங்கள் தொலைபேசி எண் மற்றும் கடவுச்சொல் தேவைப்படும்." },
+    "menu.staySignedIn": { en: "Stay signed in", ta: "தொடர்ந்து இரு" },
+    "menu.yesLogout": { en: "Yes, log out", ta: "ஆம், வெளியேறு" },
+    
+    // ─── Orders Tab (Missing Filters) ───
+    "orders.allStatuses": { en: "All Statuses", ta: "அனைத்து நிலைகள்" },
+    "orders.status.pending": { en: "Pending", ta: "நிலுவையில்" },
+    "orders.status.cutting": { en: "Cutting", ta: "வெட்டுதல்" },
+    "orders.status.stitching": { en: "Stitching", ta: "தையல்" },
+    "orders.status.alteration": { en: "Alteration", ta: "மாற்றம்" },
+    "orders.status.ready": { en: "Ready", ta: "தயார்" },
+    "orders.status.delivered": { en: "Delivered", ta: "வழங்கப்பட்டது" },
+
+    // ─── Orders Tab Specific ───
+    "orders.allOrders": { en: "All Orders", ta: "அனைத்து ஆர்டர்கள்" },
+    "orders.newOrder": { en: "New Order", ta: "புதிய ஆர்டர்" },
+    "orders.searchPlaceholder": { en: "Search by name, order ID, garment...", ta: "பெயர், ஆர்டர் ஐடி, ஆடை மூலம் தேடவும்..." },
+    "common.clear": { en: "Clear", ta: "அழி" },
+    "orders.noOrders": { en: "No orders found", ta: "ஆர்டர்கள் கிடைக்கவில்லை" },
+    "orders.adjustSearch": { en: "Try adjusting your search or filters", ta: "உங்கள் தேடல் அல்லது வடிப்பான்களை மாற்றி முயற்சிக்கவும்" }
 };

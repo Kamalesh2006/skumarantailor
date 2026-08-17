@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { X, Loader2, Plus, CheckCircle, User } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
-import { GARMENT_TYPES, GARMENT_CONFIGS } from "@/lib/measurements";
+import { GARMENT_TYPES, GARMENT_CONFIGS, MeasurementField, GarmentType } from "@/lib/measurements";
 import {
     UserData,
     createOrder,
@@ -51,6 +51,18 @@ export default function CreateOrderModal({
     const [deliveryDate, setDeliveryDate] = useState(defaultDeliveryDate());
     const [notes, setNotes] = useState("");
     const [basePrice, setBasePrice] = useState<number | "">("");
+    
+    // ── Custom Measurement Fields ──
+    const [customFields, setCustomFields] = useState<Record<string, MeasurementField[]>>({});
+    
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem('tailor_custom_fields');
+            if (saved) setCustomFields(JSON.parse(saved));
+        } catch (e) {
+            console.error("Failed to load custom fields", e);
+        }
+    }, []);
 
     // ── Customer lookup ──
     const [selectedCustomer, setSelectedCustomer] = useState<UserData | null>(null);

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
 
-import TailorIcon from "@/components/TailorIcon";
+
 import { usePathname } from "next/navigation";
 
 export default function Navbar() {
@@ -19,51 +19,49 @@ export default function Navbar() {
     // We already return null for /dashboard and /login.
 
     return (
-        <div className="w-full pt-4 px-4 md:px-8 absolute top-0 left-0 right-0 z-50">
-            <div className="max-w-7xl mx-auto bg-figma-bg rounded-t-[16px] flex items-center justify-between px-6 h-[72px]" style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
-                <Link href="/" className="flex items-center gap-3">
-                    <div className="w-[32px] h-[32px] relative flex items-center justify-center">
-                        <TailorIcon size={28} />
-                    </div>
-                    <span className="text-[18px] font-bricolage font-extrabold tracking-wide text-figma-dark">
+        <div className="w-full absolute top-0 left-0 right-0 z-50">
+            <div className="w-full bg-[#FBF7F0]/95 backdrop-blur-sm flex items-center justify-between px-6 md:px-11 h-[72px] border-b border-[#EADFCF]">
+                <Link href="/" className="flex items-center gap-[9px]">
+                    <img src="/sk-mark-dark.png" alt="S Kumaran Tailors Logo" className="w-[32px] h-[32px] object-contain" />
+                    <span className="text-[19px] font-bricolage font-extrabold tracking-[-0.4px] text-[#2A1D14]">
                         S Kumaran Tailors
                     </span>
                 </Link>
                 
                 <div className="hidden md:flex items-center gap-7">
                     <div className="flex items-center gap-6">
-                        <Link href="/#services" className="text-[13px] font-bold text-figma-grayBrown hover:text-figma-dark transition-colors">Services</Link>
-                        <Link href="/#how-it-works" className="text-[13px] font-bold text-figma-grayBrown hover:text-figma-dark transition-colors">How it works</Link>
-                        <Link href="/#visit-us" className="text-[13px] font-bold text-figma-grayBrown hover:text-figma-dark transition-colors">Visit us</Link>
+                        <Link href="/#services" className="text-[14.5px] font-semibold text-[#5E4A38] hover:text-[#2A1D14] transition-colors">Services</Link>
+                        <Link href="/#how-it-works" className="text-[14.5px] font-semibold text-[#5E4A38] hover:text-[#2A1D14] transition-colors">How it works</Link>
+                        <Link href="/#visit-us" className="text-[14.5px] font-semibold text-[#5E4A38] hover:text-[#2A1D14] transition-colors">Visit us</Link>
                     </div>
                     
                     <div className="flex items-center gap-3">
-                        <Link href="/track" className="text-[13px] font-bold text-figma-dark bg-[#F2EDE4] px-4 py-2.5 rounded-[10px] hover:bg-[#E8E2D7] transition-colors">
+                        <Link href="/track" className="text-[14px] font-bold text-[#5E4A38] bg-[#F1EBE3] px-4 py-2 rounded-xl hover:bg-[#E8E2D7] transition-colors h-[40px] flex items-center">
                             Track order
                         </Link>
                         
-                        <div className="flex items-center bg-[#F2EDE4] p-1 rounded-[10px]">
+                        <div className="flex items-center bg-[#F1EBE3] p-[3px] rounded-[10px]">
                             <button 
                                 onClick={() => lang !== 'en' && toggleLang()}
-                                className={`text-[12px] font-extrabold px-3 py-1.5 rounded-[8px] transition-all ${lang === 'en' ? 'bg-white text-figma-dark shadow-sm' : 'text-figma-grayBrown hover:text-figma-dark'}`}
+                                className={`text-[12.5px] font-extrabold px-3 h-[32px] rounded-[8px] transition-all flex items-center ${lang === 'en' ? 'bg-white text-[#2A1D14] border border-[#EADFCF]' : 'text-[#8A7A69] hover:text-[#2A1D14]'}`}
                             >
                                 EN
                             </button>
                             <button 
                                 onClick={() => lang !== 'ta' && toggleLang()}
-                                className={`text-[12px] font-extrabold px-3 py-1.5 rounded-[8px] transition-all ${lang === 'ta' ? 'bg-white text-figma-dark shadow-sm' : 'text-figma-grayBrown hover:text-figma-dark'}`}
+                                className={`text-[13px] font-bold px-3 h-[32px] rounded-[8px] transition-all flex items-center font-noto ${lang === 'ta' ? 'bg-white text-[#2A1D14] border border-[#EADFCF]' : 'text-[#8A7A69] hover:text-[#2A1D14]'}`}
                             >
                                 தமிழ்
                             </button>
                         </div>
 
                         {!loading && user ? (
-                            <Link href="/dashboard" className="text-[13px] font-bold text-white bg-[#2A1D16] px-5 py-2.5 rounded-[10px] hover:bg-black transition-colors">
+                            <Link href="/dashboard" className="text-[14px] font-bold text-[#F7EEDC] bg-[#2A1D14] px-[18px] h-[40px] flex items-center rounded-xl hover:bg-black transition-colors">
                                 Dashboard
                             </Link>
                         ) : (
-                            <Link href="/login" className="text-[13px] font-bold text-white bg-[#2A1D16] px-5 py-2.5 rounded-[10px] hover:bg-black transition-colors">
-                                Sign In
+                            <Link href="/login" className="text-[14px] font-bold text-[#F7EEDC] bg-[#2A1D14] px-[18px] h-[40px] flex items-center rounded-xl hover:bg-black transition-colors">
+                                Sign in
                             </Link>
                         )}
                     </div>

@@ -4,9 +4,9 @@ import React from "react";
 import Image from "next/image";
 import { useLanguage } from "@/lib/LanguageContext";
 
-export default function AdminMobileHeader() {
-    const { lang, toggleLang } = useLanguage();
-    const today = new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
+export default function AdminMobileHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
+    const { t, lang, toggleLang } = useLanguage();
+    const today = new Date().toLocaleDateString(lang === 'ta' ? 'ta-IN' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long' });
 
     return (
         <div className="md:hidden bg-figma-dark pt-[env(safe-area-inset-top,20px)] px-5 text-[#F3E9DA]">
@@ -14,7 +14,7 @@ export default function AdminMobileHeader() {
                 <div className="w-[34px] h-[34px] bg-figma-cream rounded-md flex items-center justify-center font-bold text-figma-dark">SK</div>
                 <div className="flex-1">
                     <div className="font-bricolage font-extrabold tracking-tight text-[20px] leading-[1.1] text-figma-cream">
-                        S Kumaran Tailors
+                        {t("app.name")}
                     </div>
                     <div className="text-[12px] text-figma-mutedGold mt-[3px]">
                         {today}
@@ -27,7 +27,7 @@ export default function AdminMobileHeader() {
                     >
                         {lang === 'en' ? 'EN' : 'தமிழ்'}
                     </div>
-                    <div className="w-[34px] h-[34px] rounded-full bg-figma-darkHover flex items-center justify-center text-[15px] text-[#E7C87A] cursor-pointer">
+                    <div className="w-[34px] h-[34px] rounded-full bg-figma-darkHover flex items-center justify-center text-[15px] text-[#E7C87A] cursor-pointer" onClick={onOpenMenu}>
                         ☰
                     </div>
                 </div>

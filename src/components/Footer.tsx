@@ -4,8 +4,13 @@ import { useLanguage } from "@/lib/LanguageContext";
 import TailorIcon from "@/components/TailorIcon";
 import { Phone, Mail, MapPin } from "lucide-react";
 
+import { usePathname } from "next/navigation";
+
 export default function Footer() {
     const { t } = useLanguage();
+    const pathname = usePathname();
+
+    if (pathname === "/login" || pathname.startsWith("/dashboard")) return null;
 
     return (
         <footer className="py-6 px-6" style={{ borderTop: "1px solid var(--glass-border)", background: "var(--bg-secondary)" }}>

@@ -127,7 +127,7 @@ export default function OrdersTab({ onCreateOrder }: { onCreateOrder: () => void
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div className="flex items-center gap-3">
                     <h1 className="font-bricolage font-extrabold text-[28px] lg:text-[32px] text-figma-dark">
-                        All Orders <span className="text-figma-grayBrown/60 ml-1">{totalOrders}</span>
+                        {t("orders.allOrders")} <span className="text-figma-grayBrown/60 ml-1">{totalOrders}</span>
                     </h1>
                 </div>
 
@@ -152,63 +152,67 @@ export default function OrdersTab({ onCreateOrder }: { onCreateOrder: () => void
                         className="h-[46px] px-6 rounded-[14px] bg-figma-dark text-white text-[14px] font-extrabold flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(42,29,20,0.1)] hover:-translate-y-0.5 transition-transform shrink-0"
                     >
                         <Plus className="w-5 h-5" />
-                        New Order
+                        {t("orders.newOrder")}
                     </button>
                 </div>
             </div>
 
             {/* Filters Row */}
             <div className="flex flex-col xl:flex-row gap-3 mb-8">
-                <div className="flex-1 min-w-[300px] bg-white border border-figma-border rounded-[14px] flex items-center px-4 h-[50px] shadow-sm focus-within:border-figma-gold focus-within:shadow-[0_0_0_2px_rgba(198,143,47,0.1)] transition-all">
+                <div className="w-full xl:flex-1 sm:min-w-[300px] bg-white border border-figma-border rounded-[14px] flex items-center px-4 min-h-[50px] shadow-sm focus-within:border-figma-gold focus-within:shadow-[0_0_0_2px_rgba(198,143,47,0.1)] transition-all">
                     <Search className="w-5 h-5 text-figma-grayBrown/60 mr-3 shrink-0" />
                     <input
                         type="text"
-                        placeholder="Search by name, order ID, garment..."
+                        placeholder={t("orders.searchPlaceholder") as string}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="flex-1 bg-transparent border-none outline-none text-[15px] text-figma-dark placeholder:text-figma-grayBrown/60"
+                        className="flex-1 w-full h-full py-2 appearance-none bg-transparent border-none outline-none text-[15px] text-figma-dark placeholder:text-figma-grayBrown/60"
                     />
                     {searchQuery && (
-                        <button onClick={() => setSearchQuery("")} className="text-[13px] font-bold text-figma-grayBrown hover:text-figma-dark px-2 shrink-0">Clear</button>
+                        <button onClick={() => setSearchQuery("")} className="text-[13px] font-bold text-figma-grayBrown hover:text-figma-dark px-2 shrink-0">{t("common.clear")}</button>
                     )}
                 </div>
 
-                <div className="flex flex-wrap sm:flex-nowrap gap-3 shrink-0">
-                    <div className="flex items-center bg-white border border-figma-border rounded-[14px] px-4 h-[50px] shadow-sm flex-1 sm:flex-none">
-                        <Calendar className="w-[18px] h-[18px] text-figma-grayBrown/60 mr-2 shrink-0" />
+                <div className="grid grid-cols-2 sm:flex sm:flex-nowrap gap-3 shrink-0 w-full xl:w-auto">
+                    <div className="flex items-center bg-white border border-figma-border rounded-[14px] px-3 sm:px-4 h-[50px] shadow-sm w-full">
+                        <Calendar className="w-[16px] sm:w-[18px] h-[16px] sm:h-[18px] text-figma-grayBrown/60 mr-1.5 sm:mr-2 shrink-0" />
                         <input
                             type="date"
                             value={dateFrom}
                             onChange={(e) => setDateFrom(e.target.value)}
-                            className="bg-transparent border-none outline-none text-[14px] font-medium text-figma-dark"
+                            className="bg-transparent border-none outline-none text-[13px] sm:text-[14px] font-medium text-figma-dark w-full min-w-0"
                         />
                     </div>
                     
-                    <div className="flex items-center bg-white border border-figma-border rounded-[14px] px-4 h-[50px] shadow-sm flex-1 sm:flex-none">
-                        <Calendar className="w-[18px] h-[18px] text-figma-grayBrown/60 mr-2 shrink-0" />
+                    <div className="flex items-center bg-white border border-figma-border rounded-[14px] px-3 sm:px-4 h-[50px] shadow-sm w-full">
+                        <Calendar className="w-[16px] sm:w-[18px] h-[16px] sm:h-[18px] text-figma-grayBrown/60 mr-1.5 sm:mr-2 shrink-0" />
                         <input
                             type="date"
                             value={dateTo}
                             onChange={(e) => setDateTo(e.target.value)}
-                            className="bg-transparent border-none outline-none text-[14px] font-medium text-figma-dark"
+                            className="bg-transparent border-none outline-none text-[13px] sm:text-[14px] font-medium text-figma-dark w-full min-w-0"
                         />
                     </div>
 
-                    <div className="relative flex-1 sm:flex-none min-w-[140px]">
+                    <div className="relative col-span-2 sm:col-span-1 w-full sm:min-w-[140px]">
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                             className="w-full appearance-none bg-white border border-figma-border rounded-[14px] px-4 pr-10 h-[50px] shadow-sm text-[14px] font-medium text-figma-dark focus:outline-none focus:border-figma-gold"
                         >
-                            <option value="">All Statuses</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Cutting">Cutting</option>
-                            <option value="Stitching">Stitching</option>
-                            <option value="Alteration">Alteration</option>
-                            <option value="Ready">Ready</option>
-                            <option value="Delivered">Delivered</option>
+                            <option value="">{t("orders.allStatuses")}</option>
+                            <option value="Pending">{t("orders.status.pending")}</option>
+                            <option value="Cutting">{t("orders.status.cutting")}</option>
+                            <option value="Stitching">{t("orders.status.stitching")}</option>
+                            <option value="Alteration">{t("orders.status.alteration")}</option>
+                            <option value="Ready">{t("orders.status.ready")}</option>
+                            <option value="Delivered">{t("orders.status.delivered")}</option>
                         </select>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-figma-grayBrown pointer-events-none" />
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 1.5L6 6.5L11 1.5" stroke="#7A6A5C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -218,8 +222,8 @@ export default function OrdersTab({ onCreateOrder }: { onCreateOrder: () => void
                 <div className="animate-fade-in">
                     {gridOrders.length === 0 && !searching ? (
                         <div className="text-center py-20 bg-white border border-figma-border border-dashed rounded-[24px]">
-                            <p className="text-[16px] text-figma-grayBrown font-medium mb-1">No orders found</p>
-                            <p className="text-[14px] text-figma-grayBrown/60">Try adjusting your search or filters</p>
+                            <p className="text-[16px] text-figma-grayBrown font-medium mb-1">{t("orders.noOrders")}</p>
+                            <p className="text-[14px] text-figma-grayBrown/60">{t("orders.adjustSearch")}</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-5 lg:gap-6">
