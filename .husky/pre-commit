@@ -1,1 +1,6 @@
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+export PATH="$HOME/.nvm/versions/node/$(nvm current 2>/dev/null)/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+
 npx lint-staged

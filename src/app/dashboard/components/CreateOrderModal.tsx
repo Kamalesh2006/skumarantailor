@@ -234,7 +234,31 @@ export default function CreateOrderModal({
 
     if (!isOpen) return null;
 
-    const garmentConfig = garmentType ? GARMENT_CONFIGS[garmentType as keyof typeof GARMENT_CONFIGS] : null;
+    const baseConfig = garmentType ? GARMENT_CONFIGS[garmentType as keyof typeof GARMENT_CONFIGS] : null;
+    const garmentConfig = baseConfig ? [...baseConfig, ...(customFields[garmentType] || [])] : null;
+
+    const handleAddField = () => {
+        if (!garmentType) return;
+        const currentCustoms = customFields[garmentType] || [];
+        if (currentCustoms.length >= 20) {
+            alert("Maximum of 20 custom fields allowed per garment.");
+            return;
+        }
+        
+        const fieldName = prompt("Enter name for the new measurement field:", `Field ${currentCustoms.length + 1}`);
+        if (!fieldName || !fieldName.trim()) return;
+        
+        const newField: MeasurementField = {
+            id: `custom_${Date.now()}`,
+            labelKey: fieldName.trim(), // Use actual name as a fallback for translation
+            placeholder: "e.g., 0"
+        };
+        
+        const updatedCustoms = [...currentCustoms, newField];
+        const newCustomFields = { ...customFields, [garmentType]: updatedCustoms };
+        setCustomFields(newCustomFields);
+        localStorage.setItem('tailor_custom_fields', JSON.stringify(newCustomFields));
+    };
 
     // Build visualizer measurements (string values for display)
     const visualizerMeasurements: Record<string, string | number> = {};
@@ -383,7 +407,10 @@ export default function CreateOrderModal({
                                             />
                                         </div>
                                     ))}
-                                    <div className="border-[1.5px] border-dashed border-[#C8912F] rounded-[10px] p-[9px_11px] flex flex-col justify-center items-center cursor-pointer hover:bg-orange-50/50">
+                                    <div 
+                                        onClick={handleAddField}
+                                        className="border-[1.5px] border-dashed border-[#C8912F] rounded-[10px] p-[9px_11px] flex flex-col justify-center items-center cursor-pointer hover:bg-orange-50/50"
+                                    >
                                         <div className="text-[15px] text-[#8A5A1E] leading-[1]">＋</div>
                                         <div className="text-[11px] font-extrabold text-[#8A5A1E]">Add field</div>
                                     </div>
