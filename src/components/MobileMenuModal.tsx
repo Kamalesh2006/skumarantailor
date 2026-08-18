@@ -15,7 +15,7 @@ interface MobileMenuModalProps {
 
 export default function MobileMenuModal({ isOpen, onClose, currentTab, onTabChange }: MobileMenuModalProps) {
     const { logout } = useAuth();
-    const { lang, toggleLang } = useLanguage();
+    const { lang, toggleLang, t } = useLanguage();
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     if (!isOpen) return null;
