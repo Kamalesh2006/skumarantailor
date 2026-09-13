@@ -82,7 +82,7 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                             <Ruler className="h-5 w-5 text-gold-400" />
                             {t("dash.editCustomer")}
                         </h3>
-                        <p className="text-sm text-themed-secondary mt-1">{user.phoneNumber || "New Customer"}</p>
+                        <p className="text-sm text-themed-secondary mt-1">{user.phoneNumber || t("customers.newCustomer")}</p>
                     </div>
                     <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/5 text-themed-muted hover:text-themed-primary transition-colors">
                         <X className="h-5 w-5" />
@@ -106,12 +106,12 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                                         value={name}
                                         onChange={(e) => { setName(e.target.value); setNameError(false); }}
                                         className={`form-input text-sm w-full font-medium ${nameError ? "border-red-500 bg-red-500/5 focus:ring-red-500/20" : ""}`}
-                                        placeholder="Customer Name"
+                                        placeholder={t("modal.customerNamePlaceholder")}
                                     />
-                                    {nameError && <p className="text-[10px] text-red-500 mt-1">Name is required.</p>}
+                                    {nameError && <p className="text-[10px] text-red-500 mt-1">{t("dash.nameRequired")}</p>}
                                 </div>
                                 <div>
-                                    <label className="text-xs font-semibold uppercase tracking-wider text-themed-muted mb-2 block">Phone Number</label>
+                                    <label className="text-xs font-semibold uppercase tracking-wider text-themed-muted mb-2 block">{t("modal.phone")}</label>
                                     <input
                                         value={phone}
                                         onChange={(e) => setPhone(e.target.value)}
@@ -120,19 +120,19 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-semibold uppercase tracking-wider text-themed-muted mb-2 block">Gender</label>
+                                    <label className="text-xs font-semibold uppercase tracking-wider text-themed-muted mb-2 block">{t("modal.gender")}</label>
                                     <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-lg border border-black/5 dark:border-white/5 h-[38px]">
                                         <button
                                             onClick={() => setGender("male")}
                                             className={`flex-1 text-sm py-1.5 px-3 rounded-md font-medium transition-colors ${gender === "male" ? "bg-white text-black shadow-sm dark:bg-zinc-800 dark:text-white" : "text-themed-secondary hover:text-themed-primary"}`}
                                         >
-                                            Male
+                                            {t("modal.male")}
                                         </button>
                                         <button
                                             onClick={() => setGender("female")}
                                             className={`flex-1 text-sm py-1.5 px-3 rounded-md font-medium transition-colors ${gender === "female" ? "bg-white text-black shadow-sm dark:bg-zinc-800 dark:text-white" : "text-themed-secondary hover:text-themed-primary"}`}
                                         >
-                                            Female
+                                            {t("modal.female")}
                                         </button>
                                     </div>
                                 </div>
@@ -151,7 +151,7 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                                                 onClick={() => { setActiveGarment(type); setIsAddingNew(false); }}
                                                 className={`px-3 py-1.5 text-sm font-medium rounded-l-lg border transition-colors ${activeGarment === type && !isAddingNew ? 'bg-gold-400/10 text-gold-400 border-gold-400/30' : 'text-themed-secondary border-transparent hover:bg-white/5'}`}
                                             >
-                                                {type}
+                                                {t(`garment.${type}`) || type}
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteGarment(type)}
@@ -168,7 +168,7 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                                             className="px-3 py-1.5 text-sm font-medium rounded-lg text-themed-secondary hover:text-gold-400 hover:bg-gold-400/10 transition-colors flex items-center gap-1 border border-dashed"
                                             style={{ borderColor: "var(--glass-border)" }}
                                         >
-                                            <Plus className="h-4 w-4" /> Add Profile
+                                            <Plus className="h-4 w-4" /> {t("customers.addProfile")}
                                         </button>
                                     )}
                                 </div>
@@ -177,13 +177,13 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                                 <div className="bg-black/10 rounded-xl p-4 border" style={{ borderColor: "var(--glass-border)" }}>
                                     {isAddingNew ? (
                                         <div className="py-4">
-                                            <label className="block text-sm font-medium text-themed-primary mb-2">Select Garment Profile to Add:</label>
+                                            <label className="block text-sm font-medium text-themed-primary mb-2">{t("customers.selectProfileToAdd")}</label>
                                             <select
                                                 className="form-input text-sm w-full cursor-pointer"
                                                 value=""
                                                 onChange={handleAddGarment}
                                             >
-                                                <option value="" disabled>-- Select Garment Type --</option>
+                                                <option value="" disabled>-- {t("modal.selectGarment")} --</option>
                                                 {GARMENT_TYPES.filter(t => {
                                                     // Hide already added
                                                     if (existingTypes.includes(t)) return false;
@@ -194,8 +194,8 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                                                     }
                                                     // If no gender, show all
                                                     return true;
-                                                }).map(t => (
-                                                    <option key={t} value={t}>{t}</option>
+                                                }).map(typeItem => (
+                                                    <option key={typeItem} value={typeItem}>{t(`garment.${typeItem}`) || typeItem}</option>
                                                 ))}
                                             </select>
                                         </div>
@@ -256,7 +256,7 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                     {/* Right Col: Visualizer */}
                     <div className="hidden lg:flex flex-1 lg:max-w-[40%] bg-black/20 p-6 flex-col">
                         <h4 className="text-sm font-semibold text-themed-secondary mb-4 text-center tracking-wider uppercase">
-                            {isAddingNew ? "Preview" : `${activeGarment} Visualizer`}
+                            {isAddingNew ? t("dash.preview") : `${t(`garment.${activeGarment}`) || activeGarment} ${t("dash.visualizer")}`}
                         </h4>
                         <div className="flex-1 min-h-[300px]">
                             {!isAddingNew ? (
@@ -266,7 +266,7 @@ export default function MeasurementForm({ user, onClose, onSave }: MeasurementFo
                                 />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center p-4 bg-gold-400/5 rounded-2xl border border-gold-400/10 border-dashed">
-                                    <p className="text-themed-muted text-sm text-center">Select a profile<br />to view diagram</p>
+                                    <p className="text-themed-muted text-sm text-center">{t("dash.selectProfileToView")}</p>
                                 </div>
                             )}
                         </div>
