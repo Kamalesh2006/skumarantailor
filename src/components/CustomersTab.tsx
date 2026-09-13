@@ -6,7 +6,7 @@ import { useLanguage } from "@/lib/LanguageContext";
 const BATCH_SIZE = 15;
 
 export default function CustomersTab({ onAddCustomer, onNewOrder }: { onAddCustomer: () => void, onNewOrder: (customer?: UserData) => void }) {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
     
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -79,21 +79,21 @@ export default function CustomersTab({ onAddCustomer, onNewOrder }: { onAddCusto
                 <div className="p-5 pb-4 border-b border-[#EADFCF]">
                     <div className="flex items-center justify-between mb-3">
                         <div>
-                            <h2 className="font-bricolage font-extrabold tracking-tight text-[23px] text-figma-dark leading-none">Customers</h2>
-                            <p className="text-[12.5px] text-figma-grayBrown mt-1">{totalCustomers} saved</p>
+                            <h2 className="font-bricolage font-extrabold tracking-tight text-[23px] text-figma-dark leading-none">{t("customers.title")}</h2>
+                            <p className="text-[12.5px] text-figma-grayBrown mt-1">{totalCustomers} {t("customers.saved")}</p>
                         </div>
                         <button 
                             onClick={onAddCustomer}
                             className="h-[40px] px-[15px] rounded-xl bg-figma-gold flex items-center gap-[7px] text-[13.5px] font-extrabold text-figma-dark hover:opacity-90 transition-opacity"
                         >
-                            <span className="text-[17px] font-light">+</span> Add
+                            <span className="text-[17px] font-light">+</span> {t("customers.add")}
                         </button>
                     </div>
                     <div className="bg-[#F5EFE5] border border-[#EADFCF] rounded-xl px-[14px] py-[11px] flex items-center gap-[10px]">
                         <Search className="w-4 h-4 text-[#A6947F]" />
                         <input 
                             type="text" 
-                            placeholder="Search name or phone number" 
+                            placeholder={t("customers.searchPlaceholder")} 
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="bg-transparent border-none outline-none text-[13.5px] w-full text-figma-dark placeholder-[#A6947F]"
@@ -108,9 +108,9 @@ export default function CustomersTab({ onAddCustomer, onNewOrder }: { onAddCusto
 
                 {/* Directory Header */}
                 <div className="grid grid-cols-[1fr_62px_128px] gap-[10px] px-[22px] py-[11px] bg-[#FBF7F0] border-b border-[#EADFCF] text-[11.5px] font-extrabold tracking-[0.8px] text-[#9A8874]">
-                    <span>NAME</span>
-                    <span className="text-right">ORDERS</span>
-                    <span className="text-right">PHONE</span>
+                    <span>{t("customers.nameCol")}</span>
+                    <span className="text-right">{t("customers.ordersCol")}</span>
+                    <span className="text-right">{t("customers.phoneCol")}</span>
                 </div>
 
                 {/* Directory List */}
@@ -122,7 +122,7 @@ export default function CustomersTab({ onAddCustomer, onNewOrder }: { onAddCusto
                     ) : customers.length === 0 ? (
                         <div className="flex flex-col items-center justify-center p-10 text-center gap-2">
                             <Search className="w-8 h-8 text-[#DFD2BF]" />
-                            <p className="text-[13px] text-[#A6947F] max-w-[200px]">No customers found. Try adjusting your search.</p>
+                            <p className="text-[13px] text-[#A6947F] max-w-[200px]">{t("customers.notFound")}</p>
                         </div>
                     ) : (
                         customers.map((c) => {
@@ -157,7 +157,7 @@ export default function CustomersTab({ onAddCustomer, onNewOrder }: { onAddCusto
                             disabled={loading}
                             className="w-full py-[16px] text-center text-[13.5px] font-extrabold text-[#8A5A1E] hover:bg-[#FBF7F0] transition-colors disabled:opacity-50"
                         >
-                            {loading ? "Loading..." : `Load more · ${customers.length} of ${totalCustomers}`}
+                            {loading ? t("common.loading") : `${t("customers.loadMoreOf")} ${customers.length} ${t("dash.of")} ${totalCustomers}`}
                         </button>
                     )}
                 </div>
@@ -175,14 +175,14 @@ export default function CustomersTab({ onAddCustomer, onNewOrder }: { onAddCusto
                                 {selectedCustomer.name}
                             </h2>
                             <p className="text-[12.5px] text-[#B9A48A] mt-1">
-                                {selectedCustomer.phoneNumber} &middot; customer since {selectedCustomer.createdAt ? new Date(selectedCustomer.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Unknown'} &middot; {selectedCustomer.queryCount || 0} orders
+                                {selectedCustomer.phoneNumber} &middot; {t("customers.since")} {selectedCustomer.createdAt ? new Date(selectedCustomer.createdAt).toLocaleDateString(lang === 'ta' ? 'ta-IN' : 'en-US', { month: 'short', year: 'numeric' }) : '—'} &middot; {selectedCustomer.queryCount || 0} {t("dash.ordersText")}
                             </p>
                         </div>
                         <button 
                             onClick={() => onNewOrder(selectedCustomer)}
                             className="h-[40px] px-[15px] rounded-xl bg-figma-gold text-[13.5px] font-extrabold text-figma-dark hover:opacity-90 transition-opacity whitespace-nowrap"
                         >
-                            New order
+                            {t("dash.newOrder")}
                         </button>
                         <a 
                             href={`https://wa.me/${selectedCustomer.phoneNumber.replace(/\D/g, '')}`}
@@ -196,23 +196,23 @@ export default function CustomersTab({ onAddCustomer, onNewOrder }: { onAddCusto
 
                     <div className="px-7 pt-5 pb-2 flex items-center gap-3">
                         <div className="flex-1">
-                            <h3 className="font-bricolage font-extrabold tracking-tight text-[19px] text-figma-dark">All measurements</h3>
+                            <h3 className="font-bricolage font-extrabold tracking-tight text-[19px] text-figma-dark">{t("customers.allMeasurements")}</h3>
                             <p className="text-[12.5px] text-figma-grayBrown mt-1">
-                                {Object.keys(selectedCustomer.measurements || {}).length} garment sets on file
+                                {Object.keys(selectedCustomer.measurements || {}).length} {t("customers.garmentSetsOnFile")}
                             </p>
                         </div>
                         <button className="h-[40px] px-[15px] rounded-xl bg-white border border-[#E5D9C7] flex items-center gap-2 text-[13.5px] font-bold text-figma-dark hover:bg-gray-50 transition-colors">
-                            <FileText className="w-4 h-4" /> Print sizes
+                            <FileText className="w-4 h-4" /> {t("customers.printSizes")}
                         </button>
                         <button className="h-[40px] px-[15px] rounded-xl bg-[#F7EEDC] border border-[#E7C87A] flex items-center gap-2 text-[13.5px] font-extrabold text-[#8A5A1E] hover:opacity-90 transition-opacity">
-                            <Plus className="w-4 h-4" /> Add garment
+                            <Plus className="w-4 h-4" /> {t("customers.addGarment")}
                         </button>
                     </div>
 
                     <div className="flex-1 px-7 pb-6 overflow-y-auto flex flex-col gap-4 mt-2">
                         {Object.keys(selectedCustomer.measurements || {}).length === 0 ? (
                             <div className="bg-white border border-[#EADFCF] rounded-2xl p-8 text-center text-figma-grayBrown text-sm">
-                                No measurements saved for this customer yet.
+                                {t("customers.noMeasurementsSaved")}
                             </div>
                         ) : (
                             Object.entries(selectedCustomer.measurements || {}).map(([garment, measures]) => (
@@ -221,19 +221,19 @@ export default function CustomersTab({ onAddCustomer, onNewOrder }: { onAddCusto
                                         <div className="w-[30px] h-[30px] rounded-lg bg-[#F7EEDC] flex items-center justify-center text-[14px] text-[#8A5A1E]">
                                             ◈
                                         </div>
-                                        <span className="flex-1 text-[16px] font-extrabold text-figma-dark">{garment}</span>
-                                        <button className="text-[12.5px] font-extrabold text-[#8A5A1E] hover:underline px-2">Edit</button>
+                                        <span className="flex-1 text-[16px] font-extrabold text-figma-dark">{t(`garment.${garment}`) || garment}</span>
+                                        <button className="text-[12.5px] font-extrabold text-[#8A5A1E] hover:underline px-2">{t("customers.edit")}</button>
                                     </div>
                                     <div className="flex flex-wrap gap-[9px]">
                                         {Object.entries(measures).map(([key, value]) => (
                                             <div key={key} className="bg-[#FBF7F0] border border-[#EADFCF] rounded-[10px] px-[11px] py-[9px] min-w-[70px]">
-                                                <div className="text-[11px] text-figma-grayBrown">{key}</div>
+                                                <div className="text-[11px] text-figma-grayBrown">{t(`measure.${key}`) || key}</div>
                                                 <div className="text-[16.5px] font-extrabold text-figma-dark mt-0.5">{value}</div>
                                             </div>
                                         ))}
                                         <button className="bg-transparent border border-dashed border-[#EADFCF] rounded-[10px] px-[11px] py-[9px] min-w-[70px] flex flex-col items-center justify-center text-figma-grayBrown hover:bg-gray-50 hover:text-figma-dark transition-colors">
                                             <Plus className="w-4 h-4 mb-0.5" />
-                                            <span className="text-[10px] font-bold">Add</span>
+                                            <span className="text-[10px] font-bold">{t("customers.add")}</span>
                                         </button>
                                     </div>
                                 </div>
@@ -247,20 +247,20 @@ export default function CustomersTab({ onAddCustomer, onNewOrder }: { onAddCusto
                         ☺
                     </div>
                     <h3 className="font-bricolage font-extrabold tracking-tight text-[24px] text-figma-dark mt-5">
-                        Pick a customer to see their sizes
+                        {t("customers.pickCustomer")}
                     </h3>
                     <p className="max-w-[400px] text-[14.5px] text-figma-grayBrown leading-relaxed mt-2.5">
-                        Every garment they have ordered keeps its own set of measurements, and they all show here together.
+                        {t("customers.pickCustomerDesc")}
                     </p>
                     <div className="flex items-center gap-3 mt-6">
                         <button 
                             onClick={onAddCustomer}
                             className="h-[46px] px-5 rounded-xl bg-figma-gold flex items-center gap-2 text-[14.5px] font-extrabold text-figma-dark hover:opacity-90 transition-opacity"
                         >
-                            <span className="text-[18px] font-light">+</span> Add customer
+                            <span className="text-[18px] font-light">+</span> {t("customers.addCustomerBtn")}
                         </button>
                         <div className="h-[46px] px-5 rounded-xl bg-white border border-[#E5D9C7] flex items-center text-[14.5px] font-bold text-figma-dark cursor-text">
-                            Search by phone
+                            {t("customers.searchByPhone")}
                         </div>
                     </div>
                 </div>

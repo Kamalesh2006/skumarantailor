@@ -9,7 +9,7 @@ interface RevenueTabProps {
 }
 
 export default function RevenueTab({ orders }: RevenueTabProps) {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
 
     const stats = useMemo(() => {
         let totalExpected = 0;
@@ -38,10 +38,10 @@ export default function RevenueTab({ orders }: RevenueTabProps) {
         
         // Calculate best day (for simplicity, using targetDeliveryDate or submissionDate)
         const dailyRevenue: Record<string, number> = {};
-        let bestDay = { date: "N/A", amount: 0 };
+        let bestDay = { date: "—", amount: 0 };
         
         deliveredOrders.forEach(o => {
-            const date = new Date(o.targetDeliveryDate || o.submissionDate).toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
+            const date = new Date(o.targetDeliveryDate || o.submissionDate).toLocaleDateString(lang === 'ta' ? 'ta-IN' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long' });
             dailyRevenue[date] = (dailyRevenue[date] || 0) + (o.totalAmount || 0);
             if (dailyRevenue[date] > bestDay.amount) {
                 bestDay = { date, amount: dailyRevenue[date] };
@@ -73,14 +73,14 @@ export default function RevenueTab({ orders }: RevenueTabProps) {
             garmentList,
             pendingOrders
         };
-    }, [orders]);
+    }, [orders, lang]);
 
     return (
         <div className="flex flex-col gap-5 animate-fade-in max-w-5xl w-full h-full pb-8 md:pb-0">
             {/* Top Stat Cards */}
             <div className="grid grid-cols-1 md:grid-cols-[1.3fr_1fr_1fr] gap-4 shrink-0">
                 <div className="bg-[#2A1D14] rounded-[16px] p-[20px_22px]">
-                    <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-[#B9A48A] uppercase">THIS MONTH</div>
+                    <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-[#B9A48A] uppercase">{t("revenue.thisMonth")}</div>
                     <div className="flex items-end gap-3 mt-2">
                         <span className="font-extrabold tracking-[-1.2px] text-[38px] text-[#F7EEDC] leading-none">₹{stats.totalExpected.toLocaleString()}</span>
                         <span className="mb-[5px] px-[9px] py-[4px] rounded-full bg-[#3B5A2E] text-[#D7E9C8] text-[12px] font-extrabold">▲ 11%</span>
@@ -92,23 +92,23 @@ export default function RevenueTab({ orders }: RevenueTabProps) {
                     <div className="flex gap-5 mt-3">
                         <div>
                             <div className="text-[15px] font-extrabold text-[#F7EEDC]">₹{stats.deliveredRevenue.toLocaleString()}</div>
-                            <div className="text-[11.5px] text-[#B9A48A] mt-[2px]">Collected</div>
+                            <div className="text-[11.5px] text-[#B9A48A] mt-[2px]">{t("revenue.collected")}</div>
                         </div>
                         <div>
                             <div className="text-[15px] font-extrabold text-[#E7C87A]">₹{stats.pendingRevenue.toLocaleString()}</div>
-                            <div className="text-[11.5px] text-[#B9A48A] mt-[2px]">Pending &middot; {stats.pendingOrdersCount} orders</div>
+                            <div className="text-[11.5px] text-[#B9A48A] mt-[2px]">{t("revenue.pendingOrders")} &middot; {stats.pendingOrdersCount} {t("dash.ordersText")}</div>
                         </div>
                     </div>
                 </div>
 
                 <div className="bg-white border border-[#EADFCF] rounded-[16px] p-[20px_22px]">
-                    <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-[#9A8874] uppercase">ORDERS DELIVERED</div>
+                    <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-[#9A8874] uppercase">{t("revenue.ordersDelivered")}</div>
                     <div className="font-bricolage font-extrabold tracking-[-1px] text-[34px] text-[#2A1D14] leading-[1.05] mt-2">{stats.deliveredCount}</div>
-                    <div className="text-[12.5px] text-[#7A6A5C] mt-[5px]">Average ₹{stats.averagePerOrder.toLocaleString()} per order</div>
+                    <div className="text-[12.5px] text-[#7A6A5C] mt-[5px]">{t("revenue.avgPerOrder")} ₹{stats.averagePerOrder.toLocaleString()} {t("revenue.perOrder")}</div>
                 </div>
 
                 <div className="bg-white border border-[#EADFCF] rounded-[16px] p-[20px_22px]">
-                    <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-[#9A8874] uppercase">BEST DAY</div>
+                    <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-[#9A8874] uppercase">{t("revenue.bestDay")}</div>
                     <div className="font-bricolage font-extrabold tracking-[-1px] text-[34px] text-[#2A1D14] leading-[1.05] mt-2">₹{stats.bestDay.amount.toLocaleString()}</div>
                     <div className="text-[12.5px] text-[#7A6A5C] mt-[5px] truncate">{stats.bestDay.date}</div>
                 </div>
@@ -122,8 +122,8 @@ export default function RevenueTab({ orders }: RevenueTabProps) {
                     {/* Last 6 months */}
                     <div className="bg-white border border-[#EADFCF] rounded-[18px] p-[20px_22px_16px]">
                         <div className="flex items-baseline gap-3 mb-4">
-                            <span className="flex-1 font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-[#2A1D14]">Last 6 months</span>
-                            <span className="text-[12.5px] text-[#7A6A5C]">₹7.4L total</span>
+                            <span className="flex-1 font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-[#2A1D14]">{t("revenue.last6Months")}</span>
+                            <span className="text-[12.5px] text-[#7A6A5C]">₹7.4L {t("revenue.totalRevenue")}</span>
                         </div>
                         <div className="flex items-end gap-4 h-[150px]">
                             {/* Static placeholder data to match Figma exactly */}
@@ -138,7 +138,7 @@ export default function RevenueTab({ orders }: RevenueTabProps) {
 
                     {/* By garment */}
                     <div className="flex-1 bg-white border border-[#EADFCF] rounded-[18px] p-[20px_22px]">
-                        <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-[#2A1D14] mb-4">By garment</div>
+                        <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-[#2A1D14] mb-4">{t("revenue.byGarment")}</div>
                         <div className="flex flex-col gap-[13px]">
                             {stats.garmentList.map((g, idx) => {
                                 const colors = ["#C8912F", "#8A5A1E", "#6E8B5E", "#A6947F"];
@@ -156,7 +156,7 @@ export default function RevenueTab({ orders }: RevenueTabProps) {
                                 );
                             })}
                             {stats.garmentList.length === 0 && (
-                                <div className="text-[13px] text-[#7A6A5C]">No data available yet.</div>
+                                <div className="text-[13px] text-[#7A6A5C]">{t("revenue.noData")}</div>
                             )}
                         </div>
                     </div>
@@ -165,7 +165,7 @@ export default function RevenueTab({ orders }: RevenueTabProps) {
                 {/* Pending Payments Column */}
                 <div className="bg-white border border-[#EADFCF] rounded-[18px] flex flex-col overflow-hidden max-h-[500px]">
                     <div className="p-[20px_22px_14px] border-b border-[#F1EBE3] flex items-baseline gap-[10px] shrink-0">
-                        <span className="flex-1 font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-[#2A1D14]">Pending payments</span>
+                        <span className="flex-1 font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-[#2A1D14]">{t("revenue.pendingPayments")}</span>
                         <span className="text-[12.5px] font-extrabold text-[#B4472F]">₹{stats.pendingRevenue.toLocaleString()}</span>
                     </div>
                     <div className="overflow-y-auto">
@@ -176,13 +176,13 @@ export default function RevenueTab({ orders }: RevenueTabProps) {
                                     <span className="text-[16px] font-extrabold text-[#2A1D14]">₹{o.totalAmount?.toLocaleString() || 0}</span>
                                 </div>
                                 <div className="text-[12px] text-[#7A6A5C] mt-[3px]">
-                                    {o.orderId} &middot; {o.status === 'Delivered' ? `delivered ${new Date(o.targetDeliveryDate).toLocaleDateString()}` : `due ${new Date(o.targetDeliveryDate).toLocaleDateString()}`}
+                                    {o.orderId} &middot; {o.status === 'Delivered' ? (lang === 'ta' ? `வழங்கப்பட்டது ${new Date(o.targetDeliveryDate).toLocaleDateString('ta-IN')}` : `delivered ${new Date(o.targetDeliveryDate).toLocaleDateString()}`) : (lang === 'ta' ? `நிலுவை ${new Date(o.targetDeliveryDate).toLocaleDateString('ta-IN')}` : `due ${new Date(o.targetDeliveryDate).toLocaleDateString()}`)}
                                 </div>
                             </div>
                         ))}
                         {stats.pendingOrders.length === 0 && (
                             <div className="p-8 text-center text-[#7A6A5C] text-[13px] font-semibold">
-                                No pending payments!
+                                {t("revenue.noPendingPayments")}
                             </div>
                         )}
                     </div>

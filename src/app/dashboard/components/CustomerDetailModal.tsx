@@ -95,7 +95,7 @@ export default function CustomerDetailModal({
                         </div>
                         <div>
                             <h3 className="text-lg font-bold text-themed-primary">
-                                {customer.name || "Unnamed"}
+                                {customer.name || t("dash.unnamed")}
                             </h3>
                             <div className="flex items-center gap-3 mt-0.5">
                                 <span className="text-sm text-themed-secondary flex items-center gap-1">
@@ -103,7 +103,7 @@ export default function CustomerDetailModal({
                                 </span>
                                 {customer.gender && (
                                     <span className="text-xs text-themed-muted uppercase tracking-wider px-2 py-0.5 rounded-md" style={{ background: "var(--hover-bg)" }}>
-                                        {customer.gender}
+                                        {customer.gender === "male" ? t("modal.male") : customer.gender === "female" ? t("modal.female") : customer.gender}
                                     </span>
                                 )}
                             </div>
@@ -113,7 +113,7 @@ export default function CustomerDetailModal({
                         <button
                             onClick={() => onEditCustomer(customer)}
                             className="p-2 rounded-lg text-themed-muted hover:text-gold-400 hover:bg-gold-400/10 transition-colors"
-                            title="Edit Customer"
+                            title={t("customers.editCustomer")}
                         >
                             <Edit3 className="h-4 w-4" />
                         </button>
@@ -134,15 +134,15 @@ export default function CustomerDetailModal({
                     <div className="grid grid-cols-3 gap-3">
                         <div className="rounded-xl p-3 text-center" style={{ background: "var(--bg-primary)", border: "1px solid var(--glass-border)" }}>
                             <p className="text-xl font-bold text-themed-primary">{customerOrders.length}</p>
-                            <p className="text-[10px] text-themed-muted uppercase tracking-wider mt-0.5">Total Orders</p>
+                            <p className="text-[10px] text-themed-muted uppercase tracking-wider mt-0.5">{t("customers.totalOrders")}</p>
                         </div>
                         <div className="rounded-xl p-3 text-center" style={{ background: "var(--bg-primary)", border: "1px solid var(--glass-border)" }}>
                             <p className="text-xl font-bold text-emerald-500">{activeOrders.length}</p>
-                            <p className="text-[10px] text-themed-muted uppercase tracking-wider mt-0.5">Active</p>
+                            <p className="text-[10px] text-themed-muted uppercase tracking-wider mt-0.5">{t("customers.active")}</p>
                         </div>
                         <div className="rounded-xl p-3 text-center" style={{ background: "var(--bg-primary)", border: "1px solid var(--glass-border)" }}>
                             <p className="text-xl font-bold text-gold-400">₹{totalSpend.toLocaleString("en-IN")}</p>
-                            <p className="text-[10px] text-themed-muted uppercase tracking-wider mt-0.5">Total Spend</p>
+                            <p className="text-[10px] text-themed-muted uppercase tracking-wider mt-0.5">{t("customers.totalSpend")}</p>
                         </div>
                     </div>
 
@@ -150,7 +150,7 @@ export default function CustomerDetailModal({
                     {garmentProfiles.length > 0 && (
                         <section>
                             <p className="text-xs font-bold uppercase tracking-widest text-gold-400 mb-3 flex items-center gap-1.5">
-                                <Ruler className="h-3.5 w-3.5" /> Measurement Profiles
+                                <Ruler className="h-3.5 w-3.5" /> {t("customers.measurementProfiles")}
                             </p>
                             <div className="space-y-2">
                                 {garmentProfiles.map((garmentType) => {
@@ -171,7 +171,7 @@ export default function CustomerDetailModal({
                                                         {t(`garment.${garmentType}`) || garmentType}
                                                     </span>
                                                     <span className="text-[10px] text-themed-muted px-1.5 py-0.5 rounded-md" style={{ background: "var(--hover-bg)" }}>
-                                                        {filledCount} measurements
+                                                        {filledCount} {t("customers.measurementsCount")}
                                                     </span>
                                                 </div>
                                                 {isExpanded ? (
@@ -217,12 +217,12 @@ export default function CustomerDetailModal({
                     {/* ── Orders ── */}
                     <section>
                         <p className="text-xs font-bold uppercase tracking-widest text-gold-400 mb-3 flex items-center gap-1.5">
-                            <Package className="h-3.5 w-3.5" /> Orders ({customerOrders.length})
+                            <Package className="h-3.5 w-3.5" /> {t("nav.orders")} ({customerOrders.length})
                         </p>
 
                         {customerOrders.length === 0 ? (
                             <div className="rounded-xl p-6 text-center" style={{ background: "var(--bg-primary)", border: "1px solid var(--glass-border)" }}>
-                                <p className="text-sm text-themed-muted">No orders yet</p>
+                                <p className="text-sm text-themed-muted">{t("customers.noOrdersYet")}</p>
                             </div>
                         ) : (
                             <div className="space-y-2">
@@ -273,26 +273,26 @@ export default function CustomerDetailModal({
                                                     {/* Order details */}
                                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                                         <div>
-                                                            <p className="text-[10px] text-themed-muted uppercase tracking-wider">Base Price</p>
+                                                            <p className="text-[10px] text-themed-muted uppercase tracking-wider">{t("track.basePrice")}</p>
                                                             <p className="text-sm font-medium text-themed-primary">₹{o.basePrice.toLocaleString("en-IN")}</p>
                                                         </div>
                                                         <div>
-                                                            <p className="text-[10px] text-themed-muted uppercase tracking-wider">Sets</p>
+                                                            <p className="text-[10px] text-themed-muted uppercase tracking-wider">{t("customers.sets")}</p>
                                                             <p className="text-sm font-medium text-themed-primary">{o.numberOfSets}</p>
                                                         </div>
                                                         <div>
-                                                            <p className="text-[10px] text-themed-muted uppercase tracking-wider flex items-center gap-1"><Calendar className="h-3 w-3" /> Placed</p>
+                                                            <p className="text-[10px] text-themed-muted uppercase tracking-wider flex items-center gap-1"><Calendar className="h-3 w-3" /> {t("customers.placed")}</p>
                                                             <p className="text-sm font-medium text-themed-primary">{o.submissionDate}</p>
                                                         </div>
                                                         <div>
-                                                            <p className="text-[10px] text-themed-muted uppercase tracking-wider flex items-center gap-1"><Calendar className="h-3 w-3" /> Due</p>
+                                                            <p className="text-[10px] text-themed-muted uppercase tracking-wider flex items-center gap-1"><Calendar className="h-3 w-3" /> {t("common.due")}</p>
                                                             <p className="text-sm font-medium text-themed-primary">{o.targetDeliveryDate}</p>
                                                         </div>
                                                     </div>
 
                                                     {o.binLocation && (
                                                         <p className="text-xs text-themed-muted flex items-center gap-1">
-                                                            <MapPin className="h-3 w-3" /> Bin: {o.binLocation}
+                                                            <MapPin className="h-3 w-3" /> {t("orders.bin")} {o.binLocation}
                                                         </p>
                                                     )}
                                                     {o.notes && (
@@ -304,7 +304,7 @@ export default function CustomerDetailModal({
                                                         <div>
                                                             <p className="text-[10px] font-semibold text-themed-secondary uppercase tracking-wider mb-2 flex items-center gap-1">
                                                                 <Ruler className="h-3 w-3 text-gold-400" />
-                                                                {t(`garment.${o.garmentType}`) || o.garmentType} Measurements
+                                                                {t(`garment.${o.garmentType}`) || o.garmentType} {t("customers.measurementsCount")}
                                                             </p>
                                                             <div className="flex flex-col sm:flex-row gap-3 rounded-lg p-3" style={{ background: "var(--hover-bg)", border: "1px solid var(--glass-border)" }}>
                                                                 <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5">
@@ -338,7 +338,7 @@ export default function CustomerDetailModal({
                                                         className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-gold-400 hover:bg-gold-400/10 transition-colors"
                                                         style={{ border: "1px solid rgba(212,175,55,0.2)" }}
                                                     >
-                                                        <Edit3 className="h-3.5 w-3.5" /> Edit Order
+                                                        <Edit3 className="h-3.5 w-3.5" /> {t("modal.editOrderTitle")}
                                                     </button>
                                                 </div>
                                             )}

@@ -7,7 +7,7 @@ const PAGE_SIZE = 5;
 const BATCH_SIZE = 9;
 
 export default function OrdersTab({ onCreateOrder }: { onCreateOrder: () => void }) {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
     
     const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
     const [searchQuery, setSearchQuery] = useState("");
@@ -238,12 +238,12 @@ export default function OrdersTab({ onCreateOrder }: { onCreateOrder: () => void
                                                     onChange={(e) => handleStatusChange(order.orderId, e.target.value as OrderStatus)}
                                                     className={`appearance-none px-3 pr-6 py-1 rounded-[8px] text-[11px] font-extrabold uppercase tracking-[0.5px] outline-none cursor-pointer ${getStatusColor(order.status)}`}
                                                 >
-                                                    <option value="Pending">Pending</option>
-                                                    <option value="Cutting">Cutting</option>
-                                                    <option value="Stitching">Stitching</option>
-                                                    <option value="Alteration">Alteration</option>
-                                                    <option value="Ready">Ready</option>
-                                                    <option value="Delivered">Delivered</option>
+                                                    <option value="Pending">{t("orders.status.pending")}</option>
+                                                    <option value="Cutting">{t("orders.status.cutting")}</option>
+                                                    <option value="Stitching">{t("orders.status.stitching")}</option>
+                                                    <option value="Alteration">{t("orders.status.alteration")}</option>
+                                                    <option value="Ready">{t("orders.status.ready")}</option>
+                                                    <option value="Delivered">{t("orders.status.delivered")}</option>
                                                 </select>
                                                 <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none opacity-60" />
                                             </div>
@@ -255,14 +255,14 @@ export default function OrdersTab({ onCreateOrder }: { onCreateOrder: () => void
                                             </p>
                                         </div>
                                         <div className="flex items-center justify-between text-[13px] font-bold text-figma-dark bg-[#FBF7F0] p-3 rounded-xl mt-1">
-                                            <span>₹{order.totalAmount?.toLocaleString('en-IN') || 0} total</span>
-                                            <span className="text-[#8A5A1E]">Due: {new Date(order.submissionDate).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}</span>
+                                            <span>₹{order.totalAmount?.toLocaleString('en-IN') || 0} {t("orders.total")}</span>
+                                            <span className="text-[#8A5A1E]">{t("orders.due")} {new Date(order.submissionDate).toLocaleDateString(lang === 'ta' ? "ta-IN" : "en-IN", { month: "short", day: "numeric" })}</span>
                                         </div>
                                     </div>
                                     <div className="bg-[#FBF7F0]/50 p-4 flex items-center justify-between mt-auto">
                                         <div className="text-[13px] font-bold text-figma-grayBrown flex items-center gap-2">
                                             <span className="w-2 h-2 rounded-full bg-[#EADFCF]" />
-                                            Bin: <input type="text" value={order.binLocation || ""} onChange={(e) => handleBinUpdate(order.orderId, e.target.value)} className="bg-transparent border-b border-transparent hover:border-figma-grayBrown/30 focus:border-figma-grayBrown outline-none w-12 text-[13px] font-bold text-figma-grayBrown transition-colors" placeholder="—" />
+                                            {t("orders.bin")} <input type="text" value={order.binLocation || ""} onChange={(e) => handleBinUpdate(order.orderId, e.target.value)} className="bg-transparent border-b border-transparent hover:border-figma-grayBrown/30 focus:border-figma-grayBrown outline-none w-12 text-[13px] font-bold text-figma-grayBrown transition-colors" placeholder="—" />
                                         </div>
                                         <button className="w-[32px] h-[32px] flex items-center justify-center rounded-lg hover:bg-black/5 text-figma-grayBrown transition-colors">
                                             <MoreHorizontal className="w-[18px] h-[18px]" />
@@ -280,7 +280,7 @@ export default function OrdersTab({ onCreateOrder }: { onCreateOrder: () => void
                                 disabled={gridLoading}
                                 className="h-[46px] px-8 rounded-xl bg-white border border-figma-border text-[14px] font-extrabold text-figma-dark flex items-center gap-2 hover:bg-[#FBF7F0] transition-colors disabled:opacity-50 shadow-sm"
                             >
-                                {gridLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Load More"}
+                                {gridLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("dash.loadMore")}
                             </button>
                         </div>
                     )}
@@ -294,19 +294,19 @@ export default function OrdersTab({ onCreateOrder }: { onCreateOrder: () => void
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-figma-border bg-[#FBF7F0]">
-                                    <th className="py-4 px-6 text-[12px] font-bold text-figma-grayBrown uppercase tracking-wider">Order ID</th>
-                                    <th className="py-4 px-6 text-[12px] font-bold text-figma-grayBrown uppercase tracking-wider">Customer</th>
-                                    <th className="py-4 px-6 text-[12px] font-bold text-figma-grayBrown uppercase tracking-wider">Garment</th>
-                                    <th className="py-4 px-6 text-[12px] font-bold text-figma-grayBrown uppercase tracking-wider">Date</th>
-                                    <th className="py-4 px-6 text-[12px] font-bold text-figma-grayBrown uppercase tracking-wider">Status</th>
-                                    <th className="py-4 px-6 text-[12px] font-bold text-figma-grayBrown uppercase tracking-wider text-right">Amount</th>
+                                    <th className="py-4 px-6 text-[12px] font-bold text-figma-grayBrown uppercase tracking-wider">{t("orders.orderId")}</th>
+                                    <th className="py-4 px-6 text-[12px] font-bold text-figma-grayBrown uppercase tracking-wider">{t("orders.customer")}</th>
+                                    <th className="py-4 px-6 text-[12px] font-bold text-figma-grayBrown uppercase tracking-wider">{t("orders.garment")}</th>
+                                    <th className="py-4 px-6 text-[12px] font-bold text-figma-grayBrown uppercase tracking-wider">{t("orders.date")}</th>
+                                    <th className="py-4 px-6 text-[12px] font-bold text-figma-grayBrown uppercase tracking-wider">{t("orders.statusHeader")}</th>
+                                    <th className="py-4 px-6 text-[12px] font-bold text-figma-grayBrown uppercase tracking-wider text-right">{t("orders.amount")}</th>
                                     <th className="py-4 px-4 w-12"></th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-figma-border">
                                 {listOrders.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7} className="py-12 text-center text-figma-grayBrown">No orders found</td>
+                                        <td colSpan={7} className="py-12 text-center text-figma-grayBrown">{t("orders.noOrders")}</td>
                                     </tr>
                                 ) : (
                                     listOrders.map(order => (
@@ -314,10 +314,10 @@ export default function OrdersTab({ onCreateOrder }: { onCreateOrder: () => void
                                             <td className="py-4 px-6 text-[14px] font-bold text-figma-dark">{order.orderId}</td>
                                             <td className="py-4 px-6 text-[14.5px] font-bold text-figma-dark">{order.customerName}</td>
                                             <td className="py-4 px-6 text-[14px] text-figma-grayBrown">{t(`garment.${order.garmentType}`) || order.garmentType} <span className="text-[12px] text-figma-grayBrown/60 ml-1">×{order.numberOfSets || 1}</span></td>
-                                            <td className="py-4 px-6 text-[14px] text-figma-grayBrown">{new Date(order.submissionDate).toLocaleDateString("en-IN", { day: 'numeric', month: 'short' })}</td>
+                                            <td className="py-4 px-6 text-[14px] text-figma-grayBrown">{new Date(order.submissionDate).toLocaleDateString(lang === 'ta' ? "ta-IN" : "en-IN", { day: 'numeric', month: 'short' })}</td>
                                             <td className="py-4 px-6">
                                                 <span className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold uppercase tracking-[0.5px] ${getStatusColor(order.status)}`}>
-                                                    {order.status}
+                                                    {t(`orders.status.${order.status.toLowerCase()}`) || order.status}
                                                 </span>
                                             </td>
                                             <td className="py-4 px-6 text-[14px] font-bold text-figma-dark text-right">₹{order.totalAmount?.toLocaleString('en-IN') || 0}</td>
@@ -334,21 +334,21 @@ export default function OrdersTab({ onCreateOrder }: { onCreateOrder: () => void
                     </div>
                     {totalPages > 1 && (
                         <div className="p-4 border-t border-figma-border bg-[#FBF7F0]/50 flex items-center justify-between mt-auto">
-                            <span className="text-[13px] text-figma-grayBrown font-medium">Page {currentPage} of {totalPages}</span>
+                            <span className="text-[13px] text-figma-grayBrown font-medium">{t("dash.page")} {currentPage} {t("dash.of")} {totalPages}</span>
                             <div className="flex items-center gap-2">
                                 <button 
                                     disabled={currentPage <= 1}
                                     onClick={() => fetchListPage(currentPage - 1)}
                                     className="px-4 py-2 bg-white border border-figma-border rounded-lg text-[13px] font-bold text-figma-dark disabled:opacity-50 shadow-sm"
                                 >
-                                    Prev
+                                    {t("dash.prev")}
                                 </button>
                                 <button 
                                     disabled={currentPage >= totalPages}
                                     onClick={() => fetchListPage(currentPage + 1)}
                                     className="px-4 py-2 bg-white border border-figma-border rounded-lg text-[13px] font-bold text-figma-dark disabled:opacity-50 shadow-sm"
                                 >
-                                    Next
+                                    {t("dash.next")}
                                 </button>
                             </div>
                         </div>

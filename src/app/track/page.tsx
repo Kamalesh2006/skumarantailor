@@ -8,7 +8,7 @@ import { getOrdersByPhone } from "@/lib/firestore";
 import type { OrderData } from "@/lib/firestore";
 
 export default function TrackOrderPage() {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
     const [phone, setPhone] = useState("");
     const [loading, setLoading] = useState(false);
     const [searched, setSearched] = useState(false);
@@ -142,7 +142,7 @@ export default function TrackOrderPage() {
                         onClick={() => setSearched(false)}
                         className="text-[14px] font-bold text-[#7A6A5C] mb-6 hover:text-[#2A1D14] flex items-center gap-1 transition-colors"
                     >
-                        ← Back to search
+                        {t("track.backToSearch")}
                     </button>
 
                     <div className="flex flex-col md:flex-row md:items-end gap-4 mb-8">
@@ -165,9 +165,9 @@ export default function TrackOrderPage() {
                                     
                                     return (
                                         <>
-                                            {stitching > 0 && <span className="h-[42px] px-4 rounded-xl bg-[#F7EEDC] border border-[#E7C87A] flex items-center text-[13.5px] font-extrabold text-[#8A5A1E] shrink-0">{stitching} stitching</span>}
-                                            {ready > 0 && <span className="h-[42px] px-4 rounded-xl bg-[#EAF0E4] border border-[#D3E0C8] flex items-center text-[13.5px] font-extrabold text-[#41603A] shrink-0">{ready} ready</span>}
-                                            {pending > 0 && <span className="h-[42px] px-4 rounded-xl bg-[#F1EBE3] border border-[#EADFCF] flex items-center text-[13.5px] font-extrabold text-[#7A6A5C] shrink-0">{pending} pending</span>}
+                                            {stitching > 0 && <span className="h-[42px] px-4 rounded-xl bg-[#F7EEDC] border border-[#E7C87A] flex items-center text-[13.5px] font-extrabold text-[#8A5A1E] shrink-0">{stitching} {t("track.stitching")}</span>}
+                                            {ready > 0 && <span className="h-[42px] px-4 rounded-xl bg-[#EAF0E4] border border-[#D3E0C8] flex items-center text-[13.5px] font-extrabold text-[#41603A] shrink-0">{ready} {t("track.ready")}</span>}
+                                            {pending > 0 && <span className="h-[42px] px-4 rounded-xl bg-[#F1EBE3] border border-[#EADFCF] flex items-center text-[13.5px] font-extrabold text-[#7A6A5C] shrink-0">{pending} {t("track.pending")}</span>}
                                         </>
                                     );
                                 })()}
@@ -179,7 +179,7 @@ export default function TrackOrderPage() {
                         {orders.map((order) => {
                             const colors = getStatusColor(order.status);
                             const totalAmount = typeof order.totalAmount === 'number' ? order.totalAmount : 0;
-                            const isPaid = totalAmount === 0; // Temporary mock since paymentStatus doesn't exist
+                            const isPaid = totalAmount === 0;
                             const itemsText = `${t(`garment.${order.garmentType}`) || order.garmentType} × ${order.numberOfSets || 1}`;
                             const isDelivered = order.status === "Delivered";
                             const isPending = order.status === "Pending";
@@ -194,20 +194,20 @@ export default function TrackOrderPage() {
                                                 {itemsText}
                                             </h3>
                                             <div className="text-[13.5px] text-[#7A6A5C] mt-1">
-                                                {order.orderId} &middot; placed {new Date(order.submissionDate || Date.now()).toLocaleDateString("en-IN", { day: 'numeric', month: 'long' })} &middot; {isPaid ? "paid" : "total"} ₹{totalAmount.toLocaleString('en-IN')}
+                                                {order.orderId} &middot; {t("track.placedOn")} {new Date(order.submissionDate || Date.now()).toLocaleDateString(lang === 'ta' ? 'ta-IN' : 'en-IN', { day: 'numeric', month: 'long' })} &middot; {isPaid ? t("track.paid") : t("track.totalAmount")} ₹{totalAmount.toLocaleString('en-IN')}
                                             </div>
                                         </div>
                                         <span 
                                             className="px-[13px] py-[7px] rounded-full text-[12px] font-extrabold tracking-wide uppercase shrink-0"
                                             style={{ backgroundColor: colors.bg, color: colors.text }}
                                         >
-                                            {order.status}
+                                            {t(`orders.status.${order.status.toLowerCase()}`) || order.status}
                                         </span>
                                     </div>
 
                                     {isDelivered ? (
                                         <div className="bg-[#F1EBE3] rounded-2xl p-4 md:p-5 mt-6 font-medium text-[#7A6A5C]">
-                                            This order was delivered to you on {new Date(order.targetDeliveryDate || Date.now()).toLocaleDateString("en-IN", { day: 'numeric', month: 'long' })}.
+                                            {t("track.deliveredOnPrefix")} {new Date(order.targetDeliveryDate || Date.now()).toLocaleDateString(lang === 'ta' ? 'ta-IN' : 'en-IN', { day: 'numeric', month: 'long' })}.
                                         </div>
                                     ) : (
                                         <>
@@ -221,8 +221,8 @@ export default function TrackOrderPage() {
                                                         <div className="w-[28px] h-[28px] rounded-full bg-[#6E8B5E] flex items-center justify-center text-[13px] text-white">✓</div>
                                                     </div>
                                                     <div className="flex-1 pb-1">
-                                                        <div className="text-[16px] font-bold text-[#2A1D14]">Pending</div>
-                                                        <div className="text-[13px] text-[#7A6A5C] mt-0.5">Order received and logged</div>
+                                                        <div className="text-[16px] font-bold text-[#2A1D14]">{t("track.stepPendingTitle")}</div>
+                                                        <div className="text-[13px] text-[#7A6A5C] mt-0.5">{t("track.stepPendingDesc")}</div>
                                                     </div>
                                                 </div>
 
@@ -239,13 +239,13 @@ export default function TrackOrderPage() {
                                                     </div>
                                                     <div className="flex-1 pb-1">
                                                         <div className={`text-[16px] md:text-[18px] font-extrabold ${isPending ? "text-[#A6947F]" : "text-[#2A1D14]"}`}>
-                                                            {order.status === "Alteration" ? "Alteration" : "Stitching"}
+                                                            {order.status === "Alteration" ? (t("orders.status.alteration") || "Alteration") : (t("orders.status.stitching") || "Stitching")}
                                                         </div>
                                                         {isProcessing ? (
-                                                            <div className="text-[13.5px] font-bold text-[#8A5A1E] mt-1">Happening now</div>
+                                                            <div className="text-[13.5px] font-bold text-[#8A5A1E] mt-1">{t("track.happeningNow")}</div>
                                                         ) : (
                                                             <div className={`text-[13px] mt-0.5 ${isPending ? "text-[#A6947F]" : "text-[#7A6A5C]"}`}>
-                                                                {isReady || isDelivered ? "Completed" : "Next step"}
+                                                                {isReady || isDelivered ? t("track.completed") : t("track.nextStep")}
                                                             </div>
                                                         )}
                                                     </div>
@@ -262,12 +262,12 @@ export default function TrackOrderPage() {
                                                     </div>
                                                     <div className="flex-1">
                                                         <div className={`text-[16px] font-bold ${isReady || isDelivered ? "text-[#2A1D14]" : "text-[#A6947F]"}`}>
-                                                            Ready to collect
+                                                            {t("track.readyToCollect")}
                                                         </div>
                                                         <div className={`text-[13px] mt-0.5 ${isReady || isDelivered ? "text-[#7A6A5C]" : "text-[#A6947F]"}`}>
                                                             {isReady 
-                                                                ? "Collect anytime between 9 am and 9 pm, closed Sundays." 
-                                                                : `Expected ${new Date(order.targetDeliveryDate).toLocaleDateString("en-IN", { day: 'numeric', month: 'short' })}`}
+                                                                ? t("track.collectTiming") 
+                                                                : `${t("track.expected")} ${new Date(order.targetDeliveryDate).toLocaleDateString(lang === 'ta' ? 'ta-IN' : 'en-IN', { day: 'numeric', month: 'short' })}`}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -275,11 +275,11 @@ export default function TrackOrderPage() {
 
                                             <div className="bg-[#F5EFE5] rounded-2xl p-4 md:p-5 mt-7 flex items-center gap-4 flex-wrap">
                                                 <div className="flex-1 min-w-[120px]">
-                                                    <div className="text-[12.5px] text-[#7A6A5C]">{isPaid ? "Paid in full" : "Amount due on collection"}</div>
+                                                    <div className="text-[12.5px] text-[#7A6A5C]">{isPaid ? t("track.paidInFull") : t("track.amountDueOnCollection")}</div>
                                                     <div className="text-[19px] font-extrabold tracking-[-0.4px] text-[#2A1D14] mt-1">₹{totalAmount.toLocaleString('en-IN')}</div>
                                                 </div>
                                                 <span className={`px-3 py-1.5 rounded-full text-[11.5px] font-extrabold shrink-0 ${isPaid ? "bg-[#EAF0E4] text-[#4F6742]" : "bg-[#F7EEDC] text-[#8A5A1E]"}`}>
-                                                    {isPaid ? "NOTHING DUE" : "PENDING PAYMENT"}
+                                                    {isPaid ? t("track.nothingDue") : t("track.pendingPayment")}
                                                 </span>
                                             </div>
                                         </>
@@ -292,8 +292,8 @@ export default function TrackOrderPage() {
                             <div className="bg-[#2A1D14] rounded-[22px] p-6 md:p-[26px_30px] flex flex-col md:flex-row md:items-center gap-4 md:gap-[18px]">
                                 <div className="w-[46px] h-[46px] rounded-xl bg-[#25795A] flex items-center justify-center text-[19px] text-white shrink-0">✆</div>
                                 <div className="flex-1">
-                                    <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[19px] text-[#F7EEDC]">Something not right?</div>
-                                    <div className="text-[13.5px] text-[#B9A48A] mt-1">Message the shop and we will check straight away.</div>
+                                    <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[19px] text-[#F7EEDC]">{t("track.somethingNotRight")}</div>
+                                    <div className="text-[13.5px] text-[#B9A48A] mt-1">{t("track.messageShop")}</div>
                                 </div>
                                 <a 
                                     href="https://wa.me/919488339199" 

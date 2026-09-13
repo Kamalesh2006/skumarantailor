@@ -31,7 +31,7 @@ export default function EditOrderModal({
     onOrderUpdated,
     garmentPrices,
 }: EditOrderModalProps) {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
 
     // ── Form state ──
     const [garmentType, setGarmentType] = useState("");
@@ -171,7 +171,7 @@ export default function EditOrderModal({
                 >
                     <div>
                         <h3 className="text-lg font-semibold text-themed-primary">
-                            Edit Order
+                            {t("modal.editOrderTitle")}
                         </h3>
                         <p className="text-xs text-themed-muted mt-0.5">
                             {order.orderId} • {order.customerName} • {order.customerPhone}
@@ -192,14 +192,14 @@ export default function EditOrderModal({
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/15">
                             <CheckCircle className="h-8 w-8 text-emerald-500" />
                         </div>
-                        <p className="text-sm font-medium text-emerald-500">Order updated!</p>
+                        <p className="text-sm font-medium text-emerald-500">{lang === 'ta' ? 'ஆர்டர் புதுப்பிக்கப்பட்டது!' : 'Order updated!'}</p>
                     </div>
                 ) : (
                     <div className="p-6 space-y-6">
 
                         {/* ── Section 1: Garment & Sets ── */}
                         <section className="space-y-4">
-                            <p className="text-xs font-bold uppercase tracking-widest text-gold-400">Garment & Sets</p>
+                            <p className="text-xs font-bold uppercase tracking-widest text-gold-400">{t("modal.garmentAndMeasurements")}</p>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -216,7 +216,7 @@ export default function EditOrderModal({
                                             color: garmentType ? "var(--text-primary)" : "var(--text-muted)",
                                         }}
                                     >
-                                        <option value="">Select garment...</option>
+                                        <option value="">{t("modal.selectGarment")}</option>
                                         {GARMENT_TYPES.map((g) => (
                                             <option key={g} value={g}>
                                                 {t(`garment.${g}`) || g}
@@ -226,7 +226,7 @@ export default function EditOrderModal({
                                 </div>
                                 <div>
                                     <label className="text-xs font-medium text-themed-secondary mb-1.5 block">
-                                        Number of Sets
+                                        {t("modal.numberOfSets")}
                                     </label>
                                     <div
                                         className="flex items-center rounded-lg overflow-hidden"
@@ -262,7 +262,7 @@ export default function EditOrderModal({
                         {/* ── Section 2: Measurements ── */}
                         {garmentType && garmentConfig && (
                             <section className="space-y-4">
-                                <p className="text-xs font-bold uppercase tracking-widest text-gold-400">Measurements</p>
+                                <p className="text-xs font-bold uppercase tracking-widest text-gold-400">{t("dash.measurements")}</p>
                                 <div className="flex flex-col lg:flex-row gap-5 rounded-xl p-4" style={{ background: "var(--bg-primary)", border: "1px solid var(--glass-border)" }}>
                                     {/* Fields */}
                                     <div className="flex-1 space-y-3">
@@ -299,11 +299,11 @@ export default function EditOrderModal({
 
                         {/* ── Section 3: Delivery & Notes ── */}
                         <section className="space-y-4">
-                            <p className="text-xs font-bold uppercase tracking-widest text-gold-400">Delivery & Notes</p>
+                            <p className="text-xs font-bold uppercase tracking-widest text-gold-400">{t("modal.deliveryAndNotes")}</p>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-xs font-medium text-themed-secondary mb-1.5 block">
-                                        Delivery Date
+                                        {t("modal.deliveryDate")}
                                     </label>
                                     <input
                                         type="date"
@@ -329,7 +329,7 @@ export default function EditOrderModal({
 
                         {/* ── Section 4: Price ── */}
                         <section className="space-y-4">
-                            <p className="text-xs font-bold uppercase tracking-widest text-gold-400">Pricing</p>
+                            <p className="text-xs font-bold uppercase tracking-widest text-gold-400">{t("track.pricing")}</p>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-xs font-medium text-themed-secondary mb-1.5 block">
@@ -348,12 +348,12 @@ export default function EditOrderModal({
                                     className="flex flex-col justify-center rounded-xl px-4 py-3"
                                     style={{ background: "var(--bg-primary)", border: "1px solid var(--glass-border)" }}
                                 >
-                                    <p className="text-[10px] font-medium text-themed-muted uppercase tracking-wider">Total Amount</p>
+                                    <p className="text-[10px] font-medium text-themed-muted uppercase tracking-wider">{t("modal.totalToCollect")}</p>
                                     <p className="text-xl font-bold text-gold-400 mt-0.5">
                                         ₹{((typeof basePrice === "number" ? basePrice : garmentPrices[garmentType] ?? 0) * numberOfSets).toLocaleString("en-IN")}
                                     </p>
                                     <p className="text-[10px] text-themed-muted mt-0.5">
-                                        ₹{typeof basePrice === "number" ? basePrice : garmentPrices[garmentType] ?? 0} × {numberOfSets} set{numberOfSets > 1 ? "s" : ""}
+                                        ₹{typeof basePrice === "number" ? basePrice : garmentPrices[garmentType] ?? 0} × {numberOfSets} {t("settings.setsPerDay")}
                                     </p>
                                 </div>
                             </div>
@@ -371,9 +371,9 @@ export default function EditOrderModal({
                             }}
                         >
                             {submitting ? (
-                                <><Loader2 className="h-4 w-4 animate-spin" /> Saving changes…</>
+                                <><Loader2 className="h-4 w-4 animate-spin" /> {lang === 'ta' ? 'மாற்றங்களை சேமிக்கிறது…' : 'Saving changes…'}</>
                             ) : (
-                                <><Save className="h-4 w-4" /> Save Changes</>
+                                <><Save className="h-4 w-4" /> {t("modal.saveOrderBtn")}</>
                             )}
                         </button>
                     </div>

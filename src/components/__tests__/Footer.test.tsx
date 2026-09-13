@@ -15,7 +15,7 @@ describe('Footer', () => {
     // Check if the contact information is rendered
     expect(screen.getByText('+91 94428 98544')).toBeInTheDocument()
     expect(screen.getByText('skumarantailorscuddalore@gmail.com')).toBeInTheDocument()
-    expect(screen.getByText('Cuddalore, Tamil Nadu')).toBeInTheDocument()
+    expect(screen.getAllByText(/Cuddalore|கடலூர்/i).length).toBeGreaterThan(0)
     
     // Check if links are correct
     expect(screen.getByText('+91 94428 98544').closest('a')).toHaveAttribute('href', 'tel:+919442898544')

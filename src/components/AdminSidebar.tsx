@@ -14,20 +14,20 @@ interface AdminSidebarProps {
 export default function AdminSidebar({ currentTab, onTabChange }: AdminSidebarProps) {
     const { logout } = useAuth();
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-    const { lang, toggleLang } = useLanguage();
+    const { lang, toggleLang, t } = useLanguage();
 
     const tabs = [
-        { key: "overview", label: "Dashboard", icon: "⌂", activeColor: "bg-figma-gold text-figma-dark", inactiveColor: "text-figma-cream", iconColor: "text-figma-dark", inactiveIconColor: "text-figma-mutedGold" },
-        { key: "orders", label: "Orders", icon: "☰", badge: "23", activeColor: "bg-figma-gold text-figma-dark", inactiveColor: "text-figma-cream", iconColor: "text-figma-dark", inactiveIconColor: "text-figma-mutedGold" },
-        { key: "monitoring", label: "Monitoring", icon: "▦", activeColor: "bg-figma-gold text-figma-dark", inactiveColor: "text-figma-cream", iconColor: "text-figma-dark", inactiveIconColor: "text-figma-mutedGold" },
-        { key: "customers", label: "Customers", icon: "☺", badge: "318", activeColor: "bg-figma-gold text-figma-dark", inactiveColor: "text-figma-cream", iconColor: "text-figma-dark", inactiveIconColor: "text-figma-mutedGold" },
-        { key: "queries", label: "Queries", icon: "✆", redBadge: "4", activeColor: "bg-figma-gold text-figma-dark", inactiveColor: "text-figma-cream", iconColor: "text-figma-dark", inactiveIconColor: "text-figma-mutedGold" },
-        { key: "revenue", label: "Revenue", icon: "₹", activeColor: "bg-figma-gold text-figma-dark", inactiveColor: "text-figma-cream", iconColor: "text-figma-dark", inactiveIconColor: "text-figma-mutedGold" },
+        { key: "overview", label: t("dash.tab.overview"), icon: "⌂", activeColor: "bg-figma-gold text-figma-dark", inactiveColor: "text-figma-cream", iconColor: "text-figma-dark", inactiveIconColor: "text-figma-mutedGold" },
+        { key: "orders", label: t("dash.tab.orders"), icon: "☰", badge: "23", activeColor: "bg-figma-gold text-figma-dark", inactiveColor: "text-figma-cream", iconColor: "text-figma-dark", inactiveIconColor: "text-figma-mutedGold" },
+        { key: "monitoring", label: t("dash.tab.monitoring"), icon: "▦", activeColor: "bg-figma-gold text-figma-dark", inactiveColor: "text-figma-cream", iconColor: "text-figma-dark", inactiveIconColor: "text-figma-mutedGold" },
+        { key: "customers", label: t("dash.tab.customers"), icon: "☺", badge: "318", activeColor: "bg-figma-gold text-figma-dark", inactiveColor: "text-figma-cream", iconColor: "text-figma-dark", inactiveIconColor: "text-figma-mutedGold" },
+        { key: "queries", label: t("dash.tab.queries"), icon: "✆", redBadge: "4", activeColor: "bg-figma-gold text-figma-dark", inactiveColor: "text-figma-cream", iconColor: "text-figma-dark", inactiveIconColor: "text-figma-mutedGold" },
+        { key: "revenue", label: t("menu.revenue"), icon: "₹", activeColor: "bg-figma-gold text-figma-dark", inactiveColor: "text-figma-cream", iconColor: "text-figma-dark", inactiveIconColor: "text-figma-mutedGold" },
     ];
 
     const bottomTabs = [
-        { key: "settings", label: "Prices", icon: "▤" },
-        { key: "backup", label: "Backup", icon: "⇪" },
+        { key: "settings", label: t("dash.tab.prices"), icon: "▤" },
+        { key: "backup", label: t("dash.tab.backup"), icon: "⇪" },
     ];
 
     return (
@@ -36,7 +36,7 @@ export default function AdminSidebar({ currentTab, onTabChange }: AdminSidebarPr
                 <div className="w-[32px] h-[32px] relative flex items-center justify-center">
                     <Image src="/sewing-machine.png" alt="Logo" width={28} height={28} className="object-contain" style={{ filter: "brightness(0) saturate(100%) invert(72%) sepia(45%) saturate(600%) hue-rotate(10deg) brightness(95%) contrast(90%)" }} priority />
                 </div>
-                <span className="font-bricolage font-extrabold text-[16px] tracking-wide text-figma-cream">S Kumaran Tailors</span>
+                <span className="font-bricolage font-extrabold text-[16px] tracking-wide text-figma-cream">{t("app.name")}</span>
             </div>
 
             <div className="flex flex-col gap-[3px]">
@@ -78,7 +78,7 @@ export default function AdminSidebar({ currentTab, onTabChange }: AdminSidebarPr
                     className="flex w-full items-center gap-[12px] px-[12px] py-[11px] rounded-[11px] cursor-pointer hover:bg-red-500/10 text-red-400 transition-colors"
                 >
                     <LogOut className="w-[18px] h-[18px]" />
-                    <span className="text-[14px] font-semibold">Logout</span>
+                    <span className="text-[14px] font-semibold">{t("common.logout")}</span>
                 </button>
             </div>
         
@@ -91,22 +91,22 @@ export default function AdminSidebar({ currentTab, onTabChange }: AdminSidebarPr
                             </div>
                             <div className="flex-1">
                                 <div className="font-bricolage font-extrabold tracking-tight text-[24px] text-figma-dark leading-tight">
-                                    Log out of this computer?
+                                    {t("menu.logoutConfirm")}
                                 </div>
                                 <div className="text-[13.5px] text-figma-grayBrown mt-[5px]">
-                                    S Kumaran Tailor
+                                    {t("menu.logoutDesc")}
                                 </div>
                             </div>
                         </div>
                         <div className="bg-white border border-[#EADFCF] rounded-[16px] p-[16px_18px] mt-[20px] flex flex-col gap-[11px]">
                             <div className="flex items-center gap-[11px]">
                                 <span className="text-[14px] text-[#6E8B5E]">✓</span>
-                                <span className="flex-1 text-[13.5px] text-[#5E4A38]">All orders saved and backed up</span>
+                                <span className="flex-1 text-[13.5px] text-[#5E4A38]">{t("menu.logoutSaved")}</span>
                             </div>
                             <div className="flex items-start gap-[11px]">
                                 <span className="text-[14px] text-figma-goldDark">•</span>
                                 <span className="flex-1 text-[13.5px] text-[#5E4A38] leading-relaxed">
-                                    You will need your phone number and password to sign in again.
+                                    {t("menu.logoutWarn")}
                                 </span>
                             </div>
                         </div>
@@ -115,13 +115,13 @@ export default function AdminSidebar({ currentTab, onTabChange }: AdminSidebarPr
                                 onClick={() => setShowLogoutConfirm(false)}
                                 className="flex-1 h-[52px] rounded-[15px] bg-[#F1EBE3] flex items-center justify-center text-[15px] font-bold text-[#5E4A38] hover:bg-[#EADFCF] transition-colors"
                             >
-                                Stay signed in
+                                {t("menu.staySignedIn")}
                             </button>
                             <button 
                                 onClick={logout}
                                 className="flex-1 h-[52px] rounded-[15px] bg-[#B4472F] flex items-center justify-center text-[15px] font-extrabold text-white hover:bg-red-700 transition-colors"
                             >
-                                Yes, log out
+                                {t("menu.yesLogout")}
                             </button>
                         </div>
                     </div>

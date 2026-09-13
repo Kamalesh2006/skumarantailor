@@ -92,7 +92,7 @@ import SettingsTab from "@/components/SettingsTab";
 export default function DashboardContent({ activeTab = "overview" }: { activeTab?: Tab }) {
     const { user, role, loading: authLoading } = useAuth();
     const router = useRouter();
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
     const isDesktop = useIsDesktop();
 
     const [currentTab, setCurrentTab] = useState<Tab>(activeTab);
@@ -454,7 +454,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                     <>
                                                 {/* ━━━ OVERVIEW TAB — Today's Tasks ━━━ */}
                         {currentTab === "overview" && (() => {
-                            const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
+                            const todayStr = new Date().toLocaleDateString(lang === 'ta' ? 'ta-IN' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long' });
                             
                             const readyOrders = orders.filter(o => o.status === "Ready");
                             const overdueOrders = orders.filter(o => {
@@ -478,13 +478,13 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                     <div className="bg-white border-b border-figma-border py-[18px] px-[30px] hidden md:flex items-center gap-[20px] shrink-0">
                                         <div className="flex-1">
                                             <div className="font-bricolage font-extrabold tracking-tight text-[25px] text-figma-dark leading-[1.1]">{todayStr}</div>
-                                            <div className="text-[13px] text-figma-muted mt-1">{readyOrders.length} to deliver &middot; {overdueOrders.length} overdue &middot; {stitchingOrders.length} stitching</div>
+                                            <div className="text-[13px] text-figma-muted mt-1">{readyOrders.length} {t("overview.toDeliver").toLowerCase()} &middot; {overdueOrders.length} {t("overview.overdue")} &middot; {stitchingOrders.length} {t("overview.stitching").toLowerCase()}</div>
                                         </div>
                                         <div className="w-[320px] bg-figma-grayLight border border-figma-border rounded-[11px] px-[14px] py-[11px] flex items-center gap-[10px]">
                                             <Search className="w-4 h-4 text-figma-muted" />
                                             <input 
                                                 type="text" 
-                                                placeholder="Search customer, phone or order no." 
+                                                placeholder={t("overview.searchPlaceholder")} 
                                                 className="bg-transparent border-none outline-none text-[13.5px] w-full text-figma-dark placeholder-figma-muted"
                                                 value=""
                                                 onChange={() => {}}
@@ -495,7 +495,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                             className="flex items-center gap-[10px] h-[44px] px-[18px] rounded-[12px] bg-figma-gold cursor-pointer hover:opacity-90 transition-opacity"
                                         >
                                             <span className="text-[20px] text-figma-dark font-light">+</span>
-                                            <span className="text-[14.5px] font-extrabold text-figma-dark">New order</span>
+                                            <span className="text-[14.5px] font-extrabold text-figma-dark">{t("dash.newOrder")}</span>
                                         </button>
                                     </div>
 
@@ -503,24 +503,24 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                     <div className="hidden md:flex flex-1 p-[24px_30px] flex-col gap-[20px] overflow-y-auto bg-figma-bg">
                                         <div className="grid grid-cols-4 gap-[16px] shrink-0">
                                             <div onClick={() => setCurrentTab("orders")} className="bg-white border border-figma-border rounded-[16px] p-[18px_20px] cursor-pointer hover:shadow-md transition-shadow">
-                                                <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-figma-text">TO DELIVER</div>
+                                                <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-figma-text">{t("overview.toDeliver").toUpperCase()}</div>
                                                 <div className="font-bricolage font-extrabold tracking-[-1px] text-[36px] text-figma-dark leading-[1.05] mt-2">{readyOrders.length}</div>
-                                                <div className="text-[12.5px] font-bold text-figma-red mt-1">{overdueOrders.length} overdue</div>
+                                                <div className="text-[12.5px] font-bold text-figma-red mt-1">{overdueOrders.length} {t("overview.overdue")}</div>
                                             </div>
                                             <div onClick={() => { setCurrentTab("orders"); }} className="bg-white border border-figma-border rounded-[16px] p-[18px_20px] cursor-pointer hover:shadow-md transition-shadow">
-                                                <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-figma-text">IN THE SHOP</div>
+                                                <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-figma-text">{t("overview.inTheShop")}</div>
                                                 <div className="font-bricolage font-extrabold tracking-[-1px] text-[36px] text-figma-dark leading-[1.05] mt-2">{inShopOrders.length}</div>
-                                                <div className="text-[12.5px] text-figma-muted mt-1">{cuttingOrders.length} cutting &middot; {stitchingOrders.length} stitching</div>
+                                                <div className="text-[12.5px] text-figma-muted mt-1">{cuttingOrders.length} {t("status.Cutting").toLowerCase()} &middot; {stitchingOrders.length} {t("status.Stitching").toLowerCase()}</div>
                                             </div>
                                             <div onClick={() => setCurrentTab("queries")} className="bg-white border border-figma-border rounded-[16px] p-[18px_20px] cursor-pointer hover:shadow-md transition-shadow">
-                                                <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-figma-text">QUERIES</div>
+                                                <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-figma-text">{t("overview.queries")}</div>
                                                 <div className="font-bricolage font-extrabold tracking-[-1px] text-[36px] text-figma-dark leading-[1.05] mt-2">128</div>
-                                                <div className="text-[12.5px] font-bold text-figma-goldDark mt-1">4 waiting now</div>
+                                                <div className="text-[12.5px] font-bold text-figma-goldDark mt-1">4 {t("overview.waitingNow")}</div>
                                             </div>
                                             <div onClick={() => setCurrentTab("revenue")} className="bg-figma-dark rounded-[16px] p-[18px_20px] cursor-pointer hover:shadow-lg hover:shadow-black/20 transition-all">
-                                                <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-figma-mutedGold">AUGUST REVENUE</div>
+                                                <div className="text-[11.5px] font-extrabold tracking-[1.1px] text-figma-mutedGold">{t("overview.augustRevenue")}</div>
                                                 <div className="font-extrabold tracking-[-1px] text-[31px] text-figma-cream leading-[1.05] mt-[9px]">₹1,42,300</div>
-                                                <div className="text-[12.5px] text-[#E0CFAE] mt-[5px]">₹31,300 pending</div>
+                                                <div className="text-[12.5px] text-[#E0CFAE] mt-[5px]">₹31,300 {t("revenue.pendingOrders").toLowerCase()}</div>
                                             </div>
                                         </div>
 
@@ -528,11 +528,11 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                             {/* Deliver Today Table */}
                                             <div className="bg-white border border-figma-border rounded-[18px] flex flex-col overflow-hidden">
                                                 <div className="p-[18px_22px_14px] flex items-baseline gap-[12px] border-b border-figma-grayLight shrink-0">
-                                                    <span className="flex-1 font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-figma-dark">Deliver today</span>
-                                                    <span onClick={() => setCurrentTab("orders")} className="text-[13px] font-bold text-figma-goldDark cursor-pointer hover:underline">See all orders</span>
+                                                    <span className="flex-1 font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-figma-dark">{t("overview.deliverToday")}</span>
+                                                    <span onClick={() => setCurrentTab("orders")} className="text-[13px] font-bold text-figma-goldDark cursor-pointer hover:underline">{t("overview.seeAllOrders")}</span>
                                                 </div>
                                                 <div className="grid grid-cols-[1fr_130px_96px_110px] gap-[14px] p-[11px_22px] bg-figma-bg border-b border-figma-grayLight text-[11.5px] font-extrabold tracking-[0.8px] text-figma-text shrink-0">
-                                                    <span>CUSTOMER</span><span>GARMENT</span><span>AMOUNT</span><span></span>
+                                                    <span>{t("orders.customer").toUpperCase()}</span><span>{t("orders.garment").toUpperCase()}</span><span>{t("orders.amount").toUpperCase()}</span><span></span>
                                                 </div>
                                                 <div className="overflow-y-auto flex-1">
                                                     {deliverToday.map(order => (
@@ -541,7 +541,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                                 <div className="w-[8px] h-[34px] rounded-[4px] bg-figma-green"></div>
                                                                 <div>
                                                                     <div className="text-[14.5px] font-bold text-figma-dark">{order.customerName}</div>
-                                                                    <div className="text-[12px] text-figma-muted mt-[2px]">{order.orderId} &middot; {order.binLocation || "No Bin"}</div>
+                                                                    <div className="text-[12px] text-figma-muted mt-[2px]">{order.orderId} &middot; {order.binLocation || (lang === 'ta' ? 'பெட்டி இல்லை' : 'No Bin')}</div>
                                                                 </div>
                                                             </div>
                                                             <span className="text-[13.5px] text-figma-brown">{t(`garment.${order.garmentType}`) || order.garmentType}</span>
@@ -550,12 +550,12 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                                 onClick={() => handleStatusChange(order.orderId, "Delivered")}
                                                                 className="h-[36px] rounded-[10px] bg-figma-dark text-figma-cream text-[13px] font-bold flex items-center justify-center cursor-pointer hover:bg-figma-darkHover transition-colors"
                                                             >
-                                                                Deliver
+                                                                {t("overview.deliverBtn")}
                                                             </button>
                                                         </div>
                                                     ))}
                                                     {deliverToday.length === 0 && (
-                                                        <div className="p-8 text-center text-figma-muted">No orders ready for delivery today.</div>
+                                                        <div className="p-8 text-center text-figma-muted">{t("overview.noOrdersReadyDesc")}</div>
                                                     )}
                                                 </div>
                                             </div>
@@ -564,7 +564,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                             <div className="flex flex-col gap-[20px] overflow-y-auto">
                                                 <div className="bg-white border border-figma-border rounded-[18px] p-[18px_20px] shrink-0">
                                                     <div className="flex items-baseline gap-[10px] mb-[14px]">
-                                                        <span className="flex-1 font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-figma-dark">Queries waiting</span>
+                                                        <span className="flex-1 font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-figma-dark">{t("overview.queriesWaiting")}</span>
                                                         <span className="px-[9px] py-[4px] rounded-full bg-[#FBE9E4] text-figma-red text-[11.5px] font-extrabold">4</span>
                                                     </div>
                                                     <div className="flex flex-col gap-[11px]">
@@ -572,41 +572,40 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                             <div className="w-[34px] h-[34px] rounded-[10px] bg-figma-cream flex items-center justify-center font-bricolage font-extrabold text-[12.5px] text-figma-goldDark">RM</div>
                                                             <div className="flex-1">
                                                                 <div className="text-[13.5px] font-bold text-figma-dark">Ramesh M.</div>
-                                                                <div className="text-[12.5px] text-figma-muted mt-[2px] leading-[1.4]">Sir, shirt ready aacha?</div>
+                                                                <div className="text-[12.5px] text-figma-muted mt-[2px] leading-[1.4]">{lang === 'ta' ? 'ஐயா, சட்டை தயாராகிவிட்டதா?' : 'Sir, shirt ready aacha?'}</div>
                                                             </div>
                                                         </div>
-                                                        {/* Static demo content for queries for now */}
                                                     </div>
                                                     <button onClick={() => setCurrentTab("queries")} className="w-full h-[40px] rounded-[11px] bg-figma-grayLight border border-figma-border flex items-center justify-center text-[13px] font-bold text-figma-goldDark mt-[15px] hover:bg-figma-cream transition-colors">
-                                                        Open all queries
+                                                        {t("overview.openAllQueries")}
                                                     </button>
                                                 </div>
 
                                                 <div className="bg-white border border-figma-border rounded-[18px] p-[18px_20px] shrink-0">
-                                                    <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-figma-dark mb-[6px]">Today&apos;s capacity</div>
-                                                    <div className="text-[12.5px] text-figma-muted">{todayLoad} of {capacity} items loaded</div>
+                                                    <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-figma-dark mb-[6px]">{t("dash.todayCapacity")}</div>
+                                                    <div className="text-[12.5px] text-figma-muted">{todayLoad} {t("dash.ordersOf")} {capacity} {t("overview.itemsLoaded")}</div>
                                                     <div className="h-[10px] rounded-[5px] bg-figma-grayLight overflow-hidden mt-[13px]">
                                                         <div className="h-full bg-figma-gold" style={{ width: `${Math.min(capacityPercent, 100)}%` }}></div>
                                                     </div>
                                                     <div className="flex flex-col gap-[9px] mt-[16px]">
                                                         <div className="flex items-center gap-[10px]">
                                                             <span className="w-[9px] h-[9px] rounded-[3px] bg-figma-goldDark"></span>
-                                                            <span className="flex-1 text-[13px] text-figma-brown">Cutting</span>
+                                                            <span className="flex-1 text-[13px] text-figma-brown">{t("status.Cutting")}</span>
                                                             <span className="text-[13.5px] font-extrabold text-figma-dark">{cuttingOrders.length}</span>
                                                         </div>
                                                         <div className="flex items-center gap-[10px]">
                                                             <span className="w-[9px] h-[9px] rounded-[3px] bg-figma-gold"></span>
-                                                            <span className="flex-1 text-[13px] text-figma-brown">Stitching</span>
+                                                            <span className="flex-1 text-[13px] text-figma-brown">{t("status.Stitching")}</span>
                                                             <span className="text-[13.5px] font-extrabold text-figma-dark">{stitchingOrders.length}</span>
                                                         </div>
                                                         <div className="flex items-center gap-[10px]">
                                                             <span className="w-[9px] h-[9px] rounded-[3px] bg-figma-red"></span>
-                                                            <span className="flex-1 text-[13px] text-figma-brown">Alteration</span>
+                                                            <span className="flex-1 text-[13px] text-figma-brown">{t("status.Alteration")}</span>
                                                             <span className="text-[13.5px] font-extrabold text-figma-dark">{alterationOrders.length}</span>
                                                         </div>
                                                         <div className="flex items-center gap-[10px]">
                                                             <span className="w-[9px] h-[9px] rounded-[3px] bg-figma-green"></span>
-                                                            <span className="flex-1 text-[13px] text-figma-brown">Ready</span>
+                                                            <span className="flex-1 text-[13px] text-figma-brown">{t("status.Ready")}</span>
                                                             <span className="text-[13.5px] font-extrabold text-figma-dark">{readyOrders.length}</span>
                                                         </div>
                                                     </div>
@@ -654,7 +653,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                                             <div className="text-[12.5px] text-figma-muted mt-[2px]">{t(`garment.${order.garmentType}`) || order.garmentType} &middot; {order.orderId}</div>
                                                         </div>
                                                         <div className="text-right">
-                                                            <div className="text-[11px] font-bold text-figma-green">READY</div>
+                                                            <div className="text-[11px] font-bold text-figma-green">{t("status.Ready").toUpperCase()}</div>
                                                             <div className="text-[12px] text-figma-muted mt-[3px]">₹{order.totalAmount}</div>
                                                         </div>
                                                     </div>
@@ -669,7 +668,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                             <div className="w-[38px] h-[38px] rounded-[12px] bg-figma-green flex items-center justify-center text-[17px] text-white">✆</div>
                                             <div className="flex-1">
                                                 <div className="text-[14px] font-bold text-figma-cream">4 {t("overview.whatsappQueries")}</div>
-                                                <div className="text-[12px] text-figma-mutedGold mt-[2px]">{t("overview.latest")}: “Sir, dress ready aacha?”</div>
+                                                <div className="text-[12px] text-figma-mutedGold mt-[2px]">{t("overview.latest")}: “{lang === 'ta' ? 'ஐயா, ஆடை தயாராகிவிட்டதா?' : 'Sir, dress ready aacha?'}”</div>
                                             </div>
                                             <span className="text-[18px] text-[#E7C87A]">›</span>
                                         </div>
@@ -677,7 +676,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                 </div>
                             );
                         })()}
-{/* ━━━ ORDERS TAB ━━━ */}
+                        {/* ━━━ ORDERS TAB ━━━ */}
                         {currentTab === "orders" && (
                             <OrdersTab onCreateOrder={() => setShowNewOrder(true)} />
                         )}
@@ -688,7 +687,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                         )}
 
                         {/* ━━━ QUERIES TAB ━━━ */}
-                        {currentTab === "queries" && (
+                        {(currentTab === "queries" || currentTab === "monitoring") && (
                             <QueriesTab allUsers={allUsers} />
                         )}
 
@@ -698,7 +697,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                         )}
 
                         {/* ━━━ SETTINGS TAB ━━━ */}
-                        {currentTab === "settings" && settings && (
+                        {(currentTab === "settings" || currentTab === "backup") && settings && (
                             <SettingsTab 
                                 pricingInput={pricingInput} 
                                 setPricingInput={setPricingInput} 
@@ -769,9 +768,9 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                             </div>
                             <div>
                                 <h3 className="text-base font-bold text-themed-primary">
-                                    {statusNotify.status === "Ready" ? "Order Ready! ✅" : "Order Delivered! 🎉"}
+                                    {statusNotify.status === "Ready" ? (lang === 'ta' ? 'ஆர்டர் தயார்! ✅' : 'Order Ready! ✅') : (lang === 'ta' ? 'ஆர்டர் வழங்கப்பட்டது! 🎉' : 'Order Delivered! 🎉')}
                                 </h3>
-                                <p className="text-xs text-themed-secondary">Notify the customer?</p>
+                                <p className="text-xs text-themed-secondary">{lang === 'ta' ? 'வாடிக்கையாளருக்கு அறிவிக்கவா?' : 'Notify the customer?'}</p>
                             </div>
                         </div>
 
@@ -822,7 +821,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                             onClick={() => setStatusNotify(null)}
                             className="w-full py-2 text-sm text-themed-muted hover:text-themed-secondary transition-colors"
                         >
-                            Skip notification
+                            {lang === 'ta' ? 'அறிவிப்பைத் தவிர்' : 'Skip notification'}
                         </button>
                     </div>
                 </div>

@@ -278,8 +278,8 @@ export default function CreateOrderModal({
                 <div className="bg-[#2A1D14] p-[17px_30px] flex items-center gap-[16px] shrink-0">
                     <div className="w-[42px] h-[42px] rounded-[13px] bg-[#C8912F] flex items-center justify-center text-[19px] text-[#2A1D14]">✂</div>
                     <div className="flex-1">
-                        <div className="font-bricolage font-extrabold tracking-[-0.5px] text-[23px] text-[#F7EEDC] leading-[1.1]">Create new order</div>
-                        <div className="text-[12.5px] text-[#B9A48A] mt-[4px]">Payment is collected now, at the counter</div>
+                        <div className="font-bricolage font-extrabold tracking-[-0.5px] text-[23px] text-[#F7EEDC] leading-[1.1]">{t("modal.createOrderTitle")}</div>
+                        <div className="text-[12.5px] text-[#B9A48A] mt-[4px]">{t("modal.paymentCounterHint")}</div>
                     </div>
                     <button onClick={onClose} className="w-[38px] h-[38px] rounded-[11px] bg-[#3B2A20] flex items-center justify-center text-[16px] text-[#B9A48A] hover:bg-[#4a3628] transition-colors">✕</button>
                 </div>
@@ -288,10 +288,10 @@ export default function CreateOrderModal({
                 <div className="p-[16px_30px_14px] flex flex-col gap-[14px] overflow-y-auto">
                     {/* CUSTOMER */}
                     <div>
-                        <div className="text-[11.5px] font-extrabold tracking-[1.4px] text-[#8A5A1E] mb-[10px]">CUSTOMER</div>
+                        <div className="text-[11.5px] font-extrabold tracking-[1.4px] text-[#8A5A1E] mb-[10px]">{t("modal.customer")}</div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
                             <div className="relative">
-                                <div className="text-[12.5px] font-bold text-[#7A6A5C] mb-[7px]">Phone number</div>
+                                <div className="text-[12.5px] font-bold text-[#7A6A5C] mb-[7px]">{t("modal.phone")}</div>
                                 <div className="bg-white border-2 border-[#C8912F] rounded-[12px] p-[12px_15px] flex items-center gap-[11px]">
                                     <span className="text-[14px] font-bold text-[#7A6A5C] pr-[11px] border-r border-[#EADFCF]">+91</span>
                                     <input 
@@ -304,7 +304,7 @@ export default function CreateOrderModal({
                                         className="flex-1 text-[16px] font-bold text-[#2A1D14] tracking-[0.4px] bg-transparent outline-none"
                                     />
                                     {selectedCustomer && (
-                                        <span className="text-[11px] font-extrabold text-[#6E8B5E]">✓ FOUND</span>
+                                        <span className="text-[11px] font-extrabold text-[#6E8B5E]">✓ {t("modal.found")}</span>
                                     )}
                                 </div>
                                 
@@ -325,17 +325,17 @@ export default function CreateOrderModal({
                                 )}
                             </div>
                             <div>
-                                <div className="text-[12.5px] font-bold text-[#7A6A5C] mb-[7px]">Name</div>
+                                <div className="text-[12.5px] font-bold text-[#7A6A5C] mb-[7px]">{t("modal.name")}</div>
                                 <div className="bg-white border border-[#EADFCF] rounded-[12px] p-[12px_15px] flex items-center gap-[11px]">
                                     <input 
                                         type="text" 
                                         value={customerName}
                                         onChange={(e) => setCustomerName(e.target.value)}
-                                        placeholder="Customer name"
+                                        placeholder={t("modal.customerNamePlaceholder")}
                                         className="flex-1 text-[16px] font-bold text-[#2A1D14] bg-transparent outline-none"
                                     />
                                     {!selectedCustomer && phone.length === 10 && customerName.length > 0 && (
-                                        <span className="text-[12px] font-extrabold text-[#8A5A1E]">Add customer</span>
+                                        <span className="text-[12px] font-extrabold text-[#8A5A1E]">{t("modal.addCustomer")}</span>
                                     )}
                                 </div>
                             </div>
@@ -344,7 +344,7 @@ export default function CreateOrderModal({
                             <div className="flex items-center gap-[11px] bg-[#EAF0E4] border border-[#D3E0C8] rounded-[11px] p-[10px_14px] mt-[11px]">
                                 <span className="text-[13px] text-[#4F6742]">✓</span>
                                 <span className="flex-1 text-[13px] text-[#41603A]">
-                                    {selectedCustomer.queryCount || 0} past orders · saved sizes for {Object.keys(selectedCustomer.measurements || {}).join(", ") || "nothing yet"}
+                                    {selectedCustomer.queryCount || 0} {t("modal.pastOrdersCount")} · {t("modal.savedSizesFor")} {Object.keys(selectedCustomer.measurements || {}).map(g => t(`garment.${g}`) || g).join(", ") || t("modal.nothingYet")}
                                 </span>
                             </div>
                         )}
@@ -352,17 +352,17 @@ export default function CreateOrderModal({
 
                     {/* GARMENT & MEASUREMENTS */}
                     <div>
-                        <div className="text-[11.5px] font-extrabold tracking-[1.4px] text-[#8A5A1E] mb-[10px]">GARMENT & MEASUREMENTS</div>
+                        <div className="text-[11.5px] font-extrabold tracking-[1.4px] text-[#8A5A1E] mb-[10px]">{t("modal.garmentAndMeasurements")}</div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] items-start">
                             <div>
-                                <div className="text-[12.5px] font-bold text-[#7A6A5C] mb-[7px]">Garment type</div>
+                                <div className="text-[12.5px] font-bold text-[#7A6A5C] mb-[7px]">{t("modal.garmentType")}</div>
                                 <div className="bg-white border border-[#EADFCF] rounded-[12px] p-[12px_15px] flex items-center gap-[11px] relative">
                                     <select 
                                         value={garmentType}
                                         onChange={(e) => setGarmentType(e.target.value)}
                                         className="flex-1 text-[15.5px] font-bold text-[#2A1D14] bg-transparent outline-none appearance-none"
                                     >
-                                        <option value="" disabled>Select garment</option>
+                                        <option value="" disabled>{t("modal.selectGarment")}</option>
                                         {GARMENT_TYPES.map(g => (
                                             <option key={g} value={g}>{t(`garment.${g}`) || g}</option>
                                         ))}
@@ -371,7 +371,7 @@ export default function CreateOrderModal({
                                 </div>
                             </div>
                             <div>
-                                <div className="text-[12.5px] font-bold text-[#7A6A5C] mb-[7px]">Number of sets</div>
+                                <div className="text-[12.5px] font-bold text-[#7A6A5C] mb-[7px]">{t("modal.numberOfSets")}</div>
                                 <div className="bg-white border border-[#EADFCF] rounded-[12px] p-[7px_9px] flex items-center justify-between">
                                     <button 
                                         onClick={() => setNumberOfSets(Math.max(1, numberOfSets - 1))}
@@ -389,9 +389,9 @@ export default function CreateOrderModal({
                         {garmentType && garmentConfig && (
                             <div className="bg-white border border-[#EADFCF] rounded-[14px] p-[13px] mt-[11px]">
                                 <div className="flex items-center gap-[10px] mb-[10px]">
-                                    <span className="flex-1 text-[14px] font-extrabold text-[#2A1D14]">{t(`garment.${garmentType}`) || garmentType} measurements</span>
+                                    <span className="flex-1 text-[14px] font-extrabold text-[#2A1D14]">{t(`garment.${garmentType}`) || garmentType} {t("modal.measurementsFor")}</span>
                                     {selectedCustomer && selectedCustomer.measurements?.[garmentType] && (
-                                        <span className="text-[12px] font-extrabold text-[#6E8B5E]">Filled from last order</span>
+                                        <span className="text-[12px] font-extrabold text-[#6E8B5E]">{t("modal.filledFromLastOrder")}</span>
                                     )}
                                 </div>
                                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-[9px]">
@@ -412,7 +412,7 @@ export default function CreateOrderModal({
                                         className="border-[1.5px] border-dashed border-[#C8912F] rounded-[10px] p-[9px_11px] flex flex-col justify-center items-center cursor-pointer hover:bg-orange-50/50"
                                     >
                                         <div className="text-[15px] text-[#8A5A1E] leading-[1]">＋</div>
-                                        <div className="text-[11px] font-extrabold text-[#8A5A1E]">Add field</div>
+                                        <div className="text-[11px] font-extrabold text-[#8A5A1E]">{t("modal.addField")}</div>
                                     </div>
                                 </div>
                             </div>
@@ -422,10 +422,10 @@ export default function CreateOrderModal({
                     {/* DELIVERY & NOTES */}
                     <div className="grid grid-cols-1 lg:grid-cols-[1fr_250px] gap-[16px] items-start">
                         <div>
-                            <div className="text-[11.5px] font-extrabold tracking-[1.4px] text-[#8A5A1E] mb-[10px]">DELIVERY & NOTES</div>
+                            <div className="text-[11.5px] font-extrabold tracking-[1.4px] text-[#8A5A1E] mb-[10px]">{t("modal.deliveryAndNotes")}</div>
                             <div className="flex flex-wrap sm:flex-nowrap gap-[12px]">
                                 <div className="flex-1 bg-white border border-[#EADFCF] rounded-[12px] p-[11px_14px]">
-                                    <div className="text-[11.5px] text-[#7A6A5C]">Delivery date</div>
+                                    <div className="text-[11.5px] text-[#7A6A5C]">{t("modal.deliveryDate")}</div>
                                     <div className="flex items-baseline gap-[8px] mt-[3px]">
                                         <input 
                                             type="date" 
@@ -436,7 +436,7 @@ export default function CreateOrderModal({
                                     </div>
                                 </div>
                                 <div className="w-[100px] bg-white border border-[#EADFCF] rounded-[12px] p-[11px_14px]">
-                                    <div className="text-[11.5px] text-[#7A6A5C]">Bin</div>
+                                    <div className="text-[11.5px] text-[#7A6A5C]">{t("modal.bin")}</div>
                                     <input 
                                         type="text" 
                                         placeholder="—"
@@ -450,7 +450,7 @@ export default function CreateOrderModal({
                                     <textarea 
                                         value={notes}
                                         onChange={(e) => setNotes(e.target.value)}
-                                        placeholder="Add notes for the tailors"
+                                        placeholder={t("modal.tailorNotesPlaceholder")}
                                         className="flex-1 text-[13.5px] font-bold text-[#2A1D14] bg-transparent outline-none resize-none h-[40px]"
                                     />
                                 </div>
@@ -462,7 +462,7 @@ export default function CreateOrderModal({
                             <div>
                                 <div className="flex justify-between items-baseline mb-[6px]">
                                     <span className="text-[13.5px] font-bold text-[#B9A48A]">
-                                        {garmentType ? `${t(`garment.${garmentType}`) || garmentType} × ${numberOfSets}` : 'No garment'}
+                                        {garmentType ? `${t(`garment.${garmentType}`) || garmentType} × ${numberOfSets}` : t("modal.noGarment")}
                                     </span>
                                     <div className="flex items-center gap-[4px] bg-[#3B2A20] rounded-[6px] px-[6px] py-[2px]">
                                         <span className="text-[11.5px] text-[#8C7761]">₹</span>
@@ -476,7 +476,7 @@ export default function CreateOrderModal({
                                 </div>
                                 <div className="h-[1px] bg-[#3B2A20] my-[14px]"></div>
                                 <div className="flex justify-between items-end">
-                                    <span className="text-[12px] text-[#8C7761] mb-[3px]">Total to collect</span>
+                                    <span className="text-[12px] text-[#8C7761] mb-[3px]">{t("modal.totalToCollect")}</span>
                                     <span className="font-bricolage font-extrabold text-[28px] text-[#F7EEDC] tracking-[-0.5px]">
                                         ₹{((typeof basePrice === 'number' ? basePrice : 0) * numberOfSets).toLocaleString('en-IN')}
                                     </span>
@@ -487,7 +487,7 @@ export default function CreateOrderModal({
                                 disabled={!isValid || submitting}
                                 className="w-full h-[52px] rounded-[14px] bg-[#C8912F] flex items-center justify-center gap-[10px] text-[15.5px] font-extrabold text-[#2A1D14] mt-6 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#b8852a] transition-colors"
                             >
-                                {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : success ? <CheckCircle className="w-5 h-5 text-green-800" /> : "+ Create order"}
+                                {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : success ? <CheckCircle className="w-5 h-5 text-green-800" /> : t("modal.createOrderBtn")}
                             </button>
                         </div>
                     </div>
