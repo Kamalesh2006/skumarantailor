@@ -716,7 +716,7 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                         </div>
                                         <div>
                                             <h3 className="font-semibold text-themed-primary">{t("dash.tab.logs")}</h3>
-                                            <p className="text-sm text-themed-secondary">View internal system errors arrayed directly from the backend text file.</p>
+                                            <p className="text-sm text-themed-secondary">{t("logs.desc")}</p>
                                         </div>
                                     </div>
                                     <button
@@ -725,11 +725,11 @@ export default function DashboardContent({ activeTab = "overview" }: { activeTab
                                         className="btn-secondary h-9 px-4 text-xs font-medium flex items-center gap-2"
                                     >
                                         <RefreshCw className={`h-3.5 w-3.5 ${fetchingLogs ? "animate-spin" : ""}`} />
-                                        {fetchingLogs ? "Refreshing..." : "Refresh"}
+                                        {fetchingLogs ? t("logs.refreshing") : t("logs.refresh")}
                                     </button>
                                 </div>
                                 <div className="bg-black/95 text-green-400 p-5 rounded-xl overflow-x-auto overflow-y-auto min-h-[400px] max-h-[600px] text-xs font-mono whitespace-pre-wrap leading-relaxed shadow-inner" style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
-                                    {logsContent || "No logs yet. Click refresh to load."}
+                                    {logsContent || t("logs.noLogs")}
                                 </div>
                             </div>
                         )}
