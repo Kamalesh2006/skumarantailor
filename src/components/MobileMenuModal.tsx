@@ -40,7 +40,7 @@ export default function MobileMenuModal({ isOpen, onClose, currentTab, onTabChan
                             <div className="w-[38px] h-[38px] bg-[#C8912F] rounded-lg flex items-center justify-center font-bricolage font-extrabold text-[#2A1D14]">SK</div>
                             <div>
                                 <div className="font-bricolage font-extrabold tracking-[-0.4px] text-[18px] text-[#F7EEDC]">Kumaran S.</div>
-                                <div className="text-[12px] text-[#B9A48A] mt-[2px]">Owner · Cuddalore branch</div>
+                                <div className="text-[12px] text-[#B9A48A] mt-[2px]">{t("menu.ownerBranch")}</div>
                             </div>
                         </div>
                     </div>

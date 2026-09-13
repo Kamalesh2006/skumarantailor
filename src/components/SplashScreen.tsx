@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface SplashScreenProps {
     onComplete: () => void;
 }
 
 export default function SplashScreen({ onComplete }: SplashScreenProps) {
+    const { t } = useLanguage();
     const [phase, setPhase] = useState<"enter" | "hold" | "exit">("enter");
 
     useEffect(() => {
@@ -44,10 +46,10 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
             >
                 <img src="/sewing-machine.png" alt="Antique sewing machine" className="w-[268px] h-[268px] object-contain drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]" />
                 <div className="font-bricolage font-extrabold tracking-[-2.2px] text-[62px] text-[#F7EEDC] leading-[1.05] mt-[26px]">
-                    S Kumaran Tailors
+                    {t("app.name")}
                 </div>
                 <div className="text-[13px] tracking-[4px] font-bold text-[#C8912F] mt-[18px]">
-                    SINCE 1986 &middot; CUDDALORE
+                    {t("landing.tagline")}
                 </div>
                 
                 {/* Progress bar */}
@@ -55,12 +57,12 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                     <div className="h-[5px] rounded-[3px] bg-[#C8912F]" style={{ animation: 'splashProgressBar 2.4s ease-in-out infinite' }}></div>
                 </div>
                 <div className="text-[13.5px] text-[#8C7761] mt-[16px]">
-                    Loading orders, customers and queries…
+                    {t("splash.loading")}
                 </div>
             </div>
 
             <div className="absolute bottom-0 w-full pb-[34px] text-center text-[11.5px] tracking-[2px] font-bold text-[#4E3A2A]">
-                CUSTOMER & ORDER MANAGEMENT
+                {t("splash.subtext")}
             </div>
 
             <style jsx>{`
