@@ -49,11 +49,11 @@ function TrackingPageContent() {
         } catch (err) {
             console.error(err);
 
-            setError("Could not find orders. Please check the number and try again.");
+            setError(t("track.fetchError"));
         } finally {
             setSearching(false);
         }
-    }, []);
+    }, [t]);
 
     const searchParams = useSearchParams();
 
@@ -99,11 +99,11 @@ function TrackingPageContent() {
             <div className="mx-auto max-w-7xl px-4 lg:px-8 mt-6">
                 {/* Search Bar for Public Tracking */}
                 <div className="glass-card p-6 mb-6">
-                    <h2 className="text-lg font-semibold text-themed-primary mb-3">Track Your Current Orders</h2>
+                    <h2 className="text-lg font-semibold text-themed-primary mb-3">{t("track.trackCurrentOrders")}</h2>
                     <div className="flex flex-col sm:flex-row gap-3">
                         <input
                             type="tel"
-                            placeholder="Enter your registered phone number (e.g. +91...)"
+                            placeholder={t("track.phonePlaceholder")}
                             value={phoneQuery}
                             onChange={(e) => setPhoneQuery(e.target.value)}
                             className="form-input flex-1"
@@ -115,7 +115,7 @@ function TrackingPageContent() {
                             className="btn-primary min-w-[140px] flex justify-center items-center"
                             disabled={!phoneQuery.trim() || searching}
                         >
-                            {searching ? <LogoLoading size={20} /> : "Find Orders"}
+                            {searching ? <LogoLoading size={20} /> : t("track.findOrders")}
                         </button>
                     </div>
                     {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
@@ -241,7 +241,7 @@ function TrackingPageContent() {
                 {!hasSearched && !searching && (
                     <div className="glass-card p-10 text-center text-themed-muted">
                         <PackageSearch className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                        <p>Enter your phone number above to track your garments.</p>
+                        <p>{t("track.enterPhoneToTrack")}</p>
                     </div>
                 )}
             </div>
