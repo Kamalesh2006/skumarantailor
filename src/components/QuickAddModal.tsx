@@ -350,7 +350,7 @@ export default function QuickAddModal({ isOpen, onClose, onOrderCreated }: Quick
                                             ? "bg-red-500/15 text-red-400 animate-pulse"
                                             : "text-themed-muted hover:text-gold-400 hover:bg-gold-400/10"
                                             }`}
-                                        title={phoneVoice.listening ? t("quickAdd.voiceListening") : "Voice input"}
+                                        title={phoneVoice.listening ? t("quickAdd.voiceListening") : t("quickAdd.voiceInput")}
                                     >
                                         {phoneVoice.listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                                     </button>
@@ -382,7 +382,7 @@ export default function QuickAddModal({ isOpen, onClose, onOrderCreated }: Quick
                                             ? "bg-red-500/15 text-red-400 animate-pulse"
                                             : "text-themed-muted hover:text-gold-400 hover:bg-gold-400/10"
                                             }`}
-                                        title={nameVoice.listening ? t("quickAdd.voiceListening") : "Voice input"}
+                                        title={nameVoice.listening ? t("quickAdd.voiceListening") : t("quickAdd.voiceInput")}
                                     >
                                         {nameVoice.listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                                     </button>
