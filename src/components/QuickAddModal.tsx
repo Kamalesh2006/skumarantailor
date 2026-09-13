@@ -470,7 +470,7 @@ export default function QuickAddModal({ isOpen, onClose, onOrderCreated }: Quick
                                                             ? "bg-red-500/15 text-red-400 animate-pulse"
                                                             : "text-themed-muted hover:text-gold-400 hover:bg-gold-400/10"
                                                             }`}
-                                                        title="Voice"
+                                                        title={t("quickAdd.voice")}
                                                     >
                                                         {countVoice.listening && voiceTargetIndex === idx ? (
                                                             <MicOff className="h-3.5 w-3.5" />
